@@ -1,0 +1,1707 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hybrid Elite Mafia</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Hybrid Elite Mafia: 120 HEM plug-ins in one rack, and the HEM 3D Listening Player.">
+<link rel="icon" href="img/brand/icon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap">
+<style>
+/* Layout: one page, four views (home, plug-ins, one plug-in, player) switched by the address hash so the music never stops;
+   glass nav on top, mini player on the bottom, a flowing HEM Blend aura behind everything. */
+:root{
+  color-scheme: dark;
+  --bg:#05050b; --ink:#f4f1fb; --dim:#c9c3dc; --faint:#948eaa; --line:rgba(255,255,255,.09);
+  --glass:rgba(16,17,28,.62); --glass-hi:rgba(28,30,46,.7);
+  --cyan:#22e4ff; --violet:#7b3cff; --magenta:#ff2fb9; --orange:#ff7a1a; --gold:#ffc94a;
+  --blend:linear-gradient(90deg,#22e4ff,#7b3cff,#ff2fb9,#ff7a1a,#ffc94a,#ff7a1a,#ff2fb9,#7b3cff,#22e4ff);
+  --font-display:'Orbitron','Rajdhani',system-ui,sans-serif;
+  --font-body:'Rajdhani',system-ui,'Segoe UI',sans-serif;
+  --nav-h:64px; --mini-h:76px;
+  --gut-l:max(16px,env(safe-area-inset-left,0px)); --gut-r:max(16px,env(safe-area-inset-right,0px));
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:500 17px/1.5 var(--font-body);min-height:100%;padding-bottom:calc(var(--mini-h) + env(safe-area-inset-bottom,0px))}
+body.on-player{overflow:hidden;padding-bottom:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:#07070e}
+[hidden]{display:none!important}
+a{color:inherit}
+img{max-width:100%;display:block}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+.flow{background:var(--blend);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 12s linear infinite}
+@keyframes flow{to{background-position:300% 0}}
+@keyframes spin{to{transform:rotate(1turn)}}
+
+/* aura behind the pages */
+#aura{position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block}
+body.on-player #aura{display:none}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;height:var(--nav-h);display:flex;align-items:center;gap:20px;padding:0 var(--gut-r) 0 var(--gut-l);background:rgba(8,8,16,.72);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--line)}
+.nav::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--blend);background-size:300% 100%;animation:flow 12s linear infinite;opacity:.8}
+body.on-player .nav{position:fixed;left:0;right:0}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0}
+.brand img{width:40px;height:40px}
+.brand b{font:900 15px/1 var(--font-display);letter-spacing:.12em;white-space:nowrap}
+.links{display:flex;gap:4px;margin-left:auto}
+.links a{text-decoration:none;font:700 13px/1 var(--font-display);letter-spacing:.14em;padding:10px 14px;border-radius:999px;color:var(--dim)}
+.links a:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.links a[aria-current="page"]{color:var(--bg);background:var(--ink)}
+
+main{padding:0 var(--gut-r) 0 var(--gut-l)}
+.wrap{max-width:1240px;margin:0 auto}
+section{padding-block:56px}
+.eyebrow{font:700 12px/1 var(--font-display);letter-spacing:.32em;color:var(--gold);text-transform:uppercase;margin:0 0 14px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h2{font:900 clamp(26px,3.6vw,40px)/1.1 var(--font-display);letter-spacing:.04em}
+.lede{font-size:clamp(18px,1.6vw,21px);color:var(--dim);max-width:60ch;margin:14px 0 0}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:12px;border:1px solid var(--line);background:var(--glass-hi);text-decoration:none;font:700 14px/1 var(--font-display);letter-spacing:.12em;cursor:pointer;transition:transform .15s,background .15s}
+.btn:hover{transform:translateY(-2px);background:rgba(40,42,62,.85)}
+.btn.main{background:var(--ink);color:var(--bg);border-color:transparent;position:relative}
+.btn.main::before{content:"";position:absolute;inset:-2px;border-radius:14px;z-index:-1;background:var(--blend);background-size:300% 100%;animation:flow 8s linear infinite;filter:blur(8px);opacity:.75}
+
+/* home: hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:center;padding-block:64px 40px}
+.hero h1{font:900 clamp(40px,7vw,92px)/.95 var(--font-display);letter-spacing:.02em}
+.hero h1 span{display:block}
+.motto{margin:22px 0 0;font:700 clamp(13px,1.3vw,15px)/1.8 var(--font-display);letter-spacing:.26em;color:var(--dim)}
+.motto i{font-style:normal;color:var(--gold)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.medal{position:relative;aspect-ratio:1;max-width:520px;width:100%;justify-self:center;perspective:900px}
+.medal .disc{position:absolute;inset:8%;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .2s ease-out}
+.medal .disc img{width:100%;height:100%;filter:drop-shadow(0 30px 40px rgba(0,0,0,.7));transform:translateZ(40px)}
+.medal .ring{position:absolute;inset:4%;border-radius:50%;background:conic-gradient(#22e4ff,#7b3cff,#ff2fb9,#ff7a1a,#ffc94a,#22e4ff);animation:spin 14s linear infinite;filter:blur(22px);opacity:.55;-webkit-mask:radial-gradient(circle,transparent 58%,#000 60%,#000 70%,transparent 72%);mask:radial-gradient(circle,transparent 58%,#000 60%,#000 70%,transparent 72%)}
+.medal .floor{position:absolute;left:12%;right:12%;bottom:-2%;height:12%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,47,185,.35),transparent);filter:blur(10px)}
+
+/* home: rack facts */
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-block:1px solid var(--line);margin-top:28px}
+.facts div{padding:22px 18px;border-left:1px solid var(--line)}
+.facts div:first-child{border-left:0}
+.facts b{display:block;font:900 clamp(26px,3vw,40px)/1 var(--font-display);font-variant-numeric:tabular-nums}
+.facts span{display:block;margin-top:8px;color:var(--dim);font-size:16px}
+
+/* category strip */
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:26px}
+.cat{position:relative;display:block;text-decoration:none;padding:16px 16px 18px;border-radius:14px;background:var(--glass);border:1px solid var(--line);overflow:hidden}
+.cat::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--blend);background-size:300% 100%;animation:flow 10s linear infinite}
+.cat b{font:900 15px/1 var(--font-display);letter-spacing:.12em}
+.cat em{float:right;font:700 14px/1 var(--font-display);font-style:normal;color:var(--gold)}
+.cat span{display:block;margin-top:10px;color:var(--dim);font-size:15px;line-height:1.35}
+.cat:hover{background:var(--glass-hi)}
+
+.head-row{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px}
+
+/* glass tablets */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:26px 22px;margin-top:28px}
+.tab{display:block;text-decoration:none;perspective:900px;min-width:0}
+.slab{position:relative;border-radius:14px;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .25s ease-out,box-shadow .25s;box-shadow:0 18px 30px -12px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.08);background:#0b0c13}
+.slab img{width:100%;height:auto;aspect-ratio:2560/1441;object-fit:cover;border-radius:14px}
+.slab::before{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.05) 32%,transparent 46%);transform:translateZ(1px);mix-blend-mode:screen;opacity:.65}
+.slab::after{content:"";position:absolute;inset:-2px;border-radius:16px;z-index:-1;background:var(--blend);background-size:300% 100%;opacity:0;filter:blur(10px);transition:opacity .25s}
+.tab:hover .slab,.tab:focus-visible .slab{box-shadow:0 26px 40px -12px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.18)}
+.tab:hover .slab::after,.tab:focus-visible .slab::after{opacity:.8;animation:flow 6s linear infinite}
+.tab .cap{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:12px}
+.tab .cap b{font:900 15px/1.2 var(--font-display);letter-spacing:.08em;min-width:0;overflow-wrap:anywhere}
+.tab .cap span{font:700 11px/1 var(--font-display);letter-spacing:.14em;color:var(--gold);white-space:nowrap}
+.tab .sub{display:block;margin-top:4px;color:var(--dim);font-size:15px;letter-spacing:.06em}
+
+/* plug-ins: filter bar */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;align-items:center}
+.chip{padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--glass);text-decoration:none;font:700 12px/1 var(--font-display);letter-spacing:.12em;color:var(--dim);font-variant-numeric:tabular-nums;cursor:pointer}
+.chip:hover{color:var(--ink)}
+.chip[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:transparent}
+.search{margin-left:auto;display:flex;align-items:center;min-width:0;flex:1 1 220px;max-width:320px}
+.search input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(8,8,16,.7);color:var(--ink);font:600 16px/1 var(--font-body)}
+.search input::placeholder{color:var(--faint)}
+.empty{margin-top:40px;color:var(--dim);font-size:18px}
+.count{color:var(--faint);font:700 12px/1 var(--font-display);letter-spacing:.16em;margin-top:18px}
+
+/* one plug-in */
+.crumb{display:inline-block;margin-top:28px;text-decoration:none;color:var(--dim);font:700 12px/1 var(--font-display);letter-spacing:.16em}
+.crumb:hover{color:var(--ink)}
+.pp{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:28px 40px}
+.pp .tab{cursor:default}
+.pp h1{font:900 clamp(34px,4.6vw,60px)/1 var(--font-display);letter-spacing:.03em;overflow-wrap:anywhere}
+.pp .subtitle{margin:12px 0 0;font:700 15px/1.3 var(--font-display);letter-spacing:.2em;color:var(--dim)}
+.pp .tagline{margin:22px 0 0;font:900 clamp(16px,1.6vw,19px)/1.2 var(--font-display);letter-spacing:.22em}
+.pp .blurb{margin:18px 0 0;font-size:20px;color:var(--ink);max-width:44ch}
+.meta{margin:24px 0 0;display:grid;grid-template-columns:auto 1fr;gap:8px 18px;font-size:16px}
+.meta dt{color:var(--faint);font:700 11px/1.9 var(--font-display);letter-spacing:.18em}
+.meta dd{margin:0;color:var(--dim)}
+.pp .cta{margin-top:26px}
+.stepper{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:18px}
+.stepper a{text-decoration:none;color:var(--dim);font:700 13px/1.3 var(--font-display);letter-spacing:.12em;max-width:48%}
+.stepper a:hover{color:var(--ink)}
+.stepper a:last-child{text-align:right}
+
+footer{padding:48px var(--gut-r) 28px var(--gut-l);text-align:center;color:var(--faint);font:700 12px/1.8 var(--font-display);letter-spacing:.3em}
+footer b{display:block;font-size:13px}
+body.on-player footer{display:none}
+
+/* player view: the 3D player fills the window under the nav */
+#stage{position:fixed;left:0;right:0;bottom:0;top:calc(var(--nav-h) + env(safe-area-inset-top,0px));width:100%;height:calc(100% - var(--nav-h) - env(safe-area-inset-top,0px));display:block;touch-action:none;cursor:grab;background:#04040a}
+body:not(.on-player) #stage{display:none}
+#stage.grabbing{cursor:grabbing}
+#stage.pointing{cursor:pointer}
+.readout{position:fixed;z-index:35;left:50%;top:calc(var(--nav-h) + 14px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:700 15px/1 var(--font-display);letter-spacing:.08em;color:var(--ink);background:rgba(5,5,11,.85);border:1px solid rgba(34,228,255,.55);border-radius:8px;padding:9px 13px;pointer-events:none;font-variant-numeric:tabular-nums;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
+.hint{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:var(--gut-l);right:var(--gut-r);margin:0;font:500 14px/1.35 var(--font-body);color:var(--dim);pointer-events:none;max-width:70ch}
+body:not(.on-player) .hint{display:none}
+.err{position:fixed;inset:var(--nav-h) 0 0;display:grid;place-items:center;padding:24px var(--gut-r) 24px var(--gut-l);text-align:center;font:600 17px/1.4 var(--font-body);color:var(--dim)}
+body:not(.on-player) .err{display:none!important}
+
+/* mini player */
+.mini{position:fixed;z-index:30;left:0;right:0;bottom:0;padding:10px var(--gut-r) calc(10px + env(safe-area-inset-bottom,0px)) var(--gut-l);background:rgba(8,8,16,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;align-items:center;gap:14px}
+.mini::before{content:"";position:absolute;left:0;right:0;top:-1px;height:1px;background:var(--blend);background-size:300% 100%;animation:flow 12s linear infinite}
+body.on-player .mini{display:none}
+.mini img{width:46px;height:48px;flex:none}
+.mini .now{min-width:0;flex:1 1 auto}
+.mini .title{font:700 16px/1.2 var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini .time{font:500 12px/1 var(--font-display);color:var(--faint);font-variant-numeric:tabular-nums;margin-top:4px}
+.mini .bar{position:absolute;left:0;right:0;top:0;height:3px;cursor:pointer;background:transparent}
+.mini .bar i{display:block;height:100%;width:0;background:var(--blend);background-size:300% 100%;animation:flow 8s linear infinite}
+.mini .ctl{display:flex;gap:6px;flex:none}
+.ib{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--glass-hi);display:grid;place-items:center;cursor:pointer}
+.ib:hover{background:rgba(44,46,68,.9)}
+.ib svg{width:18px;height:18px;fill:currentColor}
+.ib.play{width:48px;background:var(--ink);color:var(--bg)}
+.mini .more{display:flex;gap:8px;flex:none}
+.mini .more .btn{padding:12px 14px;font-size:12px}
+
+@media (max-width:900px){
+  .hero,.pp{grid-template-columns:1fr}
+  .medal{max-width:340px;order:-1}
+  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .facts div:nth-child(3){border-left:0}
+  .facts div:nth-child(n+3){border-top:1px solid var(--line)}
+}
+@media (max-width:640px){
+  :root{--nav-h:58px}
+  .brand b{display:none}
+  .links a{padding:9px 11px;font-size:12px;letter-spacing:.1em}
+  section{padding-block:40px}
+  .grid{grid-template-columns:1fr 1fr;gap:18px 12px}
+  .tab .cap{flex-direction:column;gap:4px}
+  .tab .sub{font-size:13px}
+  .mini .more .add{display:none}
+  .mini .ctl .prev{display:none}
+  .search{max-width:none;margin-left:0}
+}
+@media (max-width:420px){
+  .mini .more{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+</head>
+<body>
+<canvas id="aura" aria-hidden="true"></canvas>
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="#home"><img src="img/brand/crown.webp" alt="Hybrid Elite Mafia crown badge"><b class="flow">HYBRID ELITE MAFIA</b></a>
+  <div class="links">
+    <a href="#home" data-nav="home">HOME</a>
+    <a href="#plugins" data-nav="plugins">PLUG-INS</a>
+    <a href="#player" data-nav="player">PLAYER</a>
+  </div>
+</nav>
+
+<main>
+  <!-- HOME -->
+  <div id="view-home" class="view">
+    <div class="wrap">
+      <div class="hero">
+        <div>
+          <p class="eyebrow">Est. 2024</p>
+          <h1><span class="flow">HYBRID</span><span class="flow">ELITE</span><span class="flow">MAFIA</span></h1>
+          <p class="motto">PURE AUDIO <i>·</i> HIGHER MINDS <i>·</i> DEEPER EMOTIONS <i>·</i> REAL MUSIC <i>·</i> NO LIMITS</p>
+          <div class="cta">
+            <a class="btn main" href="#player">OPEN THE PLAYER</a>
+            <a class="btn" href="#plugins">SEE ALL 120 PLUG-INS</a>
+          </div>
+        </div>
+        <div class="medal" id="medal" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="floor"></div>
+          <div class="disc"><img src="img/brand/crown-lg.webp" alt=""></div>
+        </div>
+      </div>
+    </div>
+    <section class="wrap" aria-labelledby="rack-h">
+      <p class="eyebrow">HEM-Elite-Rack</p>
+      <h2 id="rack-h">120 plug-ins. One rack.</h2>
+      <p class="lede">EQ, dynamics, color, space, movement and mastering, each with its own faceplate. Built from the ground up by Hybrid Elite Mafia on its own C++ audio engine, no borrowed framework.</p>
+      <div class="facts">
+        <div><b class="flow">120</b><span>plug-ins with their own faceplates</span></div>
+        <div><b class="flow">8</b><span>plug-ins in one chain</span></div>
+        <div><b class="flow">A / B</b><span>with matched loudness, so louder never fools your ears</span></div>
+        <div><b class="flow">ASIO</b><span>and WASAPI for low-latency playback and live input</span></div>
+      </div>
+      <div class="cats" id="home-cats"></div>
+    </section>
+    <section class="wrap" aria-labelledby="feat-h">
+      <div class="head-row">
+        <div><p class="eyebrow">On the faceplate</p><h2 id="feat-h">A few from the rack</h2></div>
+        <a class="btn" href="#plugins">ALL PLUG-INS</a>
+      </div>
+      <div class="grid" id="featured"></div>
+    </section>
+  </div>
+
+  <!-- ALL PLUG-INS -->
+  <div id="view-plugins" class="view" hidden>
+    <section class="wrap" aria-labelledby="pl-h">
+      <p class="eyebrow">HEM-Elite-Rack</p>
+      <h2 id="pl-h">The plug-ins</h2>
+      <div class="filters" id="filters">
+        <div class="search"><input id="q" type="search" placeholder="Search by name or job" aria-label="Search the plug-ins" autocomplete="off"></div>
+      </div>
+      <p class="count" id="count"></p>
+      <div class="grid" id="all"></div>
+      <p class="empty" id="none" hidden>No plug-in matches that. Try a shorter word, like “tape” or “reverb”.</p>
+    </section>
+  </div>
+
+  <!-- ONE PLUG-IN -->
+  <div id="view-plugin" class="view" hidden>
+    <div class="wrap">
+      <a class="crumb" href="#plugins" id="crumb">← ALL PLUG-INS</a>
+      <div class="pp">
+        <div class="tab" id="pp-tab"><div class="slab"><img id="pp-img" alt=""></div></div>
+        <div>
+          <p class="eyebrow" id="pp-cat"></p>
+          <h1 id="pp-name"></h1>
+          <p class="subtitle" id="pp-sub"></p>
+          <p class="tagline flow" id="pp-tag"></p>
+          <p class="blurb" id="pp-blurb"></p>
+          <dl class="meta">
+            <dt>FAMILY</dt><dd id="pp-family"></dd>
+            <dt>KIND</dt><dd id="pp-kind"></dd>
+            <dt>LIVES IN</dt><dd>HEM-Elite-Rack for Windows</dd>
+          </dl>
+          <div class="cta" id="pp-cta"></div>
+        </div>
+      </div>
+      <nav class="stepper" aria-label="Next and previous plug-in"><a id="pp-prev"></a><a id="pp-next"></a></nav>
+    </div>
+    <section class="wrap" aria-labelledby="more-h">
+      <h2 id="more-h" style="font-size:24px"></h2>
+      <div class="grid" id="pp-more"></div>
+    </section>
+  </div>
+</main>
+
+<footer><b class="flow">HYBRID ELITE MAFIA • STUDIO PLUGINS</b>EST. 2024</footer>
+
+<!-- PLAYER (3D) -->
+<canvas id="stage" aria-label="3D HEM Listening Player. Drag empty space to turn it."></canvas>
+<p class="readout" id="readout" hidden></p>
+<p class="hint" id="hint">Tap ADD SONGS to play songs from this device; they never leave it. Drag empty space to turn the player. In SURGEON, drag a band's dot, scroll on a dot for Q, tap a number to pick a band (tap it again to switch it off), double-tap the graph to add one.</p>
+<div class="err" id="err" hidden>This page needs WebGL to draw the 3D player, and this browser didn't allow it.</div>
+
+<!-- MINI PLAYER (every page but the player) -->
+<div class="mini" id="mini" role="region" aria-label="Now playing">
+  <div class="bar" id="mini-bar" title="Jump in the song"><i id="mini-fill"></i></div>
+  <img src="img/brand/ghost.webp" alt="Hybrid Elite Mafia hooded ghost">
+  <div class="now"><div class="title" id="mini-title">No song loaded</div><div class="time" id="mini-time">Add songs from this device to start</div></div>
+  <div class="ctl">
+    <button class="ib prev" id="mini-prev" aria-label="Previous song"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+    <button class="ib play" id="mini-play" aria-label="Play"><svg viewBox="0 0 24 24" id="mini-play-ic"><path d="M7 4v16l13-8z"/></svg></button>
+    <button class="ib" id="mini-next" aria-label="Next song"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+  </div>
+  <div class="more">
+    <button class="btn add" id="mini-add">+ ADD SONGS</button>
+    <a class="btn" href="#player">OPEN PLAYER</a>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------- the site (pages, tablets, mini player)
+const PLUGINS = [{"name":"SURGEON","sub":"MASTERING EQUALIZER","tag":"SHAPE WHAT MATTERS","vst":"Fx|EQ","blurb":"16-band EQ: surgical or musical, dynamic bands, mid / side, analog character","group":"Eq","slug":"surgeon"},{"name":"THE CLEANER","sub":"AUDIO RESTORATION SUITE","tag":"RESTORE WHAT MATTERS","vst":"Fx|Restoration","blurb":"Adaptive hiss and noise reduction that keeps the air and the attacks","group":"Tools","slug":"the-cleaner"},{"name":"THE FAMILY","sub":"MIX BUS COMPRESSOR","tag":"GLUE WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Console-style bus compressor: a few dB that pulls the mix together","group":"Dynamics","slug":"the-family"},{"name":"ARCHIVE","sub":"TWO-TRACK TAPE MACHINE","tag":"WARM WHAT MATTERS","vst":"Fx|Distortion","blurb":"Tape machine: saturation, head bump, 15 / 30 IPS, wow, hiss","group":"Color","slug":"archive"},{"name":"HOTHEAD","sub":"ONE-KNOB OVERDRIVE","tag":"HEAT WHAT MATTERS","vst":"Fx|Distortion","blurb":"One knob: from untouched, through a light overdrive, to full distortion","group":"Color","slug":"hothead"},{"name":"PAWN SHOP","sub":"LO-FI WORKSHOP","tag":"AGE WHAT MATTERS","vst":"Fx|Distortion","blurb":"Lo-fi box: an old device (sound, tone, squash, ringer, decade), echo and spring / plate, twelve noises, tape and record wobble, master filters","group":"Color","slug":"pawn-shop"},{"name":"MIXTAPE","sub":"CASSETTE DECK","tag":"TAPE WHAT MATTERS","vst":"Fx|Distortion","blurb":"Cassette deck: type I / II / IV, drive, wow, flutter, hiss, age","group":"Color","slug":"mixtape"},{"name":"CRATE DIGGER","sub":"RECORD PLAYER","tag":"SPIN WHAT MATTERS","vst":"Fx|Distortion","blurb":"Vinyl: crackle, surface noise, wear, warp, mono lows","group":"Color","slug":"crate-digger"},{"name":"SHREDDER","sub":"LO-FI DECIMATOR","tag":"CRUSH WHAT MATTERS","vst":"Fx|Distortion","blurb":"Bits and sample rate down: lo-fi grit and aliasing, with mix","group":"Color","slug":"shredder"},{"name":"VELVET","sub":"PASSIVE PROGRAM EQUALIZER","tag":"LIFT WHAT MATTERS","vst":"Fx|EQ","blurb":"Classic passive tube EQ: low boost and atten, high boost, air","group":"Eq","slug":"velvet"},{"name":"FOUNDRY","sub":"CONSOLE CHANNEL EQUALIZER","tag":"DRIVE WHAT MATTERS","vst":"Fx|EQ","blurb":"British console channel EQ: stepped low cut, lows, middle and highs, EQ in / out, flip, vintage colour, peak readouts","group":"Eq","slug":"foundry"},{"name":"BOARDROOM","sub":"FOUR-BAND CONSOLE EQUALIZER","tag":"COLOR WHAT MATTERS","vst":"Fx|EQ","blurb":"British console four-band EQ: stepped high- and low-pass, shelf or bell ends, wide or tight mids, vintage colour, peak readouts","group":"Eq","slug":"boardroom"},{"name":"MIDTOWN","sub":"TUBE MIDRANGE EQUALIZER","tag":"FOCUS WHAT MATTERS","vst":"Fx|EQ","blurb":"Tube midrange EQ: low peak, dip and high peak at stepped frequencies, EQ in / out, hum, output","group":"Eq","slug":"midtown"},{"name":"LOCKDOWN","sub":"MASTERING LIMITER","tag":"FINISH WHAT MATTERS","vst":"Fx|Dynamics","blurb":"True-peak mastering limiter: loud, clean, never over the ceiling","group":"Dynamics","slug":"lockdown"},{"name":"WIDE LOAD","sub":"STEREO IMAGER","tag":"WIDEN WHAT MATTERS","vst":"Fx|Spatial","blurb":"Width from mono to extra-wide, mono bass for a tight centred low end","group":"Tools","slug":"wide-load"},{"name":"SPARK","sub":"HARMONIC EXCITER","tag":"BRIGHTEN WHAT MATTERS","vst":"Fx|Distortion","blurb":"Adds fresh tube or tape harmonics up top: air and presence without EQ","group":"Color","slug":"spark"},{"name":"THE ACCOUNTANT","sub":"LOUDNESS ANALYZER","tag":"MEASURE WHAT MATTERS","vst":"Fx|Analyzer","blurb":"LUFS momentary / short / integrated, range, true peak, phase","group":"Tools","slug":"the-accountant"},{"name":"ENFORCER","sub":"MODERN COMPRESSOR","tag":"CONTROL WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Clean, modern compressor: ratio, knee, attack, release or auto, auto makeup, sidechain HPF","group":"Dynamics","slug":"enforcer"},{"name":"HITMAN","sub":"DUAL FET PEAK COMPRESSOR","tag":"EAT THE PEAKS","vst":"Fx|Dynamics","blurb":"Dual FET compressor: L/R or M/S, lookahead, sidechain EQ, saturation, mix","group":"Dynamics","slug":"hitman"},{"name":"FURNACE","sub":"TUBE SATURATOR","tag":"WARM WHAT MATTERS","vst":"Fx|Distortion","blurb":"Tube stage: drive, bias for even harmonics, tone, mix - colour without the volume jump","group":"Color","slug":"furnace"},{"name":"CATHEDRAL","sub":"CONCERT HALL REVERB","tag":"SPACE WHAT MATTERS","vst":"Fx|Reverb","blurb":"Big, lush hall: pre-delay, size, decay, damping, early reflections, modulation","group":"Space","slug":"cathedral"},{"name":"BACKROOM","sub":"ROOM REVERB","tag":"HOUSE WHAT MATTERS","vst":"Fx|Reverb","blurb":"Real rooms, small to large: early reflections up front, short natural tails","group":"Space","slug":"backroom"},{"name":"CHROME","sub":"PLATE REVERB","tag":"SHINE WHAT MATTERS","vst":"Fx|Reverb","blurb":"Bright, dense plate: instant smooth tail for vocals and snares","group":"Space","slug":"chrome"},{"name":"REPEAT OFFENDER","sub":"STEREO DELAY","tag":"ECHO WHAT MATTERS","vst":"Fx|Delay","blurb":"Clean stereo delay: note values at a BPM, ping-pong, filters in the repeats","group":"Space","slug":"repeat-offender"},{"name":"THE CREW","sub":"STEREO CHORUS","tag":"THICKEN WHAT MATTERS","vst":"Fx|Modulation","blurb":"Lush stereo chorus: one to three voices, rate, depth, width","group":"Movement","slug":"the-crew"},{"name":"GETAWAY","sub":"JET FLANGER","tag":"SWEEP WHAT MATTERS","vst":"Fx|Modulation","blurb":"Jet-sweep flanger: manual, depth, positive or negative feedback","group":"Movement","slug":"getaway"},{"name":"SMOKESCREEN","sub":"STAGE PHASER","tag":"SWIRL WHAT MATTERS","vst":"Fx|Modulation","blurb":"Phaser: 4 to 12 stages swept around a center, feedback","group":"Movement","slug":"smokescreen"},{"name":"SHAKEDOWN","sub":"TREMOLO / AUTO PAN","tag":"PULSE WHAT MATTERS","vst":"Fx|Modulation","blurb":"Tremolo or auto pan: sine, triangle or square","group":"Movement","slug":"shakedown"},{"name":"CYCLONE","sub":"ROTATING SPEAKER","tag":"SPIN THE SOUND","vst":"Fx|Modulation","blurb":"Rotating speaker: slow / fast with real spin-up, drive, horn and drum","group":"Movement","slug":"cyclone"},{"name":"SHAPESHIFTER","sub":"ENVELOPE FILTER","tag":"MOVE WHAT MATTERS","vst":"Fx|Filter","blurb":"Resonant filter that follows the music or an LFO: low, band or high-pass","group":"Movement","slug":"shapeshifter"},{"name":"UNDERGROUND","sub":"SUB ENHANCER","tag":"DEEPEN WHAT MATTERS","vst":"Fx|Tools","blurb":"More low end: a new sub an octave down, or harmonics phones can hear","group":"Tools","slug":"underground"},{"name":"SPOTLIGHT","sub":"VOCAL CHANNEL","tag":"LEAD WHAT MATTERS","vst":"Fx|Tools","blurb":"Vocal chain on one plate: high-pass, body, compress, de-ess, presence, air","group":"Tools","slug":"spotlight"},{"name":"SWITCHBLADE","sub":"CHANNEL DYNAMICS","tag":"CUT WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Channel compander: compressor / expander and gate / expander, each wide, keyed or split by the filter","group":"Dynamics","slug":"switchblade"},{"name":"TERRITORY","sub":"MULTIBAND DYNAMICS","tag":"RULE WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Four-band dynamics: threshold, gain, range, attack, release per band, master offsets, crossover Q","group":"Dynamics","slug":"territory"},{"name":"STRAIGHT EDGE","sub":"LINEAR-PHASE MULTIBAND","tag":"SPLIT WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Five-band linear-phase dynamics: per band controls, master, adaptive floor, auto makeup, trim, dither","group":"Dynamics","slug":"straight-edge"},{"name":"CONSIGLIERE","sub":"PROGRAM LEVELER","tag":"CALM WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Light-cell leveler: gain, squeeze, compress / limit, bright detect, auto makeup, mix","group":"Dynamics","slug":"consigliere"},{"name":"STONE COLD","sub":"SOLID-STATE LEVELER","tag":"HOLD WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Solid-state light-cell leveler: quicker and firmer, with a touch of grit","group":"Dynamics","slug":"stone-cold"},{"name":"QUICK DRAW","sub":"FET LIMITING AMP","tag":"GRAB WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Fast transistor limiter: input, output, attack, release, 4 / 8 / 12 / 20 / stacked ratios","group":"Dynamics","slug":"quick-draw"},{"name":"OLD MONEY","sub":"SMOOTH COMPRESSOR","tag":"SMOOTH WHAT MATTERS","vst":"Fx|Dynamics","blurb":"All-purpose compressor: auto or manual release, snap back or ease out, colored or pure","group":"Dynamics","slug":"old-money"},{"name":"HEAVYWEIGHT","sub":"PUNCH COMPRESSOR","tag":"HIT WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Punchy compressor: snap, release in ms or on the beat, four vintage flavours, limiter or clipper","group":"Dynamics","slug":"heavyweight"},{"name":"THE DON","sub":"BROADCAST BUS COMPRESSOR","tag":"RUN WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Old-school bus compressor: stepped threshold, ratio, decay; VU meter and calibration","group":"Dynamics","slug":"the-don"},{"name":"SLOW BURN","sub":"TUBE LIMITER","tag":"WARM WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Stereo variable-mu tube limiter: six timings, separate, linked or mid / side","group":"Dynamics","slug":"slow-burn"},{"name":"LONE WOLF","sub":"TUBE LIMITER, ONE CHANNEL","tag":"WARM WHAT MATTERS","vst":"Fx|Dynamics","blurb":"One-channel variable-mu tube limiter: input, threshold, six timings","group":"Dynamics","slug":"lone-wolf"},{"name":"IRON FIST","sub":"CONSOLE CHANNEL COMPRESSOR","tag":"GRIP WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Console channel compressor and limiter: drive it in, de-ess, vintage iron, auto makeup","group":"Dynamics","slug":"iron-fist"},{"name":"KNOCKOUT","sub":"TRANSIENT DESIGNER","tag":"SNAP WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Transient designer: attack and sustain each with level, pickup, length and curve; safety, mix","group":"Dynamics","slug":"knockout"},{"name":"HAYMAKER","sub":"TRANSIENT SHAPER","tag":"PUNCH WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Transient shaper: range, pickup, length, release, output and one-push trim","group":"Dynamics","slug":"haymaker"},{"name":"FOUR KINGS","sub":"MULTIBAND TRANSIENTS","tag":"CROWN WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Four-band transient shaper: range, pickup and on per band, master, length, release, trim","group":"Dynamics","slug":"four-kings"},{"name":"BACKBONE","sub":"TWO-FADER LOUDNESS","tag":"LIFT WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Two faders: lift the quiet parts, hold the loud parts; output","group":"Dynamics","slug":"backbone"},{"name":"FULL HOUSE","sub":"LOUDNESS LEVELER","tag":"FILL WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Loudness without squash: evener, gate, quiet lift and loud hold, each with its own switch","group":"Dynamics","slug":"full-house"},{"name":"WHEELMAN","sub":"AUTO LEVEL RIDER","tag":"RIDE WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Vocal rider: target, voice pickup, ride range, rest point, stage bleed floor; rides the vocal to a steady level","group":"Dynamics","slug":"wheelman"},{"name":"CHAUFFEUR","sub":"BASS LEVEL RIDER","tag":"DRIVE WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Bass level rider: target, note pickup, speed, ignore bleed and clicks, ride range, rest point","group":"Dynamics","slug":"chauffeur"},{"name":"BIG SHOT","sub":"LOUDNESS MAXIMIZER","tag":"PUSH WHAT MATTERS","vst":"Fx|Dynamics","blurb":"One-band maximizer: threshold, ceiling, auto release, bit depth, dither and noise shape","group":"Dynamics","slug":"big-shot"},{"name":"LAST WORD","sub":"PEAK LIMITER","tag":"STOP WHAT MATTERS","vst":"Fx|Dynamics","blurb":"One-band peak limiter: input faders, release, sample / smoothed / true-peak ceiling, dither","group":"Dynamics","slug":"last-word"},{"name":"HIGH STAKES","sub":"FIVE-BAND MAXIMIZER","tag":"RAISE WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Five-band linear-phase maximizer: crossovers, gain, weight and release per band","group":"Dynamics","slug":"high-stakes"},{"name":"TOP DOG","sub":"PROFILE MAXIMIZER","tag":"TOP WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Five-band linear-phase maximizer run from nine profiles: threshold, ceiling, release","group":"Dynamics","slug":"top-dog"},{"name":"SWEET SIXTEEN","sub":"SIXTEEN-BAND MAXIMIZER","tag":"STEER WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Sixteen-band maximizer with a six-band EQ and weight curve, 22 release feels","group":"Dynamics","slug":"sweet-sixteen"},{"name":"FAST MONEY","sub":"LOW-LATENCY MAXIMIZER","tag":"QUICK WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Five-band maximizer with a low-latency split: every band control on the plate","group":"Dynamics","slug":"fast-money"},{"name":"QUICK CASH","sub":"LOW-LATENCY PROFILES","tag":"CASH WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Five-band profile maximizer with a low-latency split: threshold, ceiling, release","group":"Dynamics","slug":"quick-cash"},{"name":"SILENCER","sub":"DE-ESSER","tag":"QUIET WHAT MATTERS","vst":"Fx|Dynamics","blurb":"De-esser: threshold, frequency, split or wide, high-pass or band-pass sidechain, monitor","group":"Dynamics","slug":"silencer"},{"name":"TIGHT LIPS","sub":"DE-ESSER","tag":"HUSH WHAT MATTERS","vst":"Fx|Dynamics","blurb":"De-esser: threshold, range, frequency, high-pass or band-pass ear, split or wide, listen","group":"Dynamics","slug":"tight-lips"},{"name":"OMERTA","sub":"SMART DE-ESSER","tag":"SILENCE WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Hears esses by how bright they are, at any pitch: threshold, range, width, wide to split, look-ahead","group":"Dynamics","slug":"omerta"},{"name":"BREATHLESS","sub":"BREATH REMOVER","tag":"CLEAR WHAT MATTERS","vst":"Fx|Restoration","blurb":"Breath remover: breath and level thresholds, reduction, soft start and end, room floor, listen to what is removed","group":"Tools","slug":"breathless"},{"name":"TOMMY GUN","sub":"TEMPO PUMP","tag":"PUMP WHAT MATTERS","vst":"Fx|Dynamics","blurb":"One-knob tempo pump: amount, rate, offset; ducks on the beat and pumps back up","group":"Dynamics","slug":"tommy-gun"},{"name":"STRAIGHT SHOOTER","sub":"LINEAR PHASE EQUALIZER","tag":"SHAPE WHAT MATTERS","vst":"Fx|EQ","blurb":"Six-band linear-phase EQ: cuts, shelves and bells (variable-slope and bump shapes), no phase shift at all","group":"Eq","slug":"straight-shooter"},{"name":"BOTTOM LINE","sub":"LINEAR PHASE LOW EQ","tag":"SHAPE THE LOW END","vst":"Fx|EQ","blurb":"Three-band linear-phase EQ for the low end (11-600 Hz): cuts, shelves and bells, no phase shift","group":"Eq","slug":"bottom-line"},{"name":"TEN TOES","sub":"TEN BAND EQUALIZER","tag":"SHAPE EVERY DETAIL","vst":"Fx|EQ","blurb":"Ten-band EQ with separate left and right sets: bells, shelves, cuts, tight bells; input, phase and output per side","group":"Eq","slug":"ten-toes"},{"name":"FOUR CORNERS","sub":"FOUR FILTER EQUALIZER","tag":"SHAPE THE CORNERS","vst":"Fx|EQ","blurb":"Four-filter EQ with separate left and right sets: bells, shelves, bump shelves and cuts","group":"Eq","slug":"four-corners"},{"name":"SMOOTH TALKER","sub":"SIX BAND EQUALIZER","tag":"SHAPE IT SMOOTH","vst":"Fx|EQ","blurb":"Six-band EQ with separate left and right sets: cuts, shelves, bump shelves and bells","group":"Eq","slug":"smooth-talker"},{"name":"INSIDE MAN","sub":"CHANNEL STRIP","tag":"RUN THE WHOLE CHANNEL","vst":"Fx|Dynamics","blurb":"Channel strip: gate / expander and compressor with key filters, four-band EQ, order, phase, output, place, clip guard","group":"Dynamics","slug":"inside-man"},{"name":"CUTTHROAT","sub":"FILTER","tag":"CUT WHAT MATTERS","vst":"Fx|Filter","blurb":"High-pass and low-pass, 18 dB per octave, with separate left and right sets and link","group":"Eq","slug":"cutthroat"},{"name":"TUNNEL VISION","sub":"ONE-KNOB FILTER","tag":"CLOSE IT DOWN","vst":"Fx|Filter","blurb":"One knob closes a low-pass from wide open to 120 Hz; resonance in four steps","group":"Eq","slug":"tunnel-vision"},{"name":"THE SETUP","sub":"MODULATED FILTER","tag":"CALL THE MOVES","vst":"Fx|Filter","blurb":"A filter played by an LFO, a 16-step sequencer and an envelope follower; comb, amp, drive, crush, spread and a delay","group":"Movement","slug":"the-setup"},{"name":"THE CHAIRMAN","sub":"BRITISH CONSOLE CHANNEL","tag":"RUN WHAT MATTERS","vst":"Fx|EQ","blurb":"British-console channel: mic / line preamp, stepped high shelf, mid boost / cut, low shelf, 50 Hz cut, hum and hiss, VU","group":"Tools","slug":"the-chairman"},{"name":"REEL MONEY","sub":"TUBE TAPE MACHINE","tag":"ROLL WHAT MATTERS","vst":"Fx|Distortion","blurb":"Tube tape machine: speed, monitor, bias, into / off tape with link, tape level, wobble, hiss, the tape echo, VU","group":"Color","slug":"reel-money"},{"name":"HEAVY HITTER","sub":"DRUM ENHANCER","tag":"HIT HARDER","vst":"Fx|Dynamics","blurb":"Drum enhancer: pick the drum, then sensitivity, thump, treble, snap, output; level meter in or out","group":"Dynamics","slug":"heavy-hitter"},{"name":"KINGPIN","sub":"DRUM CHANNEL","tag":"HIT WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Drum channel: pick the drum, then pickup, compression, gate, ambience, bass, treble, VU","group":"Tools","slug":"kingpin"},{"name":"GOLD CHAIN","sub":"ONE-KNOB TONE","tag":"ENRICH WHAT MATTERS","vst":"Fx|Distortion","blurb":"One knob: warmth, density and sheen that grow together; input, link, output, hum","group":"Color","slug":"gold-chain"},{"name":"IVORIES","sub":"PIANO TONE","tag":"PLAY WHAT MATTERS","vst":"Fx|EQ","blurb":"Piano tone: one VOICING knob, slap and thicken with their levels, input, output, hum","group":"Color","slug":"ivories"},{"name":"HIGH ROLLER","sub":"FIVE-BAND ENHANCER","tag":"LIFT WHAT MATTERS","vst":"Fx|Mastering","blurb":"Five bands, each with its own lift and width: detail comes up, the mix opens","group":"Color","slug":"high-roller"},{"name":"THE MIDDLEMAN","sub":"CENTER / SIDES BALANCE","tag":"BALANCE WHAT MATTERS","vst":"Fx|Spatial","blurb":"Turn the middle or the sides up or down, lows and highs apart, hits steered","group":"Tools","slug":"the-middleman"},{"name":"DOUBLE CROSS","sub":"MONO TO STEREO","tag":"SPREAD WHAT MATTERS","vst":"Fx|Spatial","blurb":"Mono to stereo by frequency sweeps that fold back to mono exactly: spread, combs, split curves, input width and aim","group":"Tools","slug":"double-cross"},{"name":"LOW RIDER","sub":"LOW OCTAVE GENERATOR","tag":"LOWER WHAT MATTERS","vst":"Fx|Tools","blurb":"A new low octave under the bass: range, new octave, lows, dry, output, trim, line up","group":"Tools","slug":"low-rider"},{"name":"UNDERTOW","sub":"SUB GENERATOR","tag":"PULL IT UNDER","vst":"Fx|Tools","blurb":"Subs one and two octaves down from the bass: range, levels, drive, follow, sub in middle, mix","group":"Tools","slug":"undertow"},{"name":"DEEP POCKETS","sub":"BASS HARMONICS","tag":"BASS YOU CAN HEAR","vst":"Fx|Tools","blurb":"Bass small speakers can play: overtones in place of the lows, decay, ratio, speed, high-pass, monitor","group":"Tools","slug":"deep-pockets"},{"name":"LOW PROFILE","sub":"BASS ENHANCER","tag":"BASS THAT CARRIES","vst":"Fx|Tools","blurb":"Bass harmonics in one move: frequency, real bass in / out, amount, gain","group":"Tools","slug":"low-profile"},{"name":"THE FIXER","sub":"DYNAMIC TONE REPAIR","tag":"FIX WHAT MATTERS","vst":"Fx|EQ","blurb":"Three dynamic cuts for mud, harshness and fizz that only work when it gets nasty","group":"Eq","slug":"the-fixer"},{"name":"SIX SHOOTER","sub":"RHYTHMIC MULTI-TAP DELAY","tag":"REPEAT WHAT MATTERS","vst":"Fx|Delay","blurb":"Six taps, each with its own delay, gain, place and EQ; dry, tempo grid and lock, wobble, filtered feedback","group":"Space","slug":"six-shooter"},{"name":"DEAD DROP","sub":"HYBRID DELAY","tag":"IT COMES BACK","vst":"Fx|Delay","blurb":"Hybrid delay: time or note, tap, split times, feedback to 200 percent, ping pong, tied filters, modulation, vintage, lo-res","group":"Space","slug":"dead-drop"},{"name":"BACK ALLEY","sub":"LO-FI SPACE","tag":"WEAR WHAT MATTERS","vst":"Fx|Reverb","blurb":"Lo-fi spring or plate and a worn tape echo, with grit and wobble","group":"Space","slug":"back-alley"},{"name":"DRIVE-BY","sub":"PASS-BY EFFECT","tag":"PASS WHAT MATTERS","vst":"Fx|Modulation","blurb":"A sound passing by: the pitch bends, it swings across and fades away","group":"Movement","slug":"drive-by"},{"name":"BODY DOUBLE","sub":"VOICE DOUBLER","tag":"DOUBLE WHAT MATTERS","vst":"Fx|Modulation","blurb":"Doubler: four voices, each with gain, pan, delay, detune, feedback, octave and its own wobble; dry, in time, lowest note, feed, shelves","group":"Movement","slug":"body-double"},{"name":"HUSTLE","sub":"LFO MODULATOR","tag":"MOVE WHAT MATTERS","vst":"Fx|Modulation","blurb":"One LFO for tremolo, vibrato and pan, free or on the beat","group":"Movement","slug":"hustle"},{"name":"SWERVE","sub":"FLANGER","tag":"BEND WHAT MATTERS","vst":"Fx|Modulation","blurb":"Flanger: delay, depth, rate or sweeps per beat, sine or triangle, tie, hold, stereo, feedback and mix with flips, filter, tape","group":"Movement","slug":"swerve"},{"name":"COLD CASE","sub":"NOTCH SWEEPER","tag":"SOLVE WHAT MATTERS","vst":"Fx|Modulation","blurb":"Swept notches and a ringing loop: notches, depth, flip, stereo; sweep wave, rate, tempo, range; loop decay, delay, density; width, rotate, mix","group":"Movement","slug":"cold-case"},{"name":"MOUTHPIECE","sub":"ONE-MOVE VOCAL LEVELER","tag":"SPEAK WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Vocal leveler in one move: gate, press, ceiling; total, output and input readouts","group":"Dynamics","slug":"mouthpiece"},{"name":"SLINGER","sub":"GUITAR COMPRESSOR","tag":"PICK WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Guitar compressor: threshold (the ratio follows), attack, gain into a limiter; input, attenuation, output and limiter readouts","group":"Dynamics","slug":"slinger"},{"name":"STREET TEAM","sub":"CHANNEL STRIP","tag":"WORK WHAT MATTERS","vst":"Fx|Dynamics","blurb":"Channel: input, four-band EQ, gate with floor, compressor / expander, output","group":"Dynamics","slug":"street-team"},{"name":"BIG HOUSE","sub":"TWELVE-SPACE REVERB","tag":"FILL WHAT MATTERS","vst":"Fx|Reverb","blurb":"Reverb with twelve kinds of space: pre-delay either way, time, size, diffusion, decay shape, early and tail levels, damping, tail EQ","group":"Space","slug":"big-house"},{"name":"SPEAKEASY","sub":"ROOM AND DISTANCE REVERB","tag":"PLACE WHAT MATTERS","vst":"Fx|Reverb","blurb":"A real room: size, distance, room shape, balance, decay, pre-delay, density, shelves, damping, variations; direct, early and reverb levels","group":"Space","slug":"speakeasy"},{"name":"THE FORGER","sub":"EQ CLONE","tag":"COPY WHAT MATTERS","vst":"Fx|EQ","blurb":"Plays the curve THE MOLD measured on your hardware EQ: capture, hold, add; gain; the curve is saved with the session","group":"Eq","slug":"the-forger"},{"name":"THE MOLD","sub":"EQ CAPTURE","tag":"MEASURE WHAT MATTERS","vst":"Fx|Analyzer","blurb":"Measures a hardware EQ in a loop through your interface, for THE FORGER: send out, return in, headroom, loop delay","group":"Tools","slug":"the-mold"},{"name":"GRAND LARCENY","sub":"ELECTRIC GRAND PIANO","tag":"PLAY WHAT MATTERS","vst":"Instrument|Piano","blurb":"Electric grand piano: play it from MIDI or its 61 keys; velocity curve, formant, tune, mix, tone, tremolo, pan, phaser, chorus, reverb","group":"Keys","slug":"grand-larceny"},{"name":"FINGERPRINT","sub":"CONVOLUTION REVERB","tag":"PRINT WHAT MATTERS","vst":"Fx|Reverb","blurb":"Real spaces by their impulse responses: sixteen spaces, start, length, decay, mix, direct, pre-delay, dry delay, CPU, output, crosstalk","group":"Space","slug":"fingerprint"},{"name":"COIL","sub":"SPRING REVERB","tag":"BOUNCE WHAT MATTERS","vst":"Fx|Reverb","blurb":"Spring reverb: drive, headroom, pre-delay, seven tanks, short / medium / long, treble and bass on the springs, mix, output, stereo or mono","group":"Space","slug":"coil"},{"name":"THE INFORMANT","sub":"VOCODER","tag":"TALK WHAT MATTERS","vst":"Fx|Modulation","blurb":"Vocoder with its own eight-voice synth on 48 keys, noise, formant, squeeze, a five-band EQ and a four-way mixer","group":"Color","slug":"the-informant"},{"name":"STRAPPED","sub":"GUITAR MIX STRIP","tag":"STRUM WHAT MATTERS","vst":"Fx|Tools","blurb":"Guitar desk: clean tone, edge or high gain, re-amp, and six faders each with a style: bass, treble, compress, reverb, delay, pitch","group":"Tools","slug":"strapped"},{"name":"SAFE HOUSE","sub":"HEADPHONE ROOM","tag":"HEAR WHAT MATTERS","vst":"Fx|Tools","blurb":"Hear speakers in a room through headphones (for listening, bypass before export)","group":"Tools","slug":"safe-house"},{"name":"HOT WIRE","sub":"GUITAR AMP HEAD","tag":"WIRE WHAT MATTERS","vst":"Fx|Distortion","blurb":"Guitar head: five amps, clean / drive / lead, focus, gate, gain, bass, middle, treble, volume, depth, presence, cabinet pairs, room","group":"Color","slug":"hot-wire"},{"name":"BOTTOM FEEDER","sub":"BASS AMP AND DI","tag":"FEED WHAT MATTERS","vst":"Fx|Distortion","blurb":"Bass rig: two amps, DI tone / level / blend / flip, a drive pedal (fat, tight, sharp), voice, five-knob EQ, cabinet, room","group":"Color","slug":"bottom-feeder"},{"name":"TORCH","sub":"GUITAR AND BASS AMP","tag":"LIGHT WHAT MATTERS","vst":"Fx|Distortion","blurb":"Amp and cabinet: clean, crunch, lead or bass; tone stack, presence, room","group":"Color","slug":"torch"},{"name":"THE RACKET","sub":"PEDALBOARD","tag":"STOMP WHAT MATTERS","vst":"Fx|Distortion","blurb":"26 guitar pedals, one at a time: drives, modulation, echoes, rooms, squeezes, gates, EQs, volume","group":"Color","slug":"the-racket"},{"name":"THE SNITCH","sub":"TUNER","tag":"TUNE WHAT MATTERS","vst":"Fx|Analyzer","blurb":"Tuner: note, cents off and frequency; tunings, my notes, reference pitch","group":"Tools","slug":"the-snitch"},{"name":"PROMOTION","sub":"PITCH SHIFTER","tag":"SHIFT WHAT MATTERS","vst":"Fx|Pitch Shift","blurb":"Pitch up or down by semitones and cents, smooth or tight","group":"Movement","slug":"promotion"},{"name":"WISEGUYS","sub":"HARMONIZER","tag":"HARMONIZE WHAT MATTERS","vst":"Fx|Pitch Shift","blurb":"Three extra voices at your intervals, each with level and pan","group":"Movement","slug":"wiseguys"},{"name":"MADE MAN","sub":"PITCH CORRECTION","tag":"CORRECT WHAT MATTERS","vst":"Fx|Pitch Shift","blurb":"Pulls a single voice onto the notes of a key, gently or hard","group":"Tools","slug":"made-man"},{"name":"THE DETECTIVE","sub":"KEY FINDER","tag":"FIND WHAT MATTERS","vst":"Fx|Analyzer","blurb":"Listens and names the song's key, and how sure it is","group":"Tools","slug":"the-detective"},{"name":"THE AUDITOR","sub":"LOUDNESS METER","tag":"COUNT WHAT MATTERS","vst":"Fx|Analyzer","blurb":"Loudness meter: EBU / AVERAGE / DIALOGUE, six weightings, short / long term, range, true peak, overs / unders, target and trim, gain, true-peak limiter","group":"Tools","slug":"the-auditor"},{"name":"STAKEOUT","sub":"ANALYZER","tag":"WATCH WHAT MATTERS","vst":"Fx|Analyzer","blurb":"Analyzer: frequency bands (peak or RMS, L / R or sum, weighting, freeze, max line), stereo position, peak and sum meters with holds, clip lights","group":"Tools","slug":"stakeout"},{"name":"THE WITNESS","sub":"VU AND PEAK METERS","tag":"WATCH WHAT MATTERS","vst":"Fx|Analyzer","blurb":"VU and peak meters for left and right, with calibration and peak hold","group":"Tools","slug":"the-witness"},{"name":"LIVE WIRE","sub":"TEST TONES","tag":"TEST WHAT MATTERS","vst":"Fx|Generator","blurb":"Test tones: sine, square, saw, triangle, white or pink noise, sweeps","group":"Tools","slug":"live-wire"}];
+// Families and what's in them: hem-elite-rack store/LISTING.md
+const FAMILIES = [
+  { id: 'Eq', key: 'eq', name: 'EQ', what: 'From surgical 16-band mastering EQ to warm passive tone' },
+  { id: 'Dynamics', key: 'dynamics', name: 'DYNAMICS', what: 'Compressors, limiters, transient shapers, de-essers, gates' },
+  { id: 'Color', key: 'color', name: 'COLOR', what: 'Tape, tube, saturation, lo-fi' },
+  { id: 'Space', key: 'space', name: 'SPACE', what: 'Reverbs and delays' },
+  { id: 'Movement', key: 'movement', name: 'MOVEMENT', what: 'Chorus, flanger, phaser, tremolo, filters' },
+  { id: 'Tools', key: 'tools', name: 'TOOLS', what: 'Meters, loudness, stereo, analyzers' },
+  { id: 'Keys', key: 'keys', name: 'KEYS', what: 'A playable instrument' },
+];
+const FEATURED = ['SURGEON', 'THE FAMILY', 'LOCKDOWN', 'ARCHIVE', 'VELVET', 'CATHEDRAL', 'STAKEOUT', 'GRAND LARCENY'];
+const famOf = id => FAMILIES.find(f => f.id === id);
+const bySlug = Object.fromEntries(PLUGINS.map(p => [p.slug, p]));
+const kind = v => v.split('|').pop();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function tabHTML(p, lazy = true) {
+  return `<a class="tab" href="#p-${p.slug}" data-slug="${p.slug}">
+    <div class="slab"><img ${lazy ? 'loading="lazy" decoding="async"' : ''} src="img/plates/${p.slug}.webp" alt="${esc(p.name)} faceplate" width="1200" height="675"></div>
+    <div class="cap"><b>${esc(p.name)}</b><span>${famOf(p.group).name}</span></div>
+    <span class="sub">${esc(p.sub)}</span></a>`;
+}
+
+// home
+document.getElementById('home-cats').innerHTML = FAMILIES.map(f => {
+  const n = PLUGINS.filter(p => p.group === f.id).length;
+  return `<a class="cat" href="#plugins-${f.key}"><b>${f.name}</b><em>${n}</em><span>${f.what}</span></a>`;
+}).join('');
+document.getElementById('featured').innerHTML = FEATURED.map(n => tabHTML(PLUGINS.find(p => p.name === n))).join('');
+
+// all plug-ins, sorted by family then the rack's own order
+const ordered = FAMILIES.flatMap(f => PLUGINS.filter(p => p.group === f.id));
+const allEl = document.getElementById('all');
+allEl.innerHTML = ordered.map(p => tabHTML(p)).join('');
+const filtersEl = document.getElementById('filters');
+filtersEl.insertAdjacentHTML('afterbegin',
+  `<a class="chip" href="#plugins" data-f="">ALL ${PLUGINS.length}</a>` +
+  FAMILIES.map(f => `<a class="chip" href="#plugins-${f.key}" data-f="${f.key}">${f.name} ${PLUGINS.filter(p => p.group === f.id).length}</a>`).join(''));
+const q = document.getElementById('q');
+let famFilter = '';
+function applyFilter() {
+  const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  let shown = 0;
+  allEl.querySelectorAll('.tab').forEach(el => {
+    const p = bySlug[el.dataset.slug];
+    const hay = `${p.name} ${p.sub} ${p.tag} ${p.blurb} ${famOf(p.group).name} ${kind(p.vst)}`.toLowerCase();
+    const ok = (!famFilter || famOf(p.group).key === famFilter) && words.every(w => hay.includes(w));
+    el.hidden = !ok; if (ok) shown++;
+  });
+  const fam = FAMILIES.find(f => f.key === famFilter);
+  document.getElementById('count').textContent = `${shown} ${shown === 1 ? 'PLUG-IN' : 'PLUG-INS'}${fam ? ' · ' + fam.name : ''}${words.length ? ' · MATCHING “' + q.value.trim().toUpperCase() + '”' : ''}`;
+  document.getElementById('none').hidden = shown > 0;
+  filtersEl.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-current', String(c.dataset.f === famFilter)));
+}
+q.addEventListener('input', applyFilter);
+
+// one plug-in
+function showPlugin(p) {
+  const i = PLUGINS.indexOf(p), fam = famOf(p.group);
+  const set = (id, v) => { document.getElementById(id).textContent = v; };
+  const img = document.getElementById('pp-img');
+  img.src = `img/plates/${p.slug}.webp`; img.alt = `${p.name} faceplate`;
+  set('pp-cat', fam.name); set('pp-name', p.name); set('pp-sub', p.sub); set('pp-tag', p.tag); set('pp-blurb', p.blurb);
+  set('pp-family', `${fam.name}: ${fam.what.toLowerCase()}`); set('pp-kind', kind(p.vst));
+  const crumb = document.getElementById('crumb'); crumb.href = `#plugins-${fam.key}`; crumb.textContent = `← ALL ${fam.name} PLUG-INS`;
+  document.getElementById('pp-cta').innerHTML = p.name === 'SURGEON'
+    ? `<a class="btn main" href="#player">USE SURGEON IN THE PLAYER</a><a class="btn" href="#plugins">ALL PLUG-INS</a>`
+    : `<a class="btn" href="#plugins">ALL PLUG-INS</a>`;
+  const prev = PLUGINS[(i - 1 + PLUGINS.length) % PLUGINS.length], next = PLUGINS[(i + 1) % PLUGINS.length];
+  const pa = document.getElementById('pp-prev'), na = document.getElementById('pp-next');
+  pa.href = `#p-${prev.slug}`; pa.textContent = `← ${prev.name}`;
+  na.href = `#p-${next.slug}`; na.textContent = `${next.name} →`;
+  const more = PLUGINS.filter(x => x.group === p.group && x !== p).slice(0, 8);
+  document.getElementById('more-h').textContent = more.length ? `More ${fam.name.toLowerCase()} from the rack` : '';
+  document.getElementById('pp-more').innerHTML = more.map(x => tabHTML(x)).join('');
+}
+
+// router: #home, #plugins, #plugins-<family>, #p-<plug-in>, #player
+const views = ['home', 'plugins', 'plugin'].map(v => document.getElementById('view-' + v));
+let lastView = '';
+function route() {
+  const h = decodeURIComponent(location.hash.slice(1)) || 'home';
+  let view = 'home', nav = 'home';
+  if (h === 'player') { view = 'player'; nav = 'player'; }
+  else if (h === 'plugins' || h.startsWith('plugins-')) {
+    view = 'plugins'; nav = 'plugins';
+    famFilter = FAMILIES.some(f => 'plugins-' + f.key === h) ? h.slice(8) : '';
+    applyFilter();
+  } else if (h.startsWith('p-') && bySlug[h.slice(2)]) { view = 'plugin'; nav = 'plugins'; showPlugin(bySlug[h.slice(2)]); }
+  views.forEach(v => { v.hidden = v.id !== 'view-' + view; });
+  document.body.classList.toggle('on-player', view === 'player');
+  document.querySelectorAll('[data-nav]').forEach(a => { if (a.dataset.nav === nav) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  if (view === 'player' && window.hemPlayer) window.hemPlayer.resize();
+  if (view !== lastView || view === 'plugin') window.scrollTo(0, 0);
+  lastView = view;
+  startAura();
+}
+addEventListener('hashchange', route);
+
+// 3D tilt on tablets and the crown medal (follows the pointer; flat for reduced motion)
+function tilt(el, e, max) {
+  const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+  el.style.setProperty('--ry', (x * max).toFixed(2) + 'deg');
+  el.style.setProperty('--rx', (-y * max).toFixed(2) + 'deg');
+}
+if (!REDUCED) {
+  document.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    const slab = e.target.closest && e.target.closest('.tab') && e.target.closest('.tab').querySelector('.slab');
+    document.querySelectorAll('.slab[style]').forEach(s => { if (s !== slab) s.removeAttribute('style'); });
+    if (slab) tilt(slab, e, document.getElementById('view-plugin').contains(slab) ? 8 : 14);
+    const medal = document.getElementById('medal');
+    if (!document.getElementById('view-home').hidden) {
+      const r = medal.getBoundingClientRect(), x = (e.clientX - (r.left + r.width / 2)) / innerWidth, y = (e.clientY - (r.top + r.height / 2)) / innerHeight;
+      const d = medal.querySelector('.disc');
+      d.style.setProperty('--ry', (x * 30).toFixed(2) + 'deg'); d.style.setProperty('--rx', (-y * 24).toFixed(2) + 'deg');
+    }
+  });
+}
+
+// flowing HEM Blend aura behind the pages (low resolution, scaled up; stops on the player and in hidden tabs)
+const aura = document.getElementById('aura'), ax = aura.getContext('2d');
+const BLEND = ['#22e4ff', '#7b3cff', '#ff2fb9', '#ff7a1a', '#ffc94a'];
+let auraOn = false, auraT0 = performance.now();
+function sizeAura() { aura.width = Math.max(1, Math.round(innerWidth / 4)); aura.height = Math.max(1, Math.round(innerHeight / 4)); }
+function drawAura(now) {
+  const t = REDUCED ? 0 : Math.max(0, (now - auraT0) / 1000), w = aura.width, h = aura.height;
+  ax.globalCompositeOperation = 'source-over'; ax.fillStyle = '#05050b'; ax.fillRect(0, 0, w, h);
+  ax.globalCompositeOperation = 'lighter';
+  for (let k = 0; k < 5; k++) {
+    const a = t * 0.05 + k * 1.3, x = w * (0.5 + 0.42 * Math.sin(a * 1.1 + k)), y = h * (0.35 + 0.3 * Math.cos(a * 0.8 + k * 2));
+    const g = ax.createRadialGradient(x, y, 0, x, y, Math.max(w, h) * 0.45);
+    const c = BLEND[(k + Math.floor(t * 0.05)) % BLEND.length];
+    g.addColorStop(0, c + '30'); g.addColorStop(1, c + '00');
+    ax.fillStyle = g; ax.fillRect(0, 0, w, h);
+  }
+  // horizon grid
+  const hz = h * 0.72; ax.strokeStyle = 'rgba(123,60,255,.16)'; ax.lineWidth = 1;
+  for (let i = -16; i <= 16; i++) { ax.beginPath(); ax.moveTo(w / 2 + i * 6, hz); ax.lineTo(w / 2 + i * 60, h); ax.stroke(); }
+  const off = (t * 0.25) % 1;
+  for (let k = 0; k < 10; k++) { const d = (k + off) / 10, y = hz + (h - hz) * d * d; ax.globalAlpha = d * 0.9; ax.beginPath(); ax.moveTo(0, y); ax.lineTo(w, y); ax.stroke(); }
+  ax.globalAlpha = 1;
+}
+let auraLast = 0;
+function auraLoop(now) {
+  if (!auraOn) return;
+  if (now - auraLast > 33) { auraLast = now; drawAura(now); }
+  if (!REDUCED) requestAnimationFrame(auraLoop);
+}
+function startAura() {
+  const want = !document.body.classList.contains('on-player') && !document.hidden;
+  if (want && !auraOn) { auraOn = true; sizeAura(); requestAnimationFrame(auraLoop); }
+  if (!want) auraOn = false;
+}
+addEventListener('resize', () => { sizeAura(); if (REDUCED) drawAura(performance.now()); });
+document.addEventListener('visibilitychange', startAura);
+
+// mini player
+const $ = id => document.getElementById(id);
+const mm = s => { s = Math.max(0, Math.floor(s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+const PLAY_IC = '<path d="M7 4v16l13-8z"/>', PAUSE_IC = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
+let wasPlaying = null;
+function miniTick() {
+  const hp = window.hemPlayer; if (!hp) return;
+  const s = hp.state();
+  $('mini-title').textContent = s.title || (s.count ? `${s.count} songs ready · tap play` : 'No song loaded');
+  $('mini-time').textContent = s.title ? `${mm(s.pos)} / ${mm(s.dur)}${s.count > 1 ? ` · song ${s.index + 1} of ${s.count}` : ''}` : (s.count ? 'Songs stay on this device' : 'Add songs from this device to start');
+  $('mini-fill').style.width = s.dur ? `${Math.min(100, s.pos / s.dur * 100)}%` : '0';
+  if (s.playing !== wasPlaying) { wasPlaying = s.playing; $('mini-play-ic').innerHTML = s.playing ? PAUSE_IC : PLAY_IC; $('mini-play').setAttribute('aria-label', s.playing ? 'Pause' : 'Play'); }
+}
+setInterval(miniTick, 250);
+$('mini-play').onclick = () => { const hp = window.hemPlayer; if (!hp) return; hp.state().playing ? hp.pause() : hp.play(); };
+$('mini-next').onclick = () => window.hemPlayer && window.hemPlayer.next();
+$('mini-prev').onclick = () => window.hemPlayer && window.hemPlayer.prev();
+$('mini-add').onclick = () => window.hemPlayer && window.hemPlayer.addSongs();
+$('mini-bar').onclick = e => { const hp = window.hemPlayer; if (!hp) return; const r = e.currentTarget.getBoundingClientRect(); hp.seek((e.clientX - r.left) / r.width); };
+
+route();
+</script>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ---------- HEM Blend (locked) ----------
+const BLEND = ['#22e4ff', '#7b3cff', '#ff2fb9', '#ff7a1a', '#ffc94a'];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FLOW = REDUCED ? 0.012 : 0.05;           // how fast the colours travel (loops per second)
+const canvas = document.getElementById('stage');
+
+// design space: 1920 x 1080 px, 100 px = 1 world unit
+const X = px => (px - 960) / 100;
+const Y = py => (540 - py) / 100;
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+} catch (e) {
+  document.getElementById('err').hidden = false;
+  document.getElementById('hint').hidden = true;
+  throw e;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#04040a');
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
+const player = new THREE.Group();
+scene.add(player);
+
+// ---------- helpers ----------
+function rrPath(P, x, y, w, h, r) {
+  const x0 = X(x), x1 = X(x + w), y0 = Y(y), y1 = Y(y + h), R = r / 100;
+  P.moveTo(x0 + R, y1);
+  P.lineTo(x1 - R, y1); P.quadraticCurveTo(x1, y1, x1, y1 + R);
+  P.lineTo(x1, y0 - R); P.quadraticCurveTo(x1, y0, x1 - R, y0);
+  P.lineTo(x0 + R, y0); P.quadraticCurveTo(x0, y0, x0, y0 - R);
+  P.lineTo(x0, y1 + R); P.quadraticCurveTo(x0, y1, x0 + R, y1);
+  return P;
+}
+function makeCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function canvasTex(c) {
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+}
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+function blendAt(t) { // a colour on the HEM Blend loop, t 0..1
+  t = ((t % 1) + 1) % 1;
+  const s = t * BLEND.length, i = Math.floor(s), f = s - i;
+  return new THREE.Color(BLEND[i % BLEND.length]).lerp(new THREE.Color(BLEND[(i + 1) % BLEND.length]), f);
+}
+function blendCss(t, a = 1) { const c = blendAt(t); return `rgba(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)},${a})`; }
+// a moving HEM Blend gradient across x0..x1 (phase 0..1 slides the colours along)
+function blendGrad(g, x0, x1, phase, y0 = 0, y1 = 0) {
+  const span = x1 - x0, start = x0 - (((phase % 1) + 1) % 1) * span;
+  const gr = g.createLinearGradient(start, y0, start + 2 * span, y1);
+  const n = BLEND.length;
+  for (let k = 0; k <= 2 * n; k++) gr.addColorStop(k / (2 * n), BLEND[k % n]);
+  return gr;
+}
+function text(g, s, x, y, size, color, align = 'left', font = 'Rajdhani', weight = 600, spacing = 0.12) {
+  g.save();
+  g.font = `${weight} ${size}px ${font}, system-ui, sans-serif`;
+  g.fillStyle = color; g.textAlign = align; g.textBaseline = 'middle';
+  if ('letterSpacing' in g) g.letterSpacing = `${size * spacing}px`;
+  g.fillText(s, x, y);
+  g.restore();
+}
+function brushedMap() {
+  const c = makeCanvas(1024, 256), g = c.getContext('2d');
+  g.fillStyle = '#6a6a6a'; g.fillRect(0, 0, 1024, 256);
+  for (let i = 0; i < 2600; i++) {
+    const y = Math.random() * 256, v = 90 + Math.random() * 60;
+    g.strokeStyle = `rgba(${v},${v},${v},${0.25 + Math.random() * 0.35})`;
+    g.lineWidth = Math.random() < 0.15 ? 1.6 : 0.6;
+    g.beginPath(); const x = Math.random() * 1024; g.moveTo(x, y); g.lineTo(x + 80 + Math.random() * 500, y); g.stroke();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(0.12, 0.35);
+  return t;
+}
+const brushed = brushedMap();
+
+// ---------- materials ----------
+const M = {
+  body: new THREE.MeshPhysicalMaterial({ color: '#23262e', metalness: 1, roughness: 0.34, roughnessMap: brushed, clearcoat: 0.5, clearcoatRoughness: 0.2, envMapIntensity: 1.1 }),
+  plate: new THREE.MeshPhysicalMaterial({ color: '#1f2128', metalness: 1, roughness: 0.34, roughnessMap: brushed, clearcoat: 0.6, clearcoatRoughness: 0.14, envMapIntensity: 1.15 }),
+  frame: new THREE.MeshPhysicalMaterial({ color: '#30333c', metalness: 1, roughness: 0.38, roughnessMap: brushed, clearcoat: 0.3, clearcoatRoughness: 0.35, envMapIntensity: 0.8 }),
+  chrome: new THREE.MeshPhysicalMaterial({ color: '#cfd3db', metalness: 1, roughness: 0.16, envMapIntensity: 1.1 }),
+  capTop: new THREE.MeshPhysicalMaterial({ color: '#3a3d47', metalness: 1, roughness: 0.22, roughnessMap: brushed, clearcoat: 0.6, envMapIntensity: 1.0 }),
+  anod: new THREE.MeshPhysicalMaterial({ color: '#15161c', metalness: 0.85, roughness: 0.33, clearcoat: 0.4, envMapIntensity: 1.0 }),
+  btn: new THREE.MeshPhysicalMaterial({ color: '#262930', metalness: 0.95, roughness: 0.22, clearcoat: 0.8, clearcoatRoughness: 0.1, envMapIntensity: 1.2 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: '#ffffff', metalness: 0, roughness: 0.05, transparent: true, opacity: 0.05, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 0.18, depthWrite: false }),
+  slot: new THREE.MeshStandardMaterial({ color: '#07070a', metalness: 0.5, roughness: 0.6 }),
+};
+
+// ---------- layout (px in the 1920 x 1080 design) ----------
+const W = {
+  art:       [80, 108, 505, 412, 22],
+  spec:      [603, 108, 922, 196, 18],
+  faders:    [603, 314, 922, 206, 18],
+  meters:    [1543, 108, 297, 206, 18],
+  vol:       [1543, 324, 297, 196, 18],
+  surgeon:   [80, 534, 1760, 310, 22],
+  transport: [80, 856, 1760, 118, 24],
+};
+const FLOOR_Z = -0.25;
+
+// ---------- body: back slab, faceplate with real recesses, raised frame ----------
+{
+  const back = rrPath(new THREE.Shape(), 8, 8, 1904, 1064, 56);
+  const g = new THREE.ExtrudeGeometry(back, { depth: 0.6, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.08, bevelSegments: 6, curveSegments: 24 });
+  const m = new THREE.Mesh(g, M.body); m.position.z = FLOOR_Z - 0.68 - 0.003; player.add(m);
+  const front = rrPath(new THREE.Shape(), 2, 2, 1916, 1076, 60);
+  for (const k in W) { const [x, y, w, h, r] = W[k]; front.holes.push(rrPath(new THREE.Path(), x, y, w, h, r)); }
+  const fg = new THREE.ExtrudeGeometry(front, { depth: 0.21, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 4, curveSegments: 20 });
+  const fm = new THREE.Mesh(fg, M.plate); fm.position.z = FLOOR_Z + 0.02; player.add(fm);
+  // raised outer frame ring
+  const ring = rrPath(new THREE.Shape(), 2, 2, 1916, 1076, 60);
+  ring.holes.push(rrPath(new THREE.Path(), 34, 34, 1852, 1012, 40));
+  const rg = new THREE.ExtrudeGeometry(ring, { depth: 0.12, bevelEnabled: true, bevelThickness: 0.035, bevelSize: 0.025, bevelSegments: 5, curveSegments: 20 });
+  const rm = new THREE.Mesh(rg, M.frame); rm.position.z = 0.0; player.add(rm);
+}
+
+// ---------- flowing HEM Blend neon ----------
+const neonCanvas = makeCanvas(640, 8);
+{
+  const g = neonCanvas.getContext('2d'), gr = g.createLinearGradient(0, 0, 640, 0);
+  [...BLEND, BLEND[0]].forEach((c, i) => gr.addColorStop(i / BLEND.length, c));
+  g.fillStyle = gr; g.fillRect(0, 0, 640, 8);
+}
+const neonTex = canvasTex(neonCanvas);
+neonTex.wrapS = THREE.RepeatWrapping; neonTex.repeat.set(4, 1);
+const neonTexThin = neonTex.clone(); neonTexThin.needsUpdate = true; neonTexThin.repeat.set(2, 1);
+const neonMat = new THREE.MeshBasicMaterial({ map: neonTex, toneMapped: false, color: new THREE.Color(2, 2, 2) });
+const neonThin = new THREE.MeshBasicMaterial({ map: neonTexThin, toneMapped: false, color: new THREE.Color(1.5, 1.5, 1.5) });
+function neonLoop(x, y, w, h, r, z, rad, mat, segs = 600) {
+  const path = new THREE.CurvePath();
+  rrPath(new THREE.Shape(), x, y, w, h, r).curves.forEach(c => path.add(c));
+  const pts = path.getSpacedPoints(320).map(p => new THREE.Vector3(p.x, p.y, z));
+  return new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), segs, rad, 8, true), mat);
+}
+function neonBar(x0, x1, y, z, rad) {
+  const c = new THREE.LineCurve3(new THREE.Vector3(X(x0), Y(y), z), new THREE.Vector3(X(x1), Y(y), z));
+  return new THREE.Mesh(new THREE.TubeGeometry(c, 40, rad, 8, false), neonThin);
+}
+player.add(neonLoop(34, 34, 1852, 1012, 40, 0.012, 0.03, neonMat, 900));   // where frame meets plate
+player.add(neonLoop(12, 12, 1896, 1056, 52, 0.11, 0.022, neonMat, 900));   // outer frame edge
+for (const k in W) { const [x, y, w, h, r] = W[k]; player.add(neonLoop(x - 5, y - 5, w + 10, h + 10, r + 5, 0.006, 0.012, neonThin, 500)); }
+[[150, 520, 70], [1400, 1770, 70], [150, 640, 1012], [1280, 1770, 1012]].forEach(([a, b, y]) => player.add(neonBar(a, b, y, 0.01, 0.014)));
+
+// ---------- canvas panels on well floors ----------
+function floorPanel(key, scale, glass = true) {
+  const [x, y, w, h] = W[key];
+  const c = makeCanvas(Math.round(w * scale), Math.round(h * scale));
+  const tex = canvasTex(c);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w / 100, h / 100), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }));
+  mesh.position.set(X(x + w / 2), Y(y + h / 2), FLOOR_Z + 0.004);
+  player.add(mesh);
+  if (glass) {
+    const gl = new THREE.Mesh(new THREE.PlaneGeometry(w / 100 - 0.04, h / 100 - 0.04), M.glass);
+    gl.position.set(X(x + w / 2), Y(y + h / 2), -0.035); gl.renderOrder = 2; player.add(gl);
+  }
+  // px (design) -> canvas px
+  return { c, g: c.getContext('2d'), tex, s: scale, x, y, w, h, mesh, cx: px => (px - x) * scale, cy: py => (py - y) * scale };
+}
+function glassBg(p, top = '#0d0f17', bot = '#06070b') {
+  const gr = p.g.createLinearGradient(0, 0, 0, p.c.height);
+  gr.addColorStop(0, top); gr.addColorStop(1, bot);
+  p.g.fillStyle = gr; p.g.fillRect(0, 0, p.c.width, p.c.height);
+}
+const P = {
+  art: floorPanel('art', 1.6),
+  spec: floorPanel('spec', 1.5),
+  faders: floorPanel('faders', 1.5, false),
+  meters: floorPanel('meters', 2),
+  vol: floorPanel('vol', 2, false),
+  surgeon: floorPanel('surgeon', 1.25, false),
+  transport: floorPanel('transport', 1.5, false),
+};
+
+// printed / lit marks on the metal (header logo, footer line), redrawn as colours flow
+function platePanel(x, y, w, h, scale) {
+  const c = makeCanvas(Math.round(w * scale), Math.round(h * scale)), tex = canvasTex(c);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w / 100, h / 100), new THREE.MeshBasicMaterial({ map: tex, transparent: true, toneMapped: false, depthWrite: false }));
+  m.position.set(X(x + w / 2), Y(y + h / 2), 0.006); m.renderOrder = 3; player.add(m);
+  return { c, g: c.getContext('2d'), tex, s: scale };
+}
+// Steven's own logos, from hem-elite-rack assets/brand (crown_badge.png, ghost.png), resized for the web.
+const LOGO = { crown: new Image(), ghost: new Image() };
+LOGO.crown.src = 'img/brand/crown.webp';
+LOGO.ghost.src = 'img/brand/ghost.webp';
+LOGO.ghost.onload = () => { if (typeof drawTransport === 'function' && typeof clock !== 'undefined') drawTransport(clock.elapsedTime); };
+const head = platePanel(540, 34, 840, 70, 2);
+const foot = platePanel(640, 994, 640, 36, 2);
+function drawHead(t) {
+  const g = head.g, s = head.s, w = head.c.width;
+  g.clearRect(0, 0, w, head.c.height);
+  const ph = t * FLOW;
+  if (LOGO.crown.complete && LOGO.crown.naturalWidth) g.drawImage(LOGO.crown, 74 * s, 0, 70 * s, 70 * s);   // Steven's crown badge
+  g.save(); g.shadowColor = blendCss(ph + 0.3, 0.9); g.shadowBlur = 16 * s;
+  g.font = `900 ${36 * s}px Orbitron, system-ui, sans-serif`; g.textBaseline = 'middle'; g.textAlign = 'left';
+  if ('letterSpacing' in g) g.letterSpacing = `${3 * s}px`;
+  g.fillStyle = blendGrad(g, 170 * s, 800 * s, ph);
+  g.fillText('HYBRID ELITE MAFIA', 170 * s, 26 * s);
+  g.restore();
+  text(g, 'LISTENING PLAYER', 485 * s, 56 * s, 15 * s, '#e9e4f5', 'center', 'Orbitron', 500, 0.55);
+  head.tex.needsUpdate = true;
+  const f = foot.g;
+  f.clearRect(0, 0, foot.c.width, foot.c.height);
+  text(f, 'HYBRID ELITE MAFIA  •  STUDIO PLUGINS', 320 * foot.s, 18 * foot.s, 15 * foot.s, blendGrad(f, 0, foot.c.width, ph + 0.5), 'center', 'Orbitron', 500, 0.42);
+  foot.tex.needsUpdate = true;
+}
+
+// ---------- pickable controls ----------
+const pickables = [];
+const movers = [];   // buttons that travel when pressed
+const knobs = [];
+
+// knob: knurled body, chrome skirt, gold pointer, LED ring in flowing HEM Blend
+const knobParts = (() => {
+  const prof = [[0.43, 0], [0.43, 0.03], [0.405, 0.06], [0.405, 0.25], [0.38, 0.29], [0.34, 0.305], [0, 0.305]].map(([r, h]) => new THREE.Vector2(r, h));
+  const body = new THREE.LatheGeometry(prof, 140);
+  const pos = body.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    if (v.y > 0.07 && v.y < 0.24) { const a = Math.atan2(v.z, v.x), k = 1 + 0.02 * Math.sin(a * 56); pos.setX(i, v.x * k); pos.setZ(i, v.z * k); }
+  }
+  body.computeVertexNormals(); body.rotateX(Math.PI / 2);
+  return {
+    body,
+    skirt: new THREE.CylinderGeometry(0.5, 0.53, 0.05, 64).rotateX(Math.PI / 2),
+    cap: new THREE.CylinderGeometry(0.315, 0.315, 0.014, 64).rotateX(Math.PI / 2),
+    ptr: new RoundedBoxGeometry(0.05, 0.2, 0.02, 2, 0.01),
+    led: new THREE.CircleGeometry(0.03, 14),
+  };
+})();
+function makeKnob({ x, y, z = 0, size = 1, val = 0.5, read, change, dim }) {
+  const root = new THREE.Group();
+  root.position.set(X(x), Y(y), z); root.scale.setScalar(size);
+  const sk = new THREE.Mesh(knobParts.skirt, M.chrome); sk.position.z = 0.025; root.add(sk);
+  const spin = new THREE.Group(); spin.position.z = 0.05; root.add(spin);
+  const bd = new THREE.Mesh(knobParts.body, M.anod); spin.add(bd);
+  const cp = new THREE.Mesh(knobParts.cap, M.capTop); cp.position.z = 0.307; spin.add(cp);
+  const pt = new THREE.Mesh(knobParts.ptr, M.gold || M.chrome); pt.position.set(0, 0.19, 0.318); spin.add(pt);
+  const leds = [];
+  for (let k = 0; k < 21; k++) {
+    const th = THREE.MathUtils.degToRad(-135 + 270 * k / 20);
+    const l = new THREE.Mesh(knobParts.led, new THREE.MeshBasicMaterial({ toneMapped: false }));
+    l.position.set(Math.sin(th) * 0.62, Math.cos(th) * 0.62, 0.004); root.add(l); leds.push(l);
+  }
+  root.userData = { kind: 'knob', val, read, change, dim, spin, leds, seed: Math.random() };
+  [sk, bd, cp, pt].forEach(m => { m.userData.owner = root; pickables.push(m); });
+  player.add(root); knobs.push(root);
+  return root;
+}
+M.gold = new THREE.MeshPhysicalMaterial({ color: '#ffc94a', metalness: 1, roughness: 0.22, envMapIntensity: 1.2 });
+const LED_OFF = new THREE.Color('#25212d');
+function paintKnob(k, t) {
+  const u = k.userData;
+  u.spin.rotation.z = -THREE.MathUtils.degToRad(-135 + 270 * u.val);
+  const lit = Math.round(u.val * 20), off = u.dim && u.dim();
+  u.leds.forEach((l, j) => {
+    if (j <= lit && !off) l.material.color.copy(blendAt(j / 26 + t * FLOW + u.seed)).multiplyScalar(j === lit ? 3 : 1.6);
+    else l.material.color.copy(LED_OFF);
+  });
+}
+
+// button: rounded cap with its own label canvas on top
+const btnGeoCache = {};
+function makeButton({ x, y, w, h, depth = 0.16, draw, press, z }) {
+  const key = `${w}x${h}x${depth}`;
+  const geo = btnGeoCache[key] || (btnGeoCache[key] = new RoundedBoxGeometry(w / 100, h / 100, depth, 4, Math.min(0.06, h / 400)));
+  const grp = new THREE.Group();
+  const b = new THREE.Mesh(geo, M.btn); grp.add(b);
+  const scale = 3, c = makeCanvas(Math.round(w * scale), Math.round(h * scale)), tex = canvasTex(c);
+  const lab = new THREE.Mesh(new THREE.PlaneGeometry((w - 6) / 100, (h - 6) / 100), new THREE.MeshBasicMaterial({ map: tex, transparent: true, toneMapped: false }));
+  lab.position.z = depth / 2 + 0.002; grp.add(lab);
+  const baseZ = z ?? FLOOR_Z + depth / 2;
+  grp.position.set(X(x), Y(y), baseZ);
+  const api = { kind: 'btn', baseZ, pressed: 0, travel: Math.min(0.06, depth * 0.4), press,
+    redraw() { const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height); draw(g, c.width, c.height, scale); tex.needsUpdate = true; } };
+  grp.userData = api;
+  b.userData.owner = grp;
+  player.add(grp); pickables.push(b); movers.push(grp);
+  api.redraw();
+  return grp;
+}
+function labelDraw(getText, getColor, size = 13, font = 'Rajdhani', weight = 700) {
+  return (g, w, h, s) => text(g, getText(), w / 2, h / 2 + s, size * s, getColor(), 'center', font, weight, 0.1);
+}
+
+// fader: slot + flowing neon track + draggable cap
+const faders = [];
+function makeFader({ x, y0, y1, val = 0.5, read, change }) {
+  const len = (y1 - y0) / 100;
+  const slot = new THREE.Mesh(new THREE.BoxGeometry(0.09, len + 0.12, 0.02), M.slot);
+  slot.position.set(X(x), Y((y0 + y1) / 2), FLOOR_Z + 0.012); player.add(slot);
+  const track = new THREE.Mesh(new THREE.PlaneGeometry(0.03, len), neonThin);
+  track.position.set(X(x), Y((y0 + y1) / 2), FLOOR_Z + 0.024); player.add(track);
+  const cap = new THREE.Group();
+  const body = new THREE.Mesh(new RoundedBoxGeometry(0.46, 0.2, 0.16, 3, 0.04), M.btn); cap.add(body);
+  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.025), new THREE.MeshBasicMaterial({ color: '#ffffff', toneMapped: false }));
+  line.position.z = 0.081; cap.add(line);
+  player.add(cap);
+  const api = { kind: 'fader', val, read, change, cap, x, y0, y1, line, seed: Math.random() };
+  cap.userData = api; body.userData.owner = cap; pickables.push(body);
+  faders.push(cap);
+  return cap;
+}
+function placeFader(f, t) {
+  const u = f.userData, py = u.y1 - u.val * (u.y1 - u.y0);
+  u.cap.position.set(X(u.x), Y(py), FLOOR_Z + 0.1);
+  u.line.material.color.copy(blendAt(t * FLOW + u.seed)).multiplyScalar(2);
+}
+
+// ---------- LEFT: stage screen ----------
+function drawArt(t) {
+  const p = P.art, g = p.g, Wc = p.c.width, Hc = p.c.height, ph = t * FLOW;
+  const sky = g.createLinearGradient(0, 0, 0, Hc);
+  sky.addColorStop(0, '#04050b'); sky.addColorStop(0.6, '#0b0b1c'); sky.addColorStop(1, '#04040a');
+  g.fillStyle = sky; g.fillRect(0, 0, Wc, Hc);
+  const hz = Hc * 0.64;
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (let r = 0; r < 5; r++) {
+    g.beginPath();
+    for (let x = 0; x <= Wc; x += 8) {
+      const y = hz - 110 - r * 26 + Math.sin(x * 0.007 + t * (0.45 + r * 0.15) + r) * 34 + Math.sin(x * 0.015 - t * 0.6) * 10;
+      x === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
+    }
+    const col = blendCss(r / 5 + ph);
+    g.strokeStyle = col; g.globalAlpha = 0.55; g.lineWidth = 9; g.shadowColor = col; g.shadowBlur = 28; g.stroke();
+  }
+  g.restore();
+  const disc = g.createRadialGradient(Wc / 2, hz, 10, Wc / 2, hz, 280);
+  disc.addColorStop(0, blendCss(ph + 0.6, 0.5)); disc.addColorStop(0.45, blendCss(ph + 0.2, 0.16)); disc.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = disc; g.fillRect(0, 0, Wc, Hc);
+  g.save(); g.beginPath(); g.rect(0, hz, Wc, Hc - hz); g.clip();
+  g.strokeStyle = blendCss(ph + 0.25, 0.5); g.lineWidth = 1.5;
+  for (let i = -14; i <= 14; i++) { g.beginPath(); g.moveTo(Wc / 2 + i * 14, hz); g.lineTo(Wc / 2 + i * 110, Hc); g.stroke(); }
+  const off = REDUCED ? 0 : (t * 0.35) % 1;
+  for (let k = 0; k < 12; k++) { const d = (k + off) / 12, y = hz + (Hc - hz) * d * d; g.globalAlpha = d; g.beginPath(); g.moveTo(0, y); g.lineTo(Wc, y); g.stroke(); }
+  g.restore();
+  // stage rings
+  for (let k = 0; k < 3; k++) {
+    g.strokeStyle = blendCss(ph + k * 0.2, 0.55 - k * 0.15); g.lineWidth = 3;
+    g.beginPath(); g.ellipse(Wc / 2, hz + 90, 120 + k * 50, 20 + k * 9, 0, 0, Math.PI * 2); g.stroke();
+  }
+  text(g, 'STAGE', Wc / 2, hz + 90, 18, 'rgba(244,241,251,.8)', 'center', 'Orbitron', 700, 0.4);
+  text(g, 'robot and instruments go here next', Wc / 2, hz + 128, 17, 'rgba(201,195,220,.6)', 'center', 'Rajdhani', 600, 0.05);
+  g.fillStyle = 'rgba(255,255,255,.02)'; for (let y = 0; y < Hc; y += 4) g.fillRect(0, y, Wc, 1);
+  p.tex.needsUpdate = true;
+}
+
+// ---------- spectrum analyser (sample motion) ----------
+const hzToT = hz => Math.log(hz / 20) / Math.log(1000);   // 20 Hz..20 kHz -> 0..1
+function fmtHz(f) { return f >= 1000 ? (f / 1000).toFixed(f >= 10000 ? 0 : 1).replace('.0', '') + 'k' : Math.round(f).toString(); }
+let specSmooth = new Float32Array(128);
+function sampleSpectrum(t, f) { // dB, -60..0, a plausible music-like shape
+  const tilt = -4.5 * Math.log2(1 + f * 9) / 3.3;
+  const kick = 10 * Math.exp(-((f - 0.12) ** 2) / 0.004) * (0.6 + 0.4 * Math.max(0, Math.sin(t * 6.3)));
+  const mids = 6 * Math.sin(f * 21 + t * 1.7) * Math.sin(f * 7 - t);
+  return clamp(-24 + tilt * 6 + kick + mids * 0.6 - 18 * f * f, -60, 0);
+}
+function drawSpec(t) {
+  const p = P.spec, g = p.g, s = p.s, ph = t * FLOW;
+  glassBg(p);
+  const px0 = p.cx(650), px1 = p.cx(1505), py0 = p.cy(120), py1 = p.cy(272);
+  g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 1;
+  for (let d = 0; d >= -60; d -= 10) {
+    const y = py0 + (-d / 60) * (py1 - py0);
+    g.beginPath(); g.moveTo(px0, y); g.lineTo(px1, y); g.stroke();
+    text(g, String(d), px0 - 8 * s, y, 11 * s, '#c9c3dc', 'right', 'Rajdhani', 600, 0);
+  }
+  [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000].forEach(f => {
+    const x = px0 + hzToT(f) * (px1 - px0);
+    g.beginPath(); g.moveTo(x, py0); g.lineTo(x, py1); g.stroke();
+    text(g, fmtHz(f), x, py1 + 14 * s, 11 * s, '#c9c3dc', 'center', 'Rajdhani', 600, 0);
+  });
+  const N = specSmooth.length;
+  g.beginPath();
+  for (let i = 0; i < N; i++) {
+    const f = i / (N - 1), target = specTarget(t, f);
+    specSmooth[i] += (target - specSmooth[i]) * 0.25;
+    const x = px0 + f * (px1 - px0), y = py0 + (-specSmooth[i] / 60) * (py1 - py0);
+    i ? g.lineTo(x, y) : g.moveTo(x, y);
+  }
+  g.save();
+  g.lineTo(px1, py1); g.lineTo(px0, py1); g.closePath();
+  const fill = g.createLinearGradient(0, py0, 0, py1);
+  fill.addColorStop(0, blendCss(ph + 0.1, 0.35)); fill.addColorStop(1, blendCss(ph + 0.4, 0.02));
+  g.fillStyle = fill; g.fill();
+  g.restore();
+  g.beginPath();
+  for (let i = 0; i < N; i++) { const f = i / (N - 1), x = px0 + f * (px1 - px0), y = py0 + (-specSmooth[i] / 60) * (py1 - py0); i ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.strokeStyle = blendGrad(g, px0, px1, ph); g.lineWidth = 2.4 * s; g.shadowColor = blendCss(ph); g.shadowBlur = 10 * s; g.stroke(); g.shadowBlur = 0;
+  text(g, liveAudio() ? 'SPECTRUM · LIVE' : 'SPECTRUM · SAMPLE MOTION · NO SONG PLAYING', px1, p.cy(114), 10 * s, '#948eaa', 'right');
+  p.tex.needsUpdate = true;
+}
+
+// ---------- 10-band faders ----------
+const GEQ = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+const FADER_Y0 = 336, FADER_Y1 = 478, faderX = i => 712 + i * 87;
+function drawFaders() {
+  const p = P.faders, g = p.g, s = p.s;
+  glassBg(p, '#0c0e15', '#06070b');
+  const zeroY = (FADER_Y0 + FADER_Y1) / 2;
+  [[12, FADER_Y0], [0, zeroY], [-12, FADER_Y1]].forEach(([d, y]) => {
+    text(g, (d > 0 ? '+' : '') + d, p.cx(648), p.cy(y), 12 * s, '#c9c3dc', 'center', 'Rajdhani', 700, 0);
+    g.strokeStyle = d === 0 ? 'rgba(255,201,74,.35)' : 'rgba(255,255,255,.07)'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(p.cx(670), p.cy(y)); g.lineTo(p.cx(1505), p.cy(y)); g.stroke();
+  });
+  for (let k = 0; k <= 8; k++) {
+    const y = FADER_Y0 + k * (FADER_Y1 - FADER_Y0) / 8;
+    GEQ.forEach((_, i) => { g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(p.cx(faderX(i) + 18), p.cy(y) - 0.6, 10 * s, 1.2); });
+  }
+  GEQ.forEach((f, i) => text(g, fmtHz(f), p.cx(faderX(i)), p.cy(503), 13 * s, '#e9e4f5', 'center', 'Rajdhani', 700, 0.02));
+  p.tex.needsUpdate = true;
+}
+const geqGain = new Array(10).fill(0);
+GEQ.forEach((f, i) => makeFader({
+  x: faderX(i), y0: FADER_Y0, y1: FADER_Y1, val: 0.5,
+  read: v => `${fmtHz(f)} Hz  ${v * 24 - 12 > 0 ? '+' : ''}${(Math.round((v * 24 - 12) * 2) / 2).toFixed(1)} dB`,
+  change: v => { geqGain[i] = v * 24 - 12; send('f', i, geqGain[i]); },
+}));
+
+// ---------- meters (sample motion) ----------
+let lvL = 0, lvR = 0;
+function drawMeters(t) {
+  const p = P.meters, g = p.g, s = p.s, ph = t * FLOW;
+  glassBg(p);
+  const [tL, tR] = livePeaks();   // 0..1 on the 0 to -60 dB scale; 0 when nothing plays
+  lvL = tL > lvL ? tL : lvL + (tL - lvL) * 0.12; lvR = tR > lvR ? tR : lvR + (tR - lvR) * 0.12;
+  const top = p.cy(140), bot = p.cy(296), segs = 30;
+  [[lvL, 'L', 1600], [lvR, 'R', 1782]].forEach(([v, n, xc]) => {
+    text(g, n, p.cx(xc), p.cy(124), 15 * s, '#f4f1fb', 'center', 'Orbitron', 700, 0);
+    const bx = p.cx(xc - 26), bw = 52 * s;
+    g.fillStyle = '#040409'; g.beginPath(); g.roundRect(bx - 4 * s, top - 4 * s, bw + 8 * s, bot - top + 8 * s, 5 * s); g.fill();
+    for (let k = 0; k < segs; k++) {
+      const y = bot - (k + 1) * (bot - top) / segs, on = k / segs < v;
+      g.fillStyle = on ? blendCss(k / segs * 0.8 + ph) : 'rgba(255,255,255,.05)';
+      g.fillRect(bx, y + 1.5 * s, bw, (bot - top) / segs - 3 * s);
+    }
+  });
+  [0, -6, -12, -18, -24, -30, -36, -48, -60].forEach((d, i) => text(g, String(d), p.cx(1691), top + i * (bot - top) / 8, 11 * s, '#c9c3dc', 'center', 'Rajdhani', 600, 0));
+  p.tex.needsUpdate = true;
+}
+
+// ---------- volume ----------
+const VOL_X = 1691, VOL_Y = 432;
+const volDb = v => v < 0.005 ? -Infinity : -60 + 72 * v;
+function drawVol() {
+  const p = P.vol, g = p.g, s = p.s;
+  glassBg(p, '#0c0e15', '#06070b');
+  text(g, 'VOLUME', p.cx(VOL_X), p.cy(342), 15 * s, '#f4f1fb', 'center', 'Orbitron', 700, 0.18);
+  const cx = p.cx(VOL_X), cy = p.cy(VOL_Y), R = 82 * s;
+  g.strokeStyle = 'rgba(233,228,245,.55)'; g.lineWidth = 2 * s;
+  for (let k = 0; k <= 24; k++) {
+    const th = THREE.MathUtils.degToRad(-135 + 270 * k / 24), r0 = k % 4 === 0 ? R : R + 4 * s;
+    g.beginPath(); g.moveTo(cx + Math.sin(th) * r0, cy - Math.cos(th) * r0); g.lineTo(cx + Math.sin(th) * (R + 10 * s), cy - Math.cos(th) * (R + 10 * s)); g.stroke();
+  }
+  const lab = (d, txt) => { const v = d === -Infinity ? 0 : (d + 60) / 72, th = THREE.MathUtils.degToRad(-135 + 270 * v); text(g, txt, cx + Math.sin(th) * (R + 26 * s), cy - Math.cos(th) * (R + 26 * s), 12 * s, '#c9c3dc', 'center', 'Rajdhani', 700, 0); };
+  lab(-Infinity, '−∞'); lab(0, '0'); lab(12, '+12');
+  p.tex.needsUpdate = true;
+}
+const volKnob = makeKnob({ x: VOL_X, y: VOL_Y, z: FLOOR_Z, size: 1.55, val: 60 / 72,
+  read: v => { const d = volDb(v); return `VOLUME  ${d === -Infinity ? '−∞' : (d > 0 ? '+' : '') + d.toFixed(1)} dB`; },
+  change: v => { const d = volDb(v); send('v', 0, d === -Infinity ? -200 : d); } });
+
+// ---------- transport ----------
+let playing = false, shuffle = false, repeat = false;
+function icon(kind) {
+  return (g, w, h, s) => {
+    g.save(); g.translate(w / 2, h / 2); g.scale(s, s);
+    const on = (kind === 'shuffle' && shuffle) || (kind === 'repeat' && repeat) || (kind === 'play' && playing) || (kind === 'pause' && !playing);
+    g.fillStyle = g.strokeStyle = on ? '#ffc94a' : '#e9e4f5';
+    g.lineWidth = 3.2; g.lineCap = 'round'; g.lineJoin = 'round';
+    if (kind === 'play') { g.beginPath(); g.moveTo(-9, -14); g.lineTo(14, 0); g.lineTo(-9, 14); g.closePath(); g.fill(); }
+    if (kind === 'pause') { g.fillRect(-11, -13, 7, 26); g.fillRect(4, -13, 7, 26); }
+    if (kind === 'prev' || kind === 'next') {
+      if (kind === 'next') g.scale(-1, 1);
+      g.fillRect(-14, -12, 4, 24); g.beginPath(); g.moveTo(-8, 0); g.lineTo(12, -12); g.lineTo(12, 12); g.closePath(); g.fill();
+    }
+    if (kind === 'shuffle') {
+      g.beginPath(); g.moveTo(-16, -9); g.bezierCurveTo(-3, -9, 3, 9, 15, 9); g.stroke();
+      g.beginPath(); g.moveTo(-16, 9); g.bezierCurveTo(-3, 9, 3, -9, 15, -9); g.stroke();
+      [[15, -9], [15, 9]].forEach(([a, b]) => { g.beginPath(); g.moveTo(a - 5, b - 5); g.lineTo(a, b); g.lineTo(a - 5, b + 5); g.stroke(); });
+    }
+    if (kind === 'repeat') {
+      g.beginPath(); g.roundRect(-15, -9, 30, 18, 8); g.stroke();
+      g.beginPath(); g.moveTo(1, -14); g.lineTo(6, -9); g.lineTo(1, -4); g.stroke();
+    }
+    g.restore();
+  };
+}
+const tBtns = {};
+[['prev', 330], ['play', 446], ['pause', 562], ['next', 678], ['shuffle', 846], ['repeat', 962]].forEach(([k, x]) => {
+  tBtns[k] = makeButton({ x, y: 915, w: 100, h: 74, depth: 0.26, draw: icon(k), press: () => {
+    if (k === 'play') play();
+    if (k === 'pause') pause();
+    if (k === 'next') nextSong();
+    if (k === 'prev') prevSong();
+    if (k === 'shuffle') shuffle = !shuffle;
+    if (k === 'repeat') repeat = !repeat;
+    redrawTransport();
+  } });
+});
+function drawTransport(t) {
+  const p = P.transport, g = p.g, s = p.s, ph = t * FLOW;
+  glassBg(p, '#0e1018', '#07080c');
+  if (LOGO.ghost.complete && LOGO.ghost.naturalWidth) g.drawImage(LOGO.ghost, p.cx(160 - 50), p.cy(915 - 53), 100 * s, 106 * s);   // Steven's hooded ghost
+  g.fillStyle = 'rgba(255,255,255,.08)';
+  [228, 762, 1040].forEach(x => g.fillRect(p.cx(x), p.cy(878), 2 * s, 74 * s));
+  const dur = songBuf ? songBuf.duration : 0, at = songPos(), frac = dur ? clamp(at / dur, 0, 1) : 0;
+  text(g, mmss(at), p.cx(1080), p.cy(910), 20 * s, '#f4f1fb', 'left', 'Orbitron', 500, 0.02);
+  text(g, mmss(dur), p.cx(1800), p.cy(910), 20 * s, '#f4f1fb', 'right', 'Orbitron', 500, 0.02);
+  const title = loadingSong ? 'LOADING…' : curSong >= 0 ? songs[curSong].name : songs.length ? `${songs.length} SONGS · TAP PLAY` : 'NO SONG LOADED';
+  g.save(); g.beginPath(); g.rect(p.cx(1170), 0, 540 * s, p.c.height); g.clip();
+  text(g, title.length > 46 ? title.slice(0, 45) + '…' : title, p.cx(1440), p.cy(910), 14 * s, curSong >= 0 ? '#e9e4f5' : '#948eaa', 'center', 'Rajdhani', 700, 0.08);
+  g.restore();
+  if (curSong >= 0) text(g, `${curSong + 1} / ${songs.length}`, p.cx(1080), p.cy(880), 11 * s, '#948eaa', 'left', 'Rajdhani', 700, 0.1);
+  g.fillStyle = 'rgba(255,255,255,.1)'; g.beginPath(); g.roundRect(p.cx(1080), p.cy(942), 720 * s, 6 * s, 3 * s); g.fill();
+  g.fillStyle = blendGrad(g, p.cx(1080), p.cx(1800), ph);
+  g.beginPath(); g.roundRect(p.cx(1080), p.cy(942), Math.max(6 * s, 720 * s * frac), 6 * s, 3 * s); g.fill();
+  g.beginPath(); g.arc(p.cx(1080 + 720 * frac), p.cy(945), 9 * s, 0, Math.PI * 2); g.fill();
+  p.tex.needsUpdate = true;
+}
+
+// =============================================================================
+//  HEM SURGEON — copied from hem-elite-rack (rackfx/src/EliteEq.cpp, rackui/src/FaceView.cpp)
+//  and HybridCore (fx/include/hybrid/fx/Dsp.hpp). Same defaults, same filter maths, same band colours.
+// =============================================================================
+const FS = 48000;
+const TYPES = ['BELL', 'LOW SHELF', 'HIGH SHELF', 'LOW CUT', 'HIGH CUT', 'NOTCH', 'TILT'];
+const SLOPES = [6, 12, 18, 24, 36, 48];
+const STEREO = ['STEREO', 'MID', 'SIDE', 'LEFT', 'RIGHT'];
+const STEREO_TAG = ['', 'M', 'S', 'L', 'R'];
+const CHARS = ['CLEAN', 'CONSOLE', 'TUBE'];
+const BAND_COL = ['#22D8DD', '#E7B54A', '#A87BFF', '#FF5A5A', '#5BE36B', '#4C8DFF', '#FF6FC4', '#F4E04D', '#9FF0F2', '#B6E35B', '#E05BE6', '#7FC4FF', '#FF9466', '#6FE8B8', '#C9B3FF', '#FFB830'];
+const hasGain = ty => ty === 0 || ty === 1 || ty === 2 || ty === 6;
+const hasSlope = ty => ty === 3 || ty === 4;
+function rbj(type, fs, hz, q, gainDb = 0) {   // HybridCore BiquadCoefs::make
+  hz = clamp(hz, 5, fs * 0.49); q = Math.max(q, 0.025);
+  const A = Math.pow(10, gainDb / 40), w = 2 * Math.PI * hz / fs, cw = Math.cos(w), sw = Math.sin(w), al = sw / (2 * q);
+  let b0 = 1, b1 = 0, b2 = 0, a0 = 1, a1 = 0, a2 = 0;
+  switch (type) {
+    case 'lp': b0 = (1 - cw) / 2; b1 = 1 - cw; b2 = b0; a0 = 1 + al; a1 = -2 * cw; a2 = 1 - al; break;
+    case 'hp': b0 = (1 + cw) / 2; b1 = -(1 + cw); b2 = b0; a0 = 1 + al; a1 = -2 * cw; a2 = 1 - al; break;
+    case 'notch': b0 = 1; b1 = -2 * cw; b2 = 1; a0 = 1 + al; a1 = -2 * cw; a2 = 1 - al; break;
+    case 'bell': b0 = 1 + al * A; b1 = -2 * cw; b2 = 1 - al * A; a0 = 1 + al / A; a1 = -2 * cw; a2 = 1 - al / A; break;
+    case 'ls': { const s = 2 * Math.sqrt(A) * al;
+      b0 = A * ((A + 1) - (A - 1) * cw + s); b1 = 2 * A * ((A - 1) - (A + 1) * cw); b2 = A * ((A + 1) - (A - 1) * cw - s);
+      a0 = (A + 1) + (A - 1) * cw + s; a1 = -2 * ((A - 1) + (A + 1) * cw); a2 = (A + 1) + (A - 1) * cw - s; break; }
+    case 'hs': { const s = 2 * Math.sqrt(A) * al;
+      b0 = A * ((A + 1) + (A - 1) * cw + s); b1 = -2 * A * ((A - 1) + (A + 1) * cw); b2 = A * ((A + 1) + (A - 1) * cw - s);
+      a0 = (A + 1) - (A - 1) * cw + s; a1 = 2 * ((A - 1) - (A + 1) * cw); a2 = (A + 1) - (A - 1) * cw - s; break; }
+  }
+  return [b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0];
+}
+function firstOrder(highPass, fs, hz) {
+  const k = Math.tan(Math.PI * clamp(hz, 5, fs * 0.49) / fs);
+  if (highPass) { const b0 = 1 / (1 + k); return [b0, -b0, 0, (k - 1) / (k + 1), 0]; }
+  const b0 = k / (1 + k); return [b0, b0, 0, (k - 1) / (k + 1), 0];
+}
+function design(b, fs) {   // SURGEON eq::design
+  const f = clamp(b.freq, 10, fs * 0.49), q = clamp(b.q, 0.05, 40);
+  switch (b.type) {
+    case 0: return [rbj('bell', fs, f, q, b.gain)];
+    case 1: return [rbj('ls', fs, f, q, b.gain)];
+    case 2: return [rbj('hs', fs, f, q, b.gain)];
+    case 5: return [rbj('notch', fs, f, q)];
+    case 6: { const A = Math.pow(10, b.gain / 40), t = Math.tan(Math.PI * f / fs);
+      const n0 = A + t, n1 = t - A, d0 = 1 + A * t, d1 = A * t - 1; return [[n0 / d0, n1 / d0, 0, d1 / d0, 0]]; }
+    case 3: case 4: {
+      const hp = b.type === 3, n = clamp(Math.floor(SLOPES[b.slope] / 6), 1, 8), out = [];
+      if (n % 2 === 1) out.push(firstOrder(hp, fs, f));
+      const pairs = Math.floor(n / 2), qs = []; let maxQ = 0, maxAt = -1;
+      for (let k = 1; k <= pairs; k++) {
+        const ang = n % 2 === 0 ? (2 * k - 1) * Math.PI / (2 * n) : k * Math.PI / n;
+        qs[k - 1] = 1 / (2 * Math.cos(ang));
+        if (qs[k - 1] > maxQ) { maxQ = qs[k - 1]; maxAt = k - 1; }
+      }
+      for (let k = 0; k < pairs; k++) { let qk = qs[k]; if (k === maxAt) qk *= q * Math.SQRT2; out.push(rbj(hp ? 'hp' : 'lp', fs, f, qk)); }
+      return out;
+    }
+  }
+  return [];
+}
+function magDb(secs, fs, hz) {   // SURGEON eq::magnitudeDb
+  const w = 2 * Math.PI * hz / fs, cr = Math.cos(w), ci = -Math.sin(w), c2r = Math.cos(2 * w), c2i = -Math.sin(2 * w);
+  let db = 0;
+  for (const [b0, b1, b2, a1, a2] of secs) {
+    const nr = b0 + b1 * cr + b2 * c2r, ni = b1 * ci + b2 * c2i, dr = 1 + a1 * cr + a2 * c2r, di = a1 * ci + a2 * c2i;
+    db += 10 * Math.log10(Math.max(nr * nr + ni * ni, 1e-30) / Math.max(dr * dr + di * di, 1e-30));
+  }
+  return db;
+}
+// parameter ranges from EliteEq.cpp's table
+const PR = {
+  freq: [20, 20000, 'log'], gain: [-30, 30, 'lin'], q: [0.1, 18, 'log'],
+  thr: [-60, 0, 'lin'], range: [-24, 24, 'lin'], att: [0.5, 200, 'log'], rel: [10, 2000, 'log'],
+  output: [-24, 24, 'lin'], drive: [0, 100, 'lin'],
+};
+const toNorm = (k, v) => { const [a, b, t] = PR[k]; return t === 'log' ? Math.log(v / a) / Math.log(b / a) : (v - a) / (b - a); };
+const fromNorm = (k, n) => { const [a, b, t] = PR[k]; return t === 'log' ? a * Math.pow(b / a, n) : a + n * (b - a); };
+
+// 16 bands with SURGEON's own defaults; all 16 switched on (as in Steven's video), flat at 0 dB
+const bands = Array.from({ length: 16 }, (_, b) => ({
+  on: true, type: 0, freq: 30 * Math.pow(16000 / 30, b / 15), gain: 0, q: 1, slope: 3, stereo: 0,
+  dyn: false, thr: -24, range: -6, att: 10, rel: 150,
+}));
+const SG = { sel: 0, range: 12, character: 0, drive: 0, output: 0, autoGain: false };
+
+// graph area (design px)
+const GX0 = 352, GX1 = 1824, GY0 = 548, GY1 = 708;
+const KN = 220;
+const freqToX = hz => GX0 + (GX1 - GX0) * Math.log(hz / 20) / Math.log(1000);
+const xToFreq = x => 20 * Math.pow(1000, (x - GX0) / (GX1 - GX0));
+const gyOf = db => (GY0 + GY1) / 2 - clamp(db / SG.range, -1.04, 1.04) * (GY1 - GY0) / 2;
+const gyToDb = y => -((y - (GY0 + GY1) / 2) / ((GY1 - GY0) / 2)) * SG.range;
+let curves = [], totalCurve = new Float32Array(KN), curveHz = Float32Array.from({ length: KN }, (_, i) => xToFreq(GX0 + (GX1 - GX0) * i / (KN - 1)));
+function recompute() {
+  totalCurve.fill(0);
+  curves = bands.map(b => {
+    if (!b.on) return null;
+    const secs = design(b, FS), arr = new Float32Array(KN);
+    for (let i = 0; i < KN; i++) { arr[i] = magDb(secs, FS, curveHz[i]); totalCurve[i] += arr[i]; }
+    return arr;
+  });
+}
+recompute();
+
+const fmtF = hz => hz >= 1000 ? `${(hz / 1000).toFixed(hz >= 10000 ? 1 : 2)} kHz` : `${hz.toFixed(hz < 100 ? 1 : 0)} Hz`;
+const fmtDb = d => `${d > 0 ? '+' : ''}${d.toFixed(1)} dB`;
+let sgSpec = new Float32Array(96);
+
+function drawSurgeon(t) {
+  const p = P.surgeon, g = p.g, s = p.s, ph = t * FLOW, cx = p.cx, cy = p.cy;
+  glassBg(p, '#0b0d14', '#06070a');
+  // left column
+  g.save(); g.shadowColor = blendCss(ph); g.shadowBlur = 10 * s;
+  text(g, 'SURGEON', cx(96), cy(562), 30 * s, blendGrad(g, cx(96), cx(320), ph), 'left', 'Orbitron', 900, 0.04);
+  g.restore();
+  text(g, 'MASTERING EQUALIZER', cx(98), cy(590), 11 * s, '#e9e4f5', 'left', 'Rajdhani', 700, 0.14);
+  text(g, '16 BANDS · DYNAMIC · CHARACTER', cx(98), cy(606), 10 * s, '#948eaa', 'left', 'Rajdhani', 600, 0.1);
+  text(g, 'DRIVE', cx(146), cy(800), 11 * s, '#c9c3dc', 'center', 'Rajdhani', 700, 0.12);
+  text(g, 'OUTPUT', cx(266), cy(800), 11 * s, '#c9c3dc', 'center', 'Rajdhani', 700, 0.12);
+  g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(cx(338), cy(548), 2 * s, 286 * s);
+  // graph box
+  g.fillStyle = '#05060a'; g.beginPath(); g.roundRect(cx(GX0 - 6), cy(GY0 - 6), (GX1 - GX0 + 12) * s, (GY1 - GY0 + 12) * s, 8 * s); g.fill();
+  g.save(); g.beginPath(); g.rect(cx(GX0), cy(GY0), (GX1 - GX0) * s, (GY1 - GY0) * s); g.clip();
+  // sample-motion spectrum behind the curves
+  g.beginPath();
+  for (let i = 0; i < sgSpec.length; i++) {
+    const f = i / (sgSpec.length - 1), target = specTarget(t * 0.9 + 3, f);
+    sgSpec[i] += (target - sgSpec[i]) * 0.2;
+    const x = cx(GX0 + f * (GX1 - GX0)), y = cy(GY1 - (sgSpec[i] + 60) / 60 * (GY1 - GY0) * 0.92);
+    i ? g.lineTo(x, y) : g.moveTo(x, y);
+  }
+  g.lineTo(cx(GX1), cy(GY1)); g.lineTo(cx(GX0), cy(GY1)); g.closePath();
+  const sf = g.createLinearGradient(0, cy(GY0), 0, cy(GY1)); sf.addColorStop(0, blendCss(ph + 0.05, 0.22)); sf.addColorStop(1, blendCss(ph + 0.3, 0.02));
+  g.fillStyle = sf; g.fill();
+  // grid
+  const step = SG.range <= 3 ? 1 : SG.range <= 6 ? 2 : SG.range <= 12 ? 3 : 6;
+  g.lineWidth = 1;
+  for (let d = -SG.range; d <= SG.range + 0.001; d += step) {
+    g.strokeStyle = d === 0 ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.06)';
+    g.beginPath(); g.moveTo(cx(GX0), cy(gyOf(d))); g.lineTo(cx(GX1), cy(gyOf(d))); g.stroke();
+  }
+  [50, 100, 200, 500, 1000, 2000, 5000, 10000].forEach(f => {
+    g.strokeStyle = 'rgba(255,255,255,.06)'; g.beginPath(); g.moveTo(cx(freqToX(f)), cy(GY0)); g.lineTo(cx(freqToX(f)), cy(GY1)); g.stroke();
+  });
+  const xs = i => cx(GX0 + (GX1 - GX0) * i / (KN - 1));
+  const line = (arr, col, wdt) => { g.beginPath(); for (let i = 0; i < KN; i++) { const y = cy(gyOf(arr[i])); i ? g.lineTo(xs(i), y) : g.moveTo(xs(i), y); } g.strokeStyle = col; g.lineWidth = wdt * s; g.stroke(); };
+  // every band's own line in its own colour
+  bands.forEach((b, i) => { if (b.on && i !== SG.sel && curves[i]) { g.globalAlpha = 0.8; line(curves[i], BAND_COL[i], 1.6); g.globalAlpha = 1; } });
+  // selected band: filled from 0 dB, stronger line
+  const sb = bands[SG.sel];
+  if (sb.on && curves[SG.sel]) {
+    g.beginPath(); g.moveTo(xs(0), cy(gyOf(0)));
+    for (let i = 0; i < KN; i++) g.lineTo(xs(i), cy(gyOf(curves[SG.sel][i])));
+    g.lineTo(xs(KN - 1), cy(gyOf(0))); g.closePath();
+    g.fillStyle = BAND_COL[SG.sel] + '38'; g.fill();
+    line(curves[SG.sel], BAND_COL[SG.sel], 2.2);
+  }
+  // all bands added together: flowing HEM Blend
+  if (bands.some(b => b.on)) {
+    g.save(); g.shadowColor = blendCss(ph + 0.2); g.shadowBlur = 8 * s; line(totalCurve, blendGrad(g, cx(GX0), cx(GX1), ph), 2.8); g.restore();
+  } else {
+    text(g, 'DOUBLE-TAP THE GRAPH TO ADD A BAND', cx((GX0 + GX1) / 2), cy(gyOf(0) - 26), 13 * s, '#c9c3dc', 'center', 'Rajdhani', 700, 0.14);
+  }
+  // nodes
+  bands.forEach((b, i) => {
+    if (!b.on) return;
+    const x = cx(freqToX(b.freq)), y = cy(hasGain(b.type) ? gyOf(b.gain) : gyOf(0));
+    const sel = i === SG.sel, rad = (sel ? 11 : 9) * s;
+    g.fillStyle = 'rgba(0,0,0,.55)'; g.beginPath(); g.arc(x + 1.5 * s, y + 2 * s, rad, 0, Math.PI * 2); g.fill();
+    g.fillStyle = BAND_COL[i]; g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
+    if (sel || hover === i) { g.strokeStyle = sel ? '#e4e7ee' : 'rgba(228,231,238,.6)'; g.lineWidth = 2 * s; g.beginPath(); g.arc(x, y, rad + 4 * s, 0, Math.PI * 2); g.stroke(); }
+    text(g, String(i + 1), x, y + 0.5 * s, 10 * s, '#101014', 'center', 'Rajdhani', 700, 0);
+    if (STEREO_TAG[b.stereo]) text(g, STEREO_TAG[b.stereo], x + rad + 6 * s, y - rad * 0.4, 10 * s, BAND_COL[i], 'left', 'Rajdhani', 700, 0);
+    if (b.dyn && hasGain(b.type)) {   // where the dynamic band has pushed the gain right now
+      const yd = cy(gyOf(b.gain + eng.readouts[i]));
+      g.strokeStyle = BAND_COL[i]; g.globalAlpha = 0.7; g.lineWidth = 2 * s;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x, yd); g.stroke(); g.globalAlpha = 1;
+      g.beginPath(); g.arc(x, yd, rad * 0.75, 0, Math.PI * 2); g.stroke();
+    }
+  });
+  if (SG.autoGain) text(g, `AUTO GAIN ${fmtDb(eng.readouts[16])}`, cx(GX0 + 10), cy(GY0 + 30), 11 * s, '#22e4ff', 'left', 'Rajdhani', 700, 0.08);
+  g.restore();
+  // scale labels
+  for (let d = -SG.range; d <= SG.range + 0.001; d += step * 2) text(g, (d > 0 ? '+' : '') + d, cx(GX0 + 6), cy(gyOf(d)) - 7 * s, 9 * s, '#948eaa', 'left', 'Rajdhani', 700, 0);
+  [50, 100, 200, 500, 1000, 2000, 5000, 10000].forEach(f => text(g, fmtHz(f), cx(freqToX(f)), cy(GY1 - 8), 9 * s, '#948eaa', 'center', 'Rajdhani', 700, 0));
+  // selected band summary + band row captions
+  const info = `BAND ${SG.sel + 1} · ${TYPES[sb.type]} · ${fmtF(sb.freq)}${hasGain(sb.type) ? ' · ' + fmtDb(sb.gain) : ''} · Q ${sb.q.toFixed(2)}${sb.on ? '' : ' · OFF'}`;
+  text(g, info, cx(GX0 + 10), cy(GY0 + 12), 11 * s, BAND_COL[SG.sel], 'left', 'Rajdhani', 700, 0.08);
+  [['TYPE', 552], ['STEREO', 692], ['SLOPE', 832]].forEach(([n, x]) => text(g, n, cx(x), cy(764), 10 * s, '#948eaa', 'center', 'Rajdhani', 700, 0.14));
+  [['FREQ', 964, true], ['GAIN', 1052, hasGain(sb.type)], ['Q', 1140, sb.type !== 6 && !(hasSlope(sb.type) && sb.slope === 0)],
+   ['THRESHOLD', 1430, sb.dyn], ['RANGE', 1520, sb.dyn], ['ATTACK', 1610, sb.dyn], ['RELEASE', 1700, sb.dyn]]
+    .forEach(([n, x, live]) => text(g, n, cx(x), cy(834), 10 * s, live ? '#c9c3dc' : '#4d495a', 'center', 'Rajdhani', 700, 0.12));
+  p.tex.needsUpdate = true;
+}
+let hover = -1;
+
+// SURGEON 3D controls
+const sgBtns = [];
+const chipDraw = i => (g, w, h, s) => {
+  const b = bands[i], sel = i === SG.sel;
+  g.fillStyle = b.on ? BAND_COL[i] : '#2a2833';
+  g.beginPath(); g.roundRect(2 * s, 2 * s, w - 4 * s, h - 4 * s, 5 * s); g.fill();
+  if (sel) { g.strokeStyle = '#ffffff'; g.lineWidth = 2.5 * s; g.stroke(); }
+  text(g, String(i + 1), w / 2, h / 2 + s, 15 * s, b.on ? '#101014' : '#8d889c', 'center', 'Rajdhani', 700, 0);
+};
+const chips = bands.map((_, i) => makeButton({ x: GX0 + 44 + i * ((GX1 - GX0 - 88) / 15), y: 731, w: 78, h: 24, depth: 0.1, draw: chipDraw(i),
+  press: () => { if (SG.sel === i) { bands[i].on = !bands[i].on; recompute(); } SG.sel = i; refreshSurgeon(); } }));
+const rangeBtns = [3, 6, 12, 30].map((r, k) => makeButton({ x: 1640 + k * 50, y: 562, w: 44, h: 20, depth: 0.08,
+  draw: (g, w, h, s) => { const on = SG.range === r; g.fillStyle = on ? '#22e4ff' : '#1c1e26'; g.beginPath(); g.roundRect(s, s, w - 2 * s, h - 2 * s, 4 * s); g.fill(); text(g, `${r} dB`, w / 2, h / 2 + s, 10 * s, on ? '#05060a' : '#c9c3dc', 'center', 'Rajdhani', 700, 0.02); },
+  press: () => { SG.range = r; refreshSurgeon(); }, z: FLOOR_Z + 0.04 }));
+const pillDraw = (getTxt, isOn, isLive = () => true) => (g, w, h, s) => {
+  const on = isOn(), live = isLive();
+  g.fillStyle = on ? '#22e4ff' : '#16181f'; g.beginPath(); g.roundRect(s, s, w - 2 * s, h - 2 * s, 5 * s); g.fill();
+  text(g, getTxt(), w / 2, h / 2 + s, 12 * s, on ? '#05060a' : live ? '#e9e4f5' : '#4d495a', 'center', 'Rajdhani', 700, 0.08);
+};
+const charBtns = CHARS.map((n, k) => makeButton({ x: 212, y: 636 + k * 30, w: 160, h: 24, depth: 0.1, draw: pillDraw(() => n, () => SG.character === k),
+  press: () => { SG.character = k; refreshSurgeon(); } }));
+const autoBtn = makeButton({ x: 206, y: 826, w: 170, h: 22, depth: 0.08, draw: pillDraw(() => `AUTO GAIN ${SG.autoGain ? 'ON' : 'OFF'}`, () => SG.autoGain),
+  press: () => { SG.autoGain = !SG.autoGain; refreshSurgeon(); } });
+const bandOnBtn = makeButton({ x: 420, y: 790, w: 112, h: 30, depth: 0.12, draw: pillDraw(() => `BAND ${SG.sel + 1} ${bands[SG.sel].on ? 'ON' : 'OFF'}`, () => bands[SG.sel].on),
+  press: () => { bands[SG.sel].on = !bands[SG.sel].on; recompute(); refreshSurgeon(); } });
+const typeBtn = makeButton({ x: 552, y: 792, w: 126, h: 30, depth: 0.12, draw: pillDraw(() => `‹ ${TYPES[bands[SG.sel].type]} ›`, () => false),
+  press: () => { const b = bands[SG.sel]; b.type = (b.type + 1) % TYPES.length; if (!hasGain(b.type)) b.dyn = false; recompute(); refreshSurgeon(); } });
+const stereoBtn = makeButton({ x: 692, y: 792, w: 126, h: 30, depth: 0.12, draw: pillDraw(() => `‹ ${STEREO[bands[SG.sel].stereo]} ›`, () => false),
+  press: () => { const b = bands[SG.sel]; b.stereo = (b.stereo + 1) % STEREO.length; refreshSurgeon(); } });
+const slopeBtn = makeButton({ x: 832, y: 792, w: 126, h: 30, depth: 0.12, draw: pillDraw(() => `${SLOPES[bands[SG.sel].slope]} dB/oct`, () => false, () => hasSlope(bands[SG.sel].type)),
+  press: () => { const b = bands[SG.sel]; if (!hasSlope(b.type)) return; b.slope = (b.slope + 1) % SLOPES.length; recompute(); refreshSurgeon(); } });
+const dynBtn = makeButton({ x: 1300, y: 792, w: 136, h: 30, depth: 0.12, draw: pillDraw(() => `DYNAMIC ${bands[SG.sel].dyn ? 'ON' : 'OFF'}`, () => bands[SG.sel].dyn, () => hasGain(bands[SG.sel].type)),
+  press: () => { const b = bands[SG.sel]; if (!hasGain(b.type)) return; b.dyn = !b.dyn; refreshSurgeon(); } });
+sgBtns.push(...chips, ...rangeBtns, ...charBtns, autoBtn, bandOnBtn, typeBtn, stereoBtn, slopeBtn, dynBtn);
+
+// SURGEON knobs bound to the selected band
+const KZ = FLOOR_Z, KS = 0.5;
+const bandKnob = (key, x, unitFmt, live) => makeKnob({ x, y: 790, z: KZ, size: KS, val: toNorm(key, bands[0][key]),
+  read: v => `BAND ${SG.sel + 1} ${key.toUpperCase()}  ${unitFmt(fromNorm(key, v))}`,
+  change: v => { bands[SG.sel][key] = fromNorm(key, v); recompute(); syncEngine(); drawSurgeon(clock.elapsedTime); },
+  dim: () => !live(bands[SG.sel]) });
+const bk = {
+  freq: bandKnob('freq', 964, fmtF, () => true),
+  gain: bandKnob('gain', 1052, fmtDb, b => hasGain(b.type)),
+  q: bandKnob('q', 1140, v => v.toFixed(2), b => b.type !== 6 && !(hasSlope(b.type) && b.slope === 0)),
+  thr: bandKnob('thr', 1430, fmtDb, b => b.dyn),
+  range: bandKnob('range', 1520, fmtDb, b => b.dyn),
+  att: bandKnob('att', 1610, v => `${v.toFixed(v < 10 ? 1 : 0)} ms`, b => b.dyn),
+  rel: bandKnob('rel', 1700, v => `${v.toFixed(0)} ms`, b => b.dyn),
+};
+const driveKnob = makeKnob({ x: 146, y: 764, z: KZ, size: KS, val: 0, read: v => `DRIVE  ${Math.round(fromNorm('drive', v))} %`, change: v => { SG.drive = fromNorm('drive', v); syncEngine(); } });
+const outKnob = makeKnob({ x: 266, y: 764, z: KZ, size: KS, val: toNorm('output', 0), read: v => `OUTPUT  ${fmtDb(fromNorm('output', v))}`, change: v => { SG.output = fromNorm('output', v); syncEngine(); } });
+function refreshSurgeon() {
+  const b = bands[SG.sel];
+  for (const k in bk) bk[k].userData.val = toNorm(k, b[k]);
+  sgBtns.forEach(x => x.userData.redraw());
+  syncEngine();
+  drawSurgeon(clock.elapsedTime);
+}
+
+// screws
+{
+  const headG = new THREE.CylinderGeometry(0.11, 0.11, 0.05, 40).rotateX(Math.PI / 2), slotG = new THREE.BoxGeometry(0.15, 0.024, 0.02);
+  [[18, 18], [1902, 18], [18, 1062], [1902, 1062], [592, 108], [1534, 108], [592, 520], [1534, 520]].forEach(([x, y], i) => {
+    const onFrame = i < 4, z = onFrame ? 0.16 : 0.02;
+    const sx = onFrame ? (x < 960 ? 64 : 1856) : x, sy = onFrame ? (y < 540 ? 64 : 1016) : y;
+    const s = new THREE.Mesh(headG, M.chrome); s.position.set(X(onFrame ? sx : x), Y(onFrame ? sy : y), onFrame ? 0.02 : z);
+    const sl = new THREE.Mesh(slotG, M.slot); sl.position.set(s.position.x, s.position.y, s.position.z + 0.026); sl.rotation.z = i * 0.7;
+    player.add(s, sl);
+  });
+}
+
+// backlight halo
+const haloC = makeCanvas(512, 288), haloG = haloC.getContext('2d'), haloTex = canvasTex(haloC);
+{
+  const halo = new THREE.Mesh(new THREE.PlaneGeometry(44, 24.75), new THREE.MeshBasicMaterial({ map: haloTex, transparent: true, depthWrite: false }));
+  halo.position.z = -4; scene.add(halo);
+}
+function drawHalo(t) {
+  haloG.clearRect(0, 0, 512, 288);
+  const gr = haloG.createRadialGradient(256, 144, 20, 256, 144, 250);
+  gr.addColorStop(0, blendCss(t * FLOW + 0.2, 0.08)); gr.addColorStop(0.45, blendCss(t * FLOW + 0.55, 0.03)); gr.addColorStop(1, 'rgba(4,4,10,0)');
+  haloG.fillStyle = gr; haloG.fillRect(0, 0, 512, 288); haloTex.needsUpdate = true;
+}
+
+// lights: gliding coloured glints that take the HEM Blend colours as they flow
+{ const key = new THREE.DirectionalLight('#ffffff', 1.4); key.position.set(-6, 8, 10); scene.add(key); }
+const glints = [0, 1, 2].map(() => { const l = new THREE.PointLight('#ffffff', 4, 20, 2); scene.add(l); return l; });
+
+// post: soft bloom so the neon glows
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.5, 0.45, 0.92);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+function resize() {
+  const rr = canvas.getBoundingClientRect(), w = Math.round(rr.width), h = Math.round(rr.height);
+  if (!w || !h) return;
+  renderer.setSize(w, h, false); composer.setSize(w, h); bloom.resolution.set(w / 2, h / 2);
+  camera.aspect = w / h;
+  const half = THREE.MathUtils.degToRad(camera.fov / 2);
+  camera.position.set(0, 0, Math.max(5.4 * 1.2 / Math.tan(half), 9.6 * 1.1 / (Math.tan(half) * camera.aspect)) + 0.5);
+  camera.lookAt(0, 0, 0); camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+resize();
+
+// ---------- interaction ----------
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+const REST_RX = 0.08, REST_RY = -0.16;
+const view = { rx: 0, ry: 0, trx: 0, try: 0, userRx: 0, userRy: 0, lastUser: -1e9 };
+let mode = null, start = null, lastTap = { t: 0, x: 0, y: 0 };
+const readout = document.getElementById('readout');
+function setRay(e) {
+  const r = canvas.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+}
+function pick(e) { setRay(e); const hit = ray.intersectObjects(pickables, false)[0]; return hit ? hit.object.userData.owner : null; }
+function surgeonPoint(e) {   // pointer -> design px on the SURGEON floor, or null
+  setRay(e);
+  const hit = ray.intersectObject(P.surgeon.mesh, false)[0];
+  if (!hit) return null;
+  const [x, y, w, h] = W.surgeon;
+  return { x: x + hit.uv.x * w, y: y + (1 - hit.uv.y) * h };
+}
+const inGraph = pt => pt && pt.x >= GX0 && pt.x <= GX1 && pt.y >= GY0 && pt.y <= GY1;
+function nodeAt(pt) {
+  let best = -1, bd = 18 * 18;
+  bands.forEach((b, i) => {
+    if (!b.on) return;
+    const dx = freqToX(b.freq) - pt.x, dy = (hasGain(b.type) ? gyOf(b.gain) : gyOf(0)) - pt.y, d = dx * dx + dy * dy;
+    if (d < bd) { bd = d; best = i; }
+  });
+  return best;
+}
+function bandReadout(i) { const b = bands[i]; return `BAND ${i + 1}  ${TYPES[b.type]}  ${fmtF(b.freq)}${hasGain(b.type) ? '  ' + fmtDb(b.gain) : ''}  Q ${b.q.toFixed(2)}`; }
+
+canvas.addEventListener('pointerdown', e => {
+  canvas.setPointerCapture(e.pointerId);
+  const o = pick(e);
+  start = { x: e.clientX, y: e.clientY, o, rx: view.userRx, ry: view.userRy };
+  if (o && (o.userData.kind === 'knob' || o.userData.kind === 'fader')) {
+    mode = 'drag'; start.v = o.userData.val; readout.hidden = !o.userData.read; if (o.userData.read) readout.textContent = o.userData.read(o.userData.val);
+    return;
+  }
+  if (o && o.userData.kind === 'btn') { mode = 'press'; o.userData.pressed = 1; return; }
+  const pt = surgeonPoint(e);
+  if (inGraph(pt)) {
+    const now = performance.now(), dbl = now - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 24;
+    lastTap = { t: now, x: e.clientX, y: e.clientY };
+    const n = nodeAt(pt);
+    if (n >= 0) { SG.sel = n; mode = 'node'; readout.hidden = false; readout.textContent = bandReadout(n); refreshSurgeon(); return; }
+    if (dbl) {   // add a band where you tapped (first band that is off)
+      const free = bands.findIndex(b => !b.on);
+      if (free >= 0) { const b = bands[free]; b.on = true; b.type = 0; b.freq = clamp(xToFreq(pt.x), 20, 20000); b.gain = clamp(gyToDb(pt.y), -30, 30); SG.sel = free; recompute(); refreshSurgeon(); }
+      mode = null; return;
+    }
+    mode = null; return;
+  }
+  const tp = transportPoint(e);
+  if (tp && songBuf && tp.x >= 1070 && tp.x <= 1810 && tp.y >= 928 && tp.y <= 962) { seekTo(clamp((tp.x - 1080) / 720, 0, 1)); mode = null; return; }
+  mode = 'orbit'; canvas.classList.add('grabbing');
+});
+canvas.addEventListener('pointermove', e => {
+  const r = canvas.getBoundingClientRect();
+  view.trx = -((e.clientY - r.top) / r.height - 0.5) * 0.1;
+  view.try = ((e.clientX - r.left) / r.width - 0.5) * 0.16;
+  if (mode === 'drag') {
+    const o = start.o, u = o.userData;
+    const sens = u.kind === 'fader' ? 1 / (((u.y1 - u.y0) / 100) * 95) : 1 / 220;
+    u.val = clamp(start.v + (start.y - e.clientY) * sens + (u.kind === 'knob' ? (e.clientX - start.x) / 600 : 0), 0, 1);
+    if (u.change) u.change(u.val);
+    if (u.read) readout.textContent = u.read(u.val);
+  } else if (mode === 'node') {
+    const pt = surgeonPoint(e); if (!pt) return;
+    const b = bands[SG.sel];
+    b.freq = clamp(xToFreq(clamp(pt.x, GX0, GX1)), 20, 20000);
+    if (hasGain(b.type)) b.gain = Math.round(clamp(gyToDb(clamp(pt.y, GY0, GY1)), -30, 30) * 10) / 10;
+    recompute(); refreshSurgeon(); readout.textContent = bandReadout(SG.sel);
+  } else if (mode === 'orbit') {
+    view.userRy = clamp(start.ry + (e.clientX - start.x) * 0.006, -0.75, 0.75);
+    view.userRx = clamp(start.rx + (e.clientY - start.y) * 0.005, -0.5, 0.5);
+    view.lastUser = performance.now();
+  } else if (!mode && e.pointerType === 'mouse') {
+    const o = pick(e), pt = o ? null : surgeonPoint(e), n = inGraph(pt) ? nodeAt(pt) : -1;
+    if (n !== hover) hover = n;
+    canvas.classList.toggle('pointing', !!o || n >= 0);
+  }
+});
+function endPointer() {
+  if (mode === 'press' && start.o) { const u = start.o.userData; u.pressed = 0; if (u.press) u.press(); }
+  if (mode === 'orbit') view.lastUser = performance.now();
+  mode = null; readout.hidden = true; canvas.classList.remove('grabbing');
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('wheel', e => {
+  const o = pick(e);
+  if (o && (o.userData.kind === 'knob' || o.userData.kind === 'fader')) {
+    e.preventDefault(); const u = o.userData; u.val = clamp(u.val - Math.sign(e.deltaY) * 0.02, 0, 1); if (u.change) u.change(u.val); return;
+  }
+  const pt = surgeonPoint(e);
+  if (inGraph(pt)) {
+    const n = nodeAt(pt); if (n < 0) return;
+    e.preventDefault();
+    const b = bands[n]; b.q = clamp(b.q * Math.pow(1.1, -Math.sign(e.deltaY)), 0.1, 18);
+    SG.sel = n; recompute(); refreshSurgeon(); readout.hidden = false; readout.textContent = bandReadout(n);
+    clearTimeout(wheelHide); wheelHide = setTimeout(() => { if (!mode) readout.hidden = true; }, 900);
+  }
+}, { passive: false });
+let wheelHide = 0;
+
+// =============================================================================
+//  Sound: the HEM web engine (SURGEON + faders + volume, compiled from C++23 to WebAssembly)
+//  runs on the browser's audio thread (hem-engine-worklet.js). Songs are opened from this
+//  device and played from memory; nothing is uploaded anywhere.
+//  The browser always hands the finished sound to the computer's own sound system; a web
+//  page cannot use ASIO or WASAPI exclusive. The PC app will.
+// =============================================================================
+const eng = { ctx: null, node: null, an: null, aL: null, aR: null, ready: false, starting: null, readouts: new Float32Array(17), sent: new Map() };
+const songs = [];
+let curSong = -1, songBuf = null, srcNode = null, startAt = 0, pausedAt = 0, loadingSong = false, loadToken = 0;
+const specBins = new Float32Array(4096), timeL = new Float32Array(2048), timeR = new Float32Array(2048);
+const mmss = sec => { sec = Math.max(0, Math.floor(sec || 0)); return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; };
+const liveAudio = () => !!(eng.ready && playing && srcNode);
+let toastTimer = 0;
+function toast(msg) { readout.hidden = false; readout.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { if (!mode) readout.hidden = true; }, 2600); }
+
+function send(t, i, v) {
+  const key = t + i;
+  if (eng.sent.get(key) === v) return;
+  eng.sent.set(key, v);
+  if (eng.node) eng.node.port.postMessage({ t, i, v });
+}
+// Every SURGEON control in hem-elite-rack's parameter order: band b control c = b * 12 + c.
+function syncEngine() {
+  bands.forEach((b, i) => {
+    const o = i * 12;
+    send('s', o + 0, b.on ? 1 : 0); send('s', o + 1, b.type); send('s', o + 2, b.freq); send('s', o + 3, b.gain);
+    send('s', o + 4, b.q); send('s', o + 5, b.slope); send('s', o + 6, b.stereo); send('s', o + 7, b.dyn ? 1 : 0);
+    send('s', o + 8, b.thr); send('s', o + 9, b.range); send('s', o + 10, b.att); send('s', o + 11, b.rel);
+  });
+  send('s', 192, SG.output); send('s', 193, SG.autoGain ? 1 : 0); send('s', 194, SG.character); send('s', 195, SG.drive);
+  geqGain.forEach((d, i) => send('f', i, d));
+  const vd = volDb(volKnob.userData.val); send('v', 0, vd === -Infinity ? -200 : vd);
+}
+
+function ensureAudio() {
+  if (eng.ctx) { if (eng.ctx.state !== 'running') eng.ctx.resume().catch(() => {}); return eng.starting; }
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) { toast('This browser has no Web Audio, so it cannot play songs.'); return Promise.resolve(false); }
+  eng.ctx = new Ctx({ latencyHint: 'playback' });
+  eng.starting = (async () => {
+    try {
+      const wasm = await (await fetch('hem-engine.wasm')).arrayBuffer();
+      await eng.ctx.audioWorklet.addModule('hem-engine-worklet.js');
+      eng.node = new AudioWorkletNode(eng.ctx, 'hem-engine', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], channelCount: 2, channelCountMode: 'explicit', processorOptions: { wasm } });
+      eng.node.port.onmessage = e => {
+        const m = e.data;
+        if (m instanceof Float32Array) eng.readouts.set(m);
+        else if (m.t === 'ready') eng.ready = true;
+        else if (m.t === 'error') toast('The sound engine could not start: ' + m.message);
+      };
+      eng.an = eng.ctx.createAnalyser(); eng.an.fftSize = 8192; eng.an.smoothingTimeConstant = 0.6;
+      const split = eng.ctx.createChannelSplitter(2);
+      eng.aL = eng.ctx.createAnalyser(); eng.aR = eng.ctx.createAnalyser(); eng.aL.fftSize = eng.aR.fftSize = 2048;
+      eng.node.connect(eng.ctx.destination); eng.node.connect(eng.an); eng.node.connect(split);
+      split.connect(eng.aL, 0); split.connect(eng.aR, 1);
+      eng.sent.clear(); syncEngine();
+      return true;
+    } catch (err) {
+      toast('The sound engine could not start in this browser.');
+      return false;
+    }
+  })();
+  return eng.starting;
+}
+
+function specTarget(t, f) {
+  if (!liveAudio()) return sampleSpectrum(t, f);
+  const hz = 20 * Math.pow(1000, f), n = eng.an.frequencyBinCount, nyq = eng.ctx.sampleRate / 2;
+  const i0 = Math.floor(hz * 0.94 / nyq * n), i1 = Math.max(i0 + 1, Math.ceil(hz * 1.06 / nyq * n));
+  let m = -160;
+  for (let i = i0; i < i1 && i < n; i++) m = Math.max(m, specBins[i]);
+  return clamp(m + 12, -60, 0);   // ASSUMED: +12 dB lifts the analyser's per-bin level onto the 0..-60 scale
+}
+function livePeaks() {
+  if (!liveAudio()) return [0, 0];
+  const pk = a => { let m = 0; for (let i = 0; i < a.length; i++) m = Math.max(m, Math.abs(a[i])); return clamp((20 * Math.log10(Math.max(m, 1e-6)) + 60) / 60, 0, 1); };
+  eng.aL.getFloatTimeDomainData(timeL); eng.aR.getFloatTimeDomainData(timeR);
+  return [pk(timeL), pk(timeR)];
+}
+function readSpectrum() { if (liveAudio()) eng.an.getFloatFrequencyData(specBins); }
+
+function stopSrc() {
+  if (!srcNode) return;
+  const s = srcNode; srcNode = null;
+  s.onended = null;
+  try { s.stop(); } catch (e) { /* already stopped */ }
+  s.disconnect();
+}
+function startSrc(offset) {
+  stopSrc();
+  const s = eng.ctx.createBufferSource();
+  s.buffer = songBuf; s.connect(eng.node);
+  s.onended = () => { if (srcNode === s) songEnded(); };
+  startAt = eng.ctx.currentTime - offset;
+  s.start(0, offset);
+  srcNode = s; playing = true; redrawTransport();
+}
+function songPos() {
+  if (!songBuf) return 0;
+  return playing && srcNode ? Math.min(eng.ctx.currentTime - startAt, songBuf.duration) : pausedAt;
+}
+async function playIndex(i, offset = 0) {
+  if (i < 0 || i >= songs.length) return;
+  const ok = await ensureAudio(); if (!ok) return;
+  stopSrc(); playing = false; curSong = i; songBuf = null; pausedAt = 0; loadingSong = true; redrawTransport();
+  const token = ++loadToken;
+  try {
+    const bytes = await songs[i].file.arrayBuffer();
+    const buf = await eng.ctx.decodeAudioData(bytes);
+    if (token !== loadToken) return;
+    songBuf = buf;
+  } catch (err) {
+    if (token !== loadToken) return;
+    loadingSong = false; redrawTransport();
+    toast(`Couldn't read "${songs[i].name}". WAV, MP3, FLAC or M4A usually work.`);
+    return;
+  }
+  loadingSong = false;
+  if (eng.ctx.state !== 'running') await eng.ctx.resume().catch(() => {});
+  startSrc(offset);
+}
+async function play() {
+  const ok = await ensureAudio(); if (!ok) return;
+  if (eng.ctx.state !== 'running') await eng.ctx.resume().catch(() => {});
+  if (playing) return;
+  if (curSong < 0) { if (!songs.length) { toast('Tap ADD SONGS to pick songs from this device.'); return; } return playIndex(0); }
+  if (!songBuf) return playIndex(curSong, pausedAt);
+  startSrc(pausedAt);
+}
+function pause() { if (!playing) return; pausedAt = songPos(); stopSrc(); playing = false; redrawTransport(); }
+function nextIndex() {
+  if (!songs.length) return -1;
+  if (shuffle && songs.length > 1) { let k; do k = Math.floor(Math.random() * songs.length); while (k === curSong); return k; }
+  return curSong + 1 < songs.length ? curSong + 1 : -1;
+}
+function nextSong() { const n = nextIndex(); if (n >= 0) playIndex(n); else if (songs.length) toast('That was the last song.'); }
+function prevSong() {
+  if (curSong < 0) return;
+  if (songPos() > 3 || curSong === 0) { if (songBuf) { playing ? startSrc(0) : (pausedAt = 0); redrawTransport(); } return; }
+  playIndex(curSong - 1);
+}
+function songEnded() {
+  srcNode = null; playing = false; pausedAt = 0;
+  if (repeat) { startSrc(0); return; }
+  const n = nextIndex();
+  if (n >= 0) playIndex(n); else redrawTransport();
+}
+function seekTo(frac) {
+  if (!songBuf) return;
+  const at = frac * songBuf.duration;
+  if (playing) startSrc(at); else { pausedAt = at; redrawTransport(); }
+}
+function redrawTransport() { Object.values(tBtns).forEach(b => b.userData.redraw()); drawTransport(clock.elapsedTime); }
+
+// opening songs from this device
+const fileInput = document.createElement('input');
+fileInput.type = 'file'; fileInput.multiple = true; fileInput.hidden = true; fileInput.id = 'hem-song-picker';
+fileInput.accept = 'audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg,.aif,.aiff';
+document.body.appendChild(fileInput);
+const isAudio = f => /^audio\//.test(f.type) || /\.(wav|mp3|flac|m4a|aac|ogg|aif|aiff)$/i.test(f.name);
+function addFiles(list) {
+  const before = songs.length;
+  for (const f of list) if (isAudio(f)) songs.push({ name: f.name.replace(/\.[^.]+$/, ''), file: f });
+  const added = songs.length - before;
+  if (!added) { toast('No songs in that pick. WAV, MP3, FLAC or M4A files work.'); return; }
+  toast(`${added} song${added === 1 ? '' : 's'} added`);
+  if (curSong < 0) playIndex(before); else redrawTransport();
+}
+fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInput.value = ''; });
+addEventListener('dragover', e => { e.preventDefault(); });
+addEventListener('drop', e => { e.preventDefault(); ensureAudio(); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+const addBtn = makeButton({ x: 1440, y: 878, w: 176, h: 26, depth: 0.1,
+  draw: (g, w, h, s) => { g.fillStyle = '#16181f'; g.beginPath(); g.roundRect(s, s, w - 2 * s, h - 2 * s, 6 * s); g.fill(); g.strokeStyle = '#22e4ff'; g.lineWidth = 1.5 * s; g.stroke(); text(g, '+ ADD SONGS', w / 2, h / 2 + s, 12 * s, '#22e4ff', 'center', 'Orbitron', 700, 0.1); },
+  press: () => { fileInput.click(); ensureAudio(); } });
+function transportPoint(e) {
+  setRay(e);
+  const hit = ray.intersectObject(P.transport.mesh, false)[0];
+  if (!hit) return null;
+  const [x, y, w, h] = W.transport;
+  return { x: x + hit.uv.x * w, y: y + (1 - hit.uv.y) * h };
+}
+window.hemPlayer = {
+  play, pause, next: nextSong, prev: prevSong, seek: f => seekTo(clamp(f, 0, 1)), resize,
+  addSongs: () => { fileInput.click(); ensureAudio(); },
+  state: () => ({ playing: !!playing, title: loadingSong ? 'Loading…' : curSong >= 0 ? songs[curSong].name : null,
+                  count: songs.length, index: curSong, pos: songPos(), dur: songBuf ? songBuf.duration : 0 }),
+};
+window.hemStatus = () => ({ engineReady: eng.ready, playing, song: curSong >= 0 ? songs[curSong].name : null, position: songPos(),
+  peaks: livePeaks(), dynamic: Array.from(eng.readouts), sampleRate: eng.ctx ? eng.ctx.sampleRate : null });
+
+// ---------- loop ----------
+const clock = new THREE.Clock();
+let slowAcc = 1;
+function frame() {
+  if (!document.body.classList.contains('on-player')) { clock.getDelta(); requestAnimationFrame(frame); return; }
+  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+  if (mode !== 'orbit' && performance.now() - view.lastUser > 4000) { view.userRx *= 0.97; view.userRy *= 0.97; }
+  const sway = REDUCED ? 0 : 1;
+  view.rx += (REST_RX + view.userRx + view.trx + Math.sin(t * 0.35) * 0.02 * sway - view.rx) * 0.08;
+  view.ry += (REST_RY + view.userRy + view.try + Math.sin(t * 0.27) * 0.04 * sway - view.ry) * 0.08;
+  player.rotation.set(view.rx, view.ry, 0);
+  player.position.y = Math.sin(t * 0.6) * 0.035 * sway;
+
+  const sp = REDUCED ? 0.15 : 1;
+  glints[0].position.set(Math.sin(t * 0.31 * sp) * 11, Math.cos(t * 0.23 * sp) * 4 + 2, 7);
+  glints[1].position.set(Math.sin(t * 0.27 * sp + 2.1) * 11, Math.cos(t * 0.19 * sp + 1) * 4 - 2, 7);
+  glints[2].position.set(Math.cos(t * 0.2 * sp) * 8, 6, 5);
+  glints.forEach((l, i) => l.color.copy(blendAt(t * FLOW + i / 3)));
+
+  neonTex.offset.x -= dt * FLOW * 4;
+  neonTexThin.offset.x -= dt * FLOW * 2;
+
+  movers.forEach(b => { const u = b.userData, target = u.baseZ - (u.pressed ? u.travel : 0); b.position.z += (target - b.position.z) * 0.35; });
+  knobs.forEach(k => paintKnob(k, t));
+  faders.forEach(f => placeFader(f, t));
+
+  slowAcc += dt;
+  if (slowAcc > 1 / 30) {
+    slowAcc = 0;
+    readSpectrum();
+    drawArt(t); drawSpec(t); drawMeters(t); drawSurgeon(t); drawTransport(t); drawHead(t); drawHalo(t);
+  }
+  composer.render();
+  requestAnimationFrame(frame);
+}
+
+async function boot() {
+  try {
+    await Promise.race([
+      Promise.all(['700 20px Orbitron', '900 20px Orbitron', '500 20px Orbitron', '600 20px Rajdhani', '700 20px Rajdhani'].map(f => document.fonts.load(f))),
+      new Promise(r => setTimeout(r, 2500)),
+    ]);
+  } catch (e) { /* system faces stand in */ }
+  drawFaders(); drawVol();
+  [...movers].forEach(b => b.userData.redraw());
+  refreshSurgeon();
+  requestAnimationFrame(frame);
+}
+boot();
+</script>
+
+</body>
+</html>

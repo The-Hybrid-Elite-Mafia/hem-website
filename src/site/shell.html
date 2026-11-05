@@ -1,0 +1,501 @@
+<title>Hybrid Elite Mafia</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Hybrid Elite Mafia: 120 HEM plug-ins in one rack, and the HEM 3D Listening Player.">
+<link rel="icon" href="img/brand/icon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap">
+<style>
+/* Layout: one page, four views (home, plug-ins, one plug-in, player) switched by the address hash so the music never stops;
+   glass nav on top, mini player on the bottom, a flowing HEM Blend aura behind everything. */
+:root{
+  color-scheme: dark;
+  --bg:#05050b; --ink:#f4f1fb; --dim:#c9c3dc; --faint:#948eaa; --line:rgba(255,255,255,.09);
+  --glass:rgba(16,17,28,.62); --glass-hi:rgba(28,30,46,.7);
+  --cyan:#22e4ff; --violet:#7b3cff; --magenta:#ff2fb9; --orange:#ff7a1a; --gold:#ffc94a;
+  --blend:linear-gradient(90deg,#22e4ff,#7b3cff,#ff2fb9,#ff7a1a,#ffc94a,#ff7a1a,#ff2fb9,#7b3cff,#22e4ff);
+  --font-display:'Orbitron','Rajdhani',system-ui,sans-serif;
+  --font-body:'Rajdhani',system-ui,'Segoe UI',sans-serif;
+  --nav-h:64px; --mini-h:76px;
+  --gut-l:max(16px,env(safe-area-inset-left,0px)); --gut-r:max(16px,env(safe-area-inset-right,0px));
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:500 17px/1.5 var(--font-body);min-height:100%;padding-bottom:calc(var(--mini-h) + env(safe-area-inset-bottom,0px))}
+body.on-player{overflow:hidden;padding-bottom:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:#07070e}
+[hidden]{display:none!important}
+a{color:inherit}
+img{max-width:100%;display:block}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+.flow{background:var(--blend);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 12s linear infinite}
+@keyframes flow{to{background-position:300% 0}}
+@keyframes spin{to{transform:rotate(1turn)}}
+
+/* aura behind the pages */
+#aura{position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block}
+body.on-player #aura{display:none}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;height:var(--nav-h);display:flex;align-items:center;gap:20px;padding:0 var(--gut-r) 0 var(--gut-l);background:rgba(8,8,16,.72);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--line)}
+.nav::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--blend);background-size:300% 100%;animation:flow 12s linear infinite;opacity:.8}
+body.on-player .nav{position:fixed;left:0;right:0}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0}
+.brand img{width:40px;height:40px}
+.brand b{font:900 15px/1 var(--font-display);letter-spacing:.12em;white-space:nowrap}
+.links{display:flex;gap:4px;margin-left:auto}
+.links a{text-decoration:none;font:700 13px/1 var(--font-display);letter-spacing:.14em;padding:10px 14px;border-radius:999px;color:var(--dim)}
+.links a:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.links a[aria-current="page"]{color:var(--bg);background:var(--ink)}
+
+main{padding:0 var(--gut-r) 0 var(--gut-l)}
+.wrap{max-width:1240px;margin:0 auto}
+section{padding-block:56px}
+.eyebrow{font:700 12px/1 var(--font-display);letter-spacing:.32em;color:var(--gold);text-transform:uppercase;margin:0 0 14px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h2{font:900 clamp(26px,3.6vw,40px)/1.1 var(--font-display);letter-spacing:.04em}
+.lede{font-size:clamp(18px,1.6vw,21px);color:var(--dim);max-width:60ch;margin:14px 0 0}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:12px;border:1px solid var(--line);background:var(--glass-hi);text-decoration:none;font:700 14px/1 var(--font-display);letter-spacing:.12em;cursor:pointer;transition:transform .15s,background .15s}
+.btn:hover{transform:translateY(-2px);background:rgba(40,42,62,.85)}
+.btn.main{background:var(--ink);color:var(--bg);border-color:transparent;position:relative}
+.btn.main::before{content:"";position:absolute;inset:-2px;border-radius:14px;z-index:-1;background:var(--blend);background-size:300% 100%;animation:flow 8s linear infinite;filter:blur(8px);opacity:.75}
+
+/* home: hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:center;padding-block:64px 40px}
+.hero h1{font:900 clamp(40px,7vw,92px)/.95 var(--font-display);letter-spacing:.02em}
+.hero h1 span{display:block}
+.motto{margin:22px 0 0;font:700 clamp(13px,1.3vw,15px)/1.8 var(--font-display);letter-spacing:.26em;color:var(--dim)}
+.motto i{font-style:normal;color:var(--gold)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.medal{position:relative;aspect-ratio:1;max-width:520px;width:100%;justify-self:center;perspective:900px}
+.medal .disc{position:absolute;inset:8%;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .2s ease-out}
+.medal .disc img{width:100%;height:100%;filter:drop-shadow(0 30px 40px rgba(0,0,0,.7));transform:translateZ(40px)}
+.medal .ring{position:absolute;inset:4%;border-radius:50%;background:conic-gradient(#22e4ff,#7b3cff,#ff2fb9,#ff7a1a,#ffc94a,#22e4ff);animation:spin 14s linear infinite;filter:blur(22px);opacity:.55;-webkit-mask:radial-gradient(circle,transparent 58%,#000 60%,#000 70%,transparent 72%);mask:radial-gradient(circle,transparent 58%,#000 60%,#000 70%,transparent 72%)}
+.medal .floor{position:absolute;left:12%;right:12%;bottom:-2%;height:12%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,47,185,.35),transparent);filter:blur(10px)}
+
+/* home: rack facts */
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-block:1px solid var(--line);margin-top:28px}
+.facts div{padding:22px 18px;border-left:1px solid var(--line)}
+.facts div:first-child{border-left:0}
+.facts b{display:block;font:900 clamp(26px,3vw,40px)/1 var(--font-display);font-variant-numeric:tabular-nums}
+.facts span{display:block;margin-top:8px;color:var(--dim);font-size:16px}
+
+/* category strip */
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:26px}
+.cat{position:relative;display:block;text-decoration:none;padding:16px 16px 18px;border-radius:14px;background:var(--glass);border:1px solid var(--line);overflow:hidden}
+.cat::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--blend);background-size:300% 100%;animation:flow 10s linear infinite}
+.cat b{font:900 15px/1 var(--font-display);letter-spacing:.12em}
+.cat em{float:right;font:700 14px/1 var(--font-display);font-style:normal;color:var(--gold)}
+.cat span{display:block;margin-top:10px;color:var(--dim);font-size:15px;line-height:1.35}
+.cat:hover{background:var(--glass-hi)}
+
+.head-row{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px}
+
+/* glass tablets */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:26px 22px;margin-top:28px}
+.tab{display:block;text-decoration:none;perspective:900px;min-width:0}
+.slab{position:relative;border-radius:14px;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .25s ease-out,box-shadow .25s;box-shadow:0 18px 30px -12px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.08);background:#0b0c13}
+.slab img{width:100%;height:auto;aspect-ratio:2560/1441;object-fit:cover;border-radius:14px}
+.slab::before{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.05) 32%,transparent 46%);transform:translateZ(1px);mix-blend-mode:screen;opacity:.65}
+.slab::after{content:"";position:absolute;inset:-2px;border-radius:16px;z-index:-1;background:var(--blend);background-size:300% 100%;opacity:0;filter:blur(10px);transition:opacity .25s}
+.tab:hover .slab,.tab:focus-visible .slab{box-shadow:0 26px 40px -12px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.18)}
+.tab:hover .slab::after,.tab:focus-visible .slab::after{opacity:.8;animation:flow 6s linear infinite}
+.tab .cap{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:12px}
+.tab .cap b{font:900 15px/1.2 var(--font-display);letter-spacing:.08em;min-width:0;overflow-wrap:anywhere}
+.tab .cap span{font:700 11px/1 var(--font-display);letter-spacing:.14em;color:var(--gold);white-space:nowrap}
+.tab .sub{display:block;margin-top:4px;color:var(--dim);font-size:15px;letter-spacing:.06em}
+
+/* plug-ins: filter bar */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;align-items:center}
+.chip{padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--glass);text-decoration:none;font:700 12px/1 var(--font-display);letter-spacing:.12em;color:var(--dim);font-variant-numeric:tabular-nums;cursor:pointer}
+.chip:hover{color:var(--ink)}
+.chip[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:transparent}
+.search{margin-left:auto;display:flex;align-items:center;min-width:0;flex:1 1 220px;max-width:320px}
+.search input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(8,8,16,.7);color:var(--ink);font:600 16px/1 var(--font-body)}
+.search input::placeholder{color:var(--faint)}
+.empty{margin-top:40px;color:var(--dim);font-size:18px}
+.count{color:var(--faint);font:700 12px/1 var(--font-display);letter-spacing:.16em;margin-top:18px}
+
+/* one plug-in */
+.crumb{display:inline-block;margin-top:28px;text-decoration:none;color:var(--dim);font:700 12px/1 var(--font-display);letter-spacing:.16em}
+.crumb:hover{color:var(--ink)}
+.pp{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:28px 40px}
+.pp .tab{cursor:default}
+.pp h1{font:900 clamp(34px,4.6vw,60px)/1 var(--font-display);letter-spacing:.03em;overflow-wrap:anywhere}
+.pp .subtitle{margin:12px 0 0;font:700 15px/1.3 var(--font-display);letter-spacing:.2em;color:var(--dim)}
+.pp .tagline{margin:22px 0 0;font:900 clamp(16px,1.6vw,19px)/1.2 var(--font-display);letter-spacing:.22em}
+.pp .blurb{margin:18px 0 0;font-size:20px;color:var(--ink);max-width:44ch}
+.meta{margin:24px 0 0;display:grid;grid-template-columns:auto 1fr;gap:8px 18px;font-size:16px}
+.meta dt{color:var(--faint);font:700 11px/1.9 var(--font-display);letter-spacing:.18em}
+.meta dd{margin:0;color:var(--dim)}
+.pp .cta{margin-top:26px}
+.stepper{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:18px}
+.stepper a{text-decoration:none;color:var(--dim);font:700 13px/1.3 var(--font-display);letter-spacing:.12em;max-width:48%}
+.stepper a:hover{color:var(--ink)}
+.stepper a:last-child{text-align:right}
+
+footer{padding:48px var(--gut-r) 28px var(--gut-l);text-align:center;color:var(--faint);font:700 12px/1.8 var(--font-display);letter-spacing:.3em}
+footer b{display:block;font-size:13px}
+body.on-player footer{display:none}
+
+/* player view: the 3D player fills the window under the nav */
+#stage{position:fixed;left:0;right:0;bottom:0;top:calc(var(--nav-h) + env(safe-area-inset-top,0px));width:100%;height:calc(100% - var(--nav-h) - env(safe-area-inset-top,0px));display:block;touch-action:none;cursor:grab;background:#04040a}
+body:not(.on-player) #stage{display:none}
+#stage.grabbing{cursor:grabbing}
+#stage.pointing{cursor:pointer}
+.readout{position:fixed;z-index:35;left:50%;top:calc(var(--nav-h) + 14px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:700 15px/1 var(--font-display);letter-spacing:.08em;color:var(--ink);background:rgba(5,5,11,.85);border:1px solid rgba(34,228,255,.55);border-radius:8px;padding:9px 13px;pointer-events:none;font-variant-numeric:tabular-nums;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
+.hint{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:var(--gut-l);right:var(--gut-r);margin:0;font:500 14px/1.35 var(--font-body);color:var(--dim);pointer-events:none;max-width:70ch}
+body:not(.on-player) .hint{display:none}
+.err{position:fixed;inset:var(--nav-h) 0 0;display:grid;place-items:center;padding:24px var(--gut-r) 24px var(--gut-l);text-align:center;font:600 17px/1.4 var(--font-body);color:var(--dim)}
+body:not(.on-player) .err{display:none!important}
+
+/* mini player */
+.mini{position:fixed;z-index:30;left:0;right:0;bottom:0;padding:10px var(--gut-r) calc(10px + env(safe-area-inset-bottom,0px)) var(--gut-l);background:rgba(8,8,16,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;align-items:center;gap:14px}
+.mini::before{content:"";position:absolute;left:0;right:0;top:-1px;height:1px;background:var(--blend);background-size:300% 100%;animation:flow 12s linear infinite}
+body.on-player .mini{display:none}
+.mini img{width:46px;height:48px;flex:none}
+.mini .now{min-width:0;flex:1 1 auto}
+.mini .title{font:700 16px/1.2 var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini .time{font:500 12px/1 var(--font-display);color:var(--faint);font-variant-numeric:tabular-nums;margin-top:4px}
+.mini .bar{position:absolute;left:0;right:0;top:0;height:3px;cursor:pointer;background:transparent}
+.mini .bar i{display:block;height:100%;width:0;background:var(--blend);background-size:300% 100%;animation:flow 8s linear infinite}
+.mini .ctl{display:flex;gap:6px;flex:none}
+.ib{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--glass-hi);display:grid;place-items:center;cursor:pointer}
+.ib:hover{background:rgba(44,46,68,.9)}
+.ib svg{width:18px;height:18px;fill:currentColor}
+.ib.play{width:48px;background:var(--ink);color:var(--bg)}
+.mini .more{display:flex;gap:8px;flex:none}
+.mini .more .btn{padding:12px 14px;font-size:12px}
+
+@media (max-width:900px){
+  .hero,.pp{grid-template-columns:1fr}
+  .medal{max-width:340px;order:-1}
+  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .facts div:nth-child(3){border-left:0}
+  .facts div:nth-child(n+3){border-top:1px solid var(--line)}
+}
+@media (max-width:640px){
+  :root{--nav-h:58px}
+  .brand b{display:none}
+  .links a{padding:9px 11px;font-size:12px;letter-spacing:.1em}
+  section{padding-block:40px}
+  .grid{grid-template-columns:1fr 1fr;gap:18px 12px}
+  .tab .cap{flex-direction:column;gap:4px}
+  .tab .sub{font-size:13px}
+  .mini .more .add{display:none}
+  .mini .ctl .prev{display:none}
+  .search{max-width:none;margin-left:0}
+}
+@media (max-width:420px){
+  .mini .more{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+<canvas id="aura" aria-hidden="true"></canvas>
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="#home"><img src="img/brand/crown.webp" alt="Hybrid Elite Mafia crown badge"><b class="flow">HYBRID ELITE MAFIA</b></a>
+  <div class="links">
+    <a href="#home" data-nav="home">HOME</a>
+    <a href="#plugins" data-nav="plugins">PLUG-INS</a>
+    <a href="#player" data-nav="player">PLAYER</a>
+  </div>
+</nav>
+
+<main>
+  <!-- HOME -->
+  <div id="view-home" class="view">
+    <div class="wrap">
+      <div class="hero">
+        <div>
+          <p class="eyebrow">Est. 2024</p>
+          <h1><span class="flow">HYBRID</span><span class="flow">ELITE</span><span class="flow">MAFIA</span></h1>
+          <p class="motto">PURE AUDIO <i>·</i> HIGHER MINDS <i>·</i> DEEPER EMOTIONS <i>·</i> REAL MUSIC <i>·</i> NO LIMITS</p>
+          <div class="cta">
+            <a class="btn main" href="#player">OPEN THE PLAYER</a>
+            <a class="btn" href="#plugins">SEE ALL 120 PLUG-INS</a>
+          </div>
+        </div>
+        <div class="medal" id="medal" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="floor"></div>
+          <div class="disc"><img src="img/brand/crown-lg.webp" alt=""></div>
+        </div>
+      </div>
+    </div>
+    <section class="wrap" aria-labelledby="rack-h">
+      <p class="eyebrow">HEM-Elite-Rack</p>
+      <h2 id="rack-h">120 plug-ins. One rack.</h2>
+      <p class="lede">EQ, dynamics, color, space, movement and mastering, each with its own faceplate. Built from the ground up by Hybrid Elite Mafia on its own C++ audio engine, no borrowed framework.</p>
+      <div class="facts">
+        <div><b class="flow">120</b><span>plug-ins with their own faceplates</span></div>
+        <div><b class="flow">8</b><span>plug-ins in one chain</span></div>
+        <div><b class="flow">A / B</b><span>with matched loudness, so louder never fools your ears</span></div>
+        <div><b class="flow">ASIO</b><span>and WASAPI for low-latency playback and live input</span></div>
+      </div>
+      <div class="cats" id="home-cats"></div>
+    </section>
+    <section class="wrap" aria-labelledby="feat-h">
+      <div class="head-row">
+        <div><p class="eyebrow">On the faceplate</p><h2 id="feat-h">A few from the rack</h2></div>
+        <a class="btn" href="#plugins">ALL PLUG-INS</a>
+      </div>
+      <div class="grid" id="featured"></div>
+    </section>
+  </div>
+
+  <!-- ALL PLUG-INS -->
+  <div id="view-plugins" class="view" hidden>
+    <section class="wrap" aria-labelledby="pl-h">
+      <p class="eyebrow">HEM-Elite-Rack</p>
+      <h2 id="pl-h">The plug-ins</h2>
+      <div class="filters" id="filters">
+        <div class="search"><input id="q" type="search" placeholder="Search by name or job" aria-label="Search the plug-ins" autocomplete="off"></div>
+      </div>
+      <p class="count" id="count"></p>
+      <div class="grid" id="all"></div>
+      <p class="empty" id="none" hidden>No plug-in matches that. Try a shorter word, like “tape” or “reverb”.</p>
+    </section>
+  </div>
+
+  <!-- ONE PLUG-IN -->
+  <div id="view-plugin" class="view" hidden>
+    <div class="wrap">
+      <a class="crumb" href="#plugins" id="crumb">← ALL PLUG-INS</a>
+      <div class="pp">
+        <div class="tab" id="pp-tab"><div class="slab"><img id="pp-img" alt=""></div></div>
+        <div>
+          <p class="eyebrow" id="pp-cat"></p>
+          <h1 id="pp-name"></h1>
+          <p class="subtitle" id="pp-sub"></p>
+          <p class="tagline flow" id="pp-tag"></p>
+          <p class="blurb" id="pp-blurb"></p>
+          <dl class="meta">
+            <dt>FAMILY</dt><dd id="pp-family"></dd>
+            <dt>KIND</dt><dd id="pp-kind"></dd>
+            <dt>LIVES IN</dt><dd>HEM-Elite-Rack for Windows</dd>
+          </dl>
+          <div class="cta" id="pp-cta"></div>
+        </div>
+      </div>
+      <nav class="stepper" aria-label="Next and previous plug-in"><a id="pp-prev"></a><a id="pp-next"></a></nav>
+    </div>
+    <section class="wrap" aria-labelledby="more-h">
+      <h2 id="more-h" style="font-size:24px"></h2>
+      <div class="grid" id="pp-more"></div>
+    </section>
+  </div>
+</main>
+
+<footer><b class="flow">HYBRID ELITE MAFIA • STUDIO PLUGINS</b>EST. 2024</footer>
+
+<!-- PLAYER (3D) -->
+<canvas id="stage" aria-label="3D HEM Listening Player. Drag empty space to turn it."></canvas>
+<p class="readout" id="readout" hidden></p>
+<p class="hint" id="hint">Tap ADD SONGS to play songs from this device; they never leave it. Drag empty space to turn the player. In SURGEON, drag a band's dot, scroll on a dot for Q, tap a number to pick a band (tap it again to switch it off), double-tap the graph to add one.</p>
+<div class="err" id="err" hidden>This page needs WebGL to draw the 3D player, and this browser didn't allow it.</div>
+
+<!-- MINI PLAYER (every page but the player) -->
+<div class="mini" id="mini" role="region" aria-label="Now playing">
+  <div class="bar" id="mini-bar" title="Jump in the song"><i id="mini-fill"></i></div>
+  <img src="img/brand/ghost.webp" alt="Hybrid Elite Mafia hooded ghost">
+  <div class="now"><div class="title" id="mini-title">No song loaded</div><div class="time" id="mini-time">Add songs from this device to start</div></div>
+  <div class="ctl">
+    <button class="ib prev" id="mini-prev" aria-label="Previous song"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+    <button class="ib play" id="mini-play" aria-label="Play"><svg viewBox="0 0 24 24" id="mini-play-ic"><path d="M7 4v16l13-8z"/></svg></button>
+    <button class="ib" id="mini-next" aria-label="Next song"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+  </div>
+  <div class="more">
+    <button class="btn add" id="mini-add">+ ADD SONGS</button>
+    <a class="btn" href="#player">OPEN PLAYER</a>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------- the site (pages, tablets, mini player)
+const PLUGINS = {{PLUGINS_JSON}};
+// Families and what's in them: hem-elite-rack store/LISTING.md
+const FAMILIES = [
+  { id: 'Eq', key: 'eq', name: 'EQ', what: 'From surgical 16-band mastering EQ to warm passive tone' },
+  { id: 'Dynamics', key: 'dynamics', name: 'DYNAMICS', what: 'Compressors, limiters, transient shapers, de-essers, gates' },
+  { id: 'Color', key: 'color', name: 'COLOR', what: 'Tape, tube, saturation, lo-fi' },
+  { id: 'Space', key: 'space', name: 'SPACE', what: 'Reverbs and delays' },
+  { id: 'Movement', key: 'movement', name: 'MOVEMENT', what: 'Chorus, flanger, phaser, tremolo, filters' },
+  { id: 'Tools', key: 'tools', name: 'TOOLS', what: 'Meters, loudness, stereo, analyzers' },
+  { id: 'Keys', key: 'keys', name: 'KEYS', what: 'A playable instrument' },
+];
+const FEATURED = ['SURGEON', 'THE FAMILY', 'LOCKDOWN', 'ARCHIVE', 'VELVET', 'CATHEDRAL', 'STAKEOUT', 'GRAND LARCENY'];
+const famOf = id => FAMILIES.find(f => f.id === id);
+const bySlug = Object.fromEntries(PLUGINS.map(p => [p.slug, p]));
+const kind = v => v.split('|').pop();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function tabHTML(p, lazy = true) {
+  return `<a class="tab" href="#p-${p.slug}" data-slug="${p.slug}">
+    <div class="slab"><img ${lazy ? 'loading="lazy" decoding="async"' : ''} src="img/plates/${p.slug}.webp" alt="${esc(p.name)} faceplate" width="1200" height="675"></div>
+    <div class="cap"><b>${esc(p.name)}</b><span>${famOf(p.group).name}</span></div>
+    <span class="sub">${esc(p.sub)}</span></a>`;
+}
+
+// home
+document.getElementById('home-cats').innerHTML = FAMILIES.map(f => {
+  const n = PLUGINS.filter(p => p.group === f.id).length;
+  return `<a class="cat" href="#plugins-${f.key}"><b>${f.name}</b><em>${n}</em><span>${f.what}</span></a>`;
+}).join('');
+document.getElementById('featured').innerHTML = FEATURED.map(n => tabHTML(PLUGINS.find(p => p.name === n))).join('');
+
+// all plug-ins, sorted by family then the rack's own order
+const ordered = FAMILIES.flatMap(f => PLUGINS.filter(p => p.group === f.id));
+const allEl = document.getElementById('all');
+allEl.innerHTML = ordered.map(p => tabHTML(p)).join('');
+const filtersEl = document.getElementById('filters');
+filtersEl.insertAdjacentHTML('afterbegin',
+  `<a class="chip" href="#plugins" data-f="">ALL ${PLUGINS.length}</a>` +
+  FAMILIES.map(f => `<a class="chip" href="#plugins-${f.key}" data-f="${f.key}">${f.name} ${PLUGINS.filter(p => p.group === f.id).length}</a>`).join(''));
+const q = document.getElementById('q');
+let famFilter = '';
+function applyFilter() {
+  const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  let shown = 0;
+  allEl.querySelectorAll('.tab').forEach(el => {
+    const p = bySlug[el.dataset.slug];
+    const hay = `${p.name} ${p.sub} ${p.tag} ${p.blurb} ${famOf(p.group).name} ${kind(p.vst)}`.toLowerCase();
+    const ok = (!famFilter || famOf(p.group).key === famFilter) && words.every(w => hay.includes(w));
+    el.hidden = !ok; if (ok) shown++;
+  });
+  const fam = FAMILIES.find(f => f.key === famFilter);
+  document.getElementById('count').textContent = `${shown} ${shown === 1 ? 'PLUG-IN' : 'PLUG-INS'}${fam ? ' · ' + fam.name : ''}${words.length ? ' · MATCHING “' + q.value.trim().toUpperCase() + '”' : ''}`;
+  document.getElementById('none').hidden = shown > 0;
+  filtersEl.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-current', String(c.dataset.f === famFilter)));
+}
+q.addEventListener('input', applyFilter);
+
+// one plug-in
+function showPlugin(p) {
+  const i = PLUGINS.indexOf(p), fam = famOf(p.group);
+  const set = (id, v) => { document.getElementById(id).textContent = v; };
+  const img = document.getElementById('pp-img');
+  img.src = `img/plates/${p.slug}.webp`; img.alt = `${p.name} faceplate`;
+  set('pp-cat', fam.name); set('pp-name', p.name); set('pp-sub', p.sub); set('pp-tag', p.tag); set('pp-blurb', p.blurb);
+  set('pp-family', `${fam.name}: ${fam.what.toLowerCase()}`); set('pp-kind', kind(p.vst));
+  const crumb = document.getElementById('crumb'); crumb.href = `#plugins-${fam.key}`; crumb.textContent = `← ALL ${fam.name} PLUG-INS`;
+  document.getElementById('pp-cta').innerHTML = p.name === 'SURGEON'
+    ? `<a class="btn main" href="#player">USE SURGEON IN THE PLAYER</a><a class="btn" href="#plugins">ALL PLUG-INS</a>`
+    : `<a class="btn" href="#plugins">ALL PLUG-INS</a>`;
+  const prev = PLUGINS[(i - 1 + PLUGINS.length) % PLUGINS.length], next = PLUGINS[(i + 1) % PLUGINS.length];
+  const pa = document.getElementById('pp-prev'), na = document.getElementById('pp-next');
+  pa.href = `#p-${prev.slug}`; pa.textContent = `← ${prev.name}`;
+  na.href = `#p-${next.slug}`; na.textContent = `${next.name} →`;
+  const more = PLUGINS.filter(x => x.group === p.group && x !== p).slice(0, 8);
+  document.getElementById('more-h').textContent = more.length ? `More ${fam.name.toLowerCase()} from the rack` : '';
+  document.getElementById('pp-more').innerHTML = more.map(x => tabHTML(x)).join('');
+}
+
+// router: #home, #plugins, #plugins-<family>, #p-<plug-in>, #player
+const views = ['home', 'plugins', 'plugin'].map(v => document.getElementById('view-' + v));
+let lastView = '';
+function route() {
+  const h = decodeURIComponent(location.hash.slice(1)) || 'home';
+  let view = 'home', nav = 'home';
+  if (h === 'player') { view = 'player'; nav = 'player'; }
+  else if (h === 'plugins' || h.startsWith('plugins-')) {
+    view = 'plugins'; nav = 'plugins';
+    famFilter = FAMILIES.some(f => 'plugins-' + f.key === h) ? h.slice(8) : '';
+    applyFilter();
+  } else if (h.startsWith('p-') && bySlug[h.slice(2)]) { view = 'plugin'; nav = 'plugins'; showPlugin(bySlug[h.slice(2)]); }
+  views.forEach(v => { v.hidden = v.id !== 'view-' + view; });
+  document.body.classList.toggle('on-player', view === 'player');
+  document.querySelectorAll('[data-nav]').forEach(a => { if (a.dataset.nav === nav) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  if (view === 'player' && window.hemPlayer) window.hemPlayer.resize();
+  if (view !== lastView || view === 'plugin') window.scrollTo(0, 0);
+  lastView = view;
+  startAura();
+}
+addEventListener('hashchange', route);
+
+// 3D tilt on tablets and the crown medal (follows the pointer; flat for reduced motion)
+function tilt(el, e, max) {
+  const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+  el.style.setProperty('--ry', (x * max).toFixed(2) + 'deg');
+  el.style.setProperty('--rx', (-y * max).toFixed(2) + 'deg');
+}
+if (!REDUCED) {
+  document.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    const slab = e.target.closest && e.target.closest('.tab') && e.target.closest('.tab').querySelector('.slab');
+    document.querySelectorAll('.slab[style]').forEach(s => { if (s !== slab) s.removeAttribute('style'); });
+    if (slab) tilt(slab, e, document.getElementById('view-plugin').contains(slab) ? 8 : 14);
+    const medal = document.getElementById('medal');
+    if (!document.getElementById('view-home').hidden) {
+      const r = medal.getBoundingClientRect(), x = (e.clientX - (r.left + r.width / 2)) / innerWidth, y = (e.clientY - (r.top + r.height / 2)) / innerHeight;
+      const d = medal.querySelector('.disc');
+      d.style.setProperty('--ry', (x * 30).toFixed(2) + 'deg'); d.style.setProperty('--rx', (-y * 24).toFixed(2) + 'deg');
+    }
+  });
+}
+
+// flowing HEM Blend aura behind the pages (low resolution, scaled up; stops on the player and in hidden tabs)
+const aura = document.getElementById('aura'), ax = aura.getContext('2d');
+const BLEND = ['#22e4ff', '#7b3cff', '#ff2fb9', '#ff7a1a', '#ffc94a'];
+let auraOn = false, auraT0 = performance.now();
+function sizeAura() { aura.width = Math.max(1, Math.round(innerWidth / 4)); aura.height = Math.max(1, Math.round(innerHeight / 4)); }
+function drawAura(now) {
+  const t = REDUCED ? 0 : Math.max(0, (now - auraT0) / 1000), w = aura.width, h = aura.height;
+  ax.globalCompositeOperation = 'source-over'; ax.fillStyle = '#05050b'; ax.fillRect(0, 0, w, h);
+  ax.globalCompositeOperation = 'lighter';
+  for (let k = 0; k < 5; k++) {
+    const a = t * 0.05 + k * 1.3, x = w * (0.5 + 0.42 * Math.sin(a * 1.1 + k)), y = h * (0.35 + 0.3 * Math.cos(a * 0.8 + k * 2));
+    const g = ax.createRadialGradient(x, y, 0, x, y, Math.max(w, h) * 0.45);
+    const c = BLEND[(k + Math.floor(t * 0.05)) % BLEND.length];
+    g.addColorStop(0, c + '30'); g.addColorStop(1, c + '00');
+    ax.fillStyle = g; ax.fillRect(0, 0, w, h);
+  }
+  // horizon grid
+  const hz = h * 0.72; ax.strokeStyle = 'rgba(123,60,255,.16)'; ax.lineWidth = 1;
+  for (let i = -16; i <= 16; i++) { ax.beginPath(); ax.moveTo(w / 2 + i * 6, hz); ax.lineTo(w / 2 + i * 60, h); ax.stroke(); }
+  const off = (t * 0.25) % 1;
+  for (let k = 0; k < 10; k++) { const d = (k + off) / 10, y = hz + (h - hz) * d * d; ax.globalAlpha = d * 0.9; ax.beginPath(); ax.moveTo(0, y); ax.lineTo(w, y); ax.stroke(); }
+  ax.globalAlpha = 1;
+}
+let auraLast = 0;
+function auraLoop(now) {
+  if (!auraOn) return;
+  if (now - auraLast > 33) { auraLast = now; drawAura(now); }
+  if (!REDUCED) requestAnimationFrame(auraLoop);
+}
+function startAura() {
+  const want = !document.body.classList.contains('on-player') && !document.hidden;
+  if (want && !auraOn) { auraOn = true; sizeAura(); requestAnimationFrame(auraLoop); }
+  if (!want) auraOn = false;
+}
+addEventListener('resize', () => { sizeAura(); if (REDUCED) drawAura(performance.now()); });
+document.addEventListener('visibilitychange', startAura);
+
+// mini player
+const $ = id => document.getElementById(id);
+const mm = s => { s = Math.max(0, Math.floor(s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+const PLAY_IC = '<path d="M7 4v16l13-8z"/>', PAUSE_IC = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
+let wasPlaying = null;
+function miniTick() {
+  const hp = window.hemPlayer; if (!hp) return;
+  const s = hp.state();
+  $('mini-title').textContent = s.title || (s.count ? `${s.count} songs ready · tap play` : 'No song loaded');
+  $('mini-time').textContent = s.title ? `${mm(s.pos)} / ${mm(s.dur)}${s.count > 1 ? ` · song ${s.index + 1} of ${s.count}` : ''}` : (s.count ? 'Songs stay on this device' : 'Add songs from this device to start');
+  $('mini-fill').style.width = s.dur ? `${Math.min(100, s.pos / s.dur * 100)}%` : '0';
+  if (s.playing !== wasPlaying) { wasPlaying = s.playing; $('mini-play-ic').innerHTML = s.playing ? PAUSE_IC : PLAY_IC; $('mini-play').setAttribute('aria-label', s.playing ? 'Pause' : 'Play'); }
+}
+setInterval(miniTick, 250);
+$('mini-play').onclick = () => { const hp = window.hemPlayer; if (!hp) return; hp.state().playing ? hp.pause() : hp.play(); };
+$('mini-next').onclick = () => window.hemPlayer && window.hemPlayer.next();
+$('mini-prev').onclick = () => window.hemPlayer && window.hemPlayer.prev();
+$('mini-add').onclick = () => window.hemPlayer && window.hemPlayer.addSongs();
+$('mini-bar').onclick = e => { const hp = window.hemPlayer; if (!hp) return; const r = e.currentTarget.getBoundingClientRect(); hp.seek((e.clientX - r.left) / r.width); };
+
+route();
+</script>
+
+{{PLAYER_SCRIPTS}}
