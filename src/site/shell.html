@@ -44,7 +44,7 @@ body.on-player .nav{position:fixed;left:0;right:0}
 .brand img{width:40px;height:40px}
 .brand b{font:900 15px/1 var(--font-display);letter-spacing:.12em;white-space:nowrap}
 .links{display:flex;gap:4px;margin-left:auto}
-.links a{text-decoration:none;font:700 13px/1 var(--font-display);letter-spacing:.14em;padding:10px 14px;border-radius:999px;color:var(--dim)}
+.links a{text-decoration:none;font:700 13px/1 var(--font-display);letter-spacing:.14em;padding:10px 14px;border-radius:999px;color:var(--dim);white-space:nowrap}
 .links a:hover{color:var(--ink);background:rgba(255,255,255,.06)}
 .links a[aria-current="page"]{color:var(--bg);background:var(--ink)}
 
@@ -116,6 +116,40 @@ h2{font:900 clamp(26px,3.6vw,40px)/1.1 var(--font-display);letter-spacing:.04em}
 .empty{margin-top:40px;color:var(--dim);font-size:18px}
 .count{color:var(--faint);font:700 12px/1 var(--font-display);letter-spacing:.16em;margin-top:18px}
 
+/* playlists */
+.pl-wrap{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:28px;margin-top:28px;align-items:start}
+.pl-side{display:flex;flex-direction:column;gap:10px}
+.pl-item{display:flex;justify-content:space-between;align-items:baseline;gap:10px;width:100%;text-align:left;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--glass);cursor:pointer}
+.pl-item b{font:900 14px/1.3 var(--font-display);letter-spacing:.08em;min-width:0;overflow-wrap:anywhere}
+.pl-item span{color:var(--faint);font:700 12px/1 var(--font-display);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pl-item[aria-current="true"]{background:var(--glass-hi);border-color:rgba(34,228,255,.55);box-shadow:inset 3px 0 0 var(--cyan)}
+.pl-new{display:flex;gap:8px}
+.pl-new input,.pl-name{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(8,8,16,.7);color:var(--ink);font:700 17px/1.2 var(--font-body)}
+.pl-main{min-width:0;border-radius:18px;border:1px solid var(--line);background:var(--glass);padding:22px}
+.pl-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pl-name{font:900 20px/1.2 var(--font-display);letter-spacing:.06em;flex:1 1 240px}
+.pl-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.pl-actions .btn{padding:12px 16px;font-size:12px}
+.btn.danger{border-color:rgba(255,90,90,.5);color:#ff8a8a}
+.btn.danger.armed{background:#ff5a5a;color:#05050b}
+.pl-meta{margin:14px 0 0;color:var(--faint);font:700 12px/1.4 var(--font-display);letter-spacing:.12em}
+.songs{list-style:none;margin:16px 0 0;padding:0;border-top:1px solid var(--line)}
+.songs li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.songs li.now{background:linear-gradient(90deg,rgba(34,228,255,.12),transparent)}
+.songs .n{font:700 12px/1 var(--font-display);color:var(--faint);text-align:right;font-variant-numeric:tabular-nums}
+.songs .t{font:600 17px/1.3 var(--font-body);overflow-wrap:anywhere}
+.songs .t small{display:block;color:var(--faint);font-size:13px}
+.songs .acts{display:flex;gap:4px}
+.songs .acts button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:rgba(8,8,16,.6);cursor:pointer;display:grid;place-items:center;font:700 14px/1 var(--font-display)}
+.songs .acts button:hover{background:var(--glass-hi)}
+.songs .acts button:disabled{opacity:.3;cursor:default}
+.pl-empty{margin:18px 0 0;color:var(--dim);font-size:18px;max-width:52ch}
+.pl-drop{outline:2px dashed var(--cyan);outline-offset:6px}
+.store-line{margin-top:18px;color:var(--faint);font-size:15px}
+@media (max-width:900px){.pl-wrap{grid-template-columns:minmax(0,1fr)}}
+.pl-side,.pl-main{min-width:0}
+@media (max-width:520px){.songs .acts .up,.songs .acts .down{display:none}.pl-main{padding:16px}}
+
 /* one plug-in */
 .crumb{display:inline-block;margin-top:28px;text-decoration:none;color:var(--dim);font:700 12px/1 var(--font-display);letter-spacing:.16em}
 .crumb:hover{color:var(--ink)}
@@ -178,7 +212,10 @@ body.on-player .mini{display:none}
 @media (max-width:640px){
   :root{--nav-h:58px}
   .brand b{display:none}
-  .links a{padding:9px 11px;font-size:12px;letter-spacing:.1em}
+  .links a{padding:9px 8px;font-size:11px;letter-spacing:.04em}
+  .nav{gap:8px}
+  .brand img{width:34px;height:34px}
+  .links{gap:0}
   section{padding-block:40px}
   .grid{grid-template-columns:1fr 1fr;gap:18px 12px}
   .tab .cap{flex-direction:column;gap:4px}
@@ -202,6 +239,7 @@ body.on-player .mini{display:none}
   <div class="links">
     <a href="#home" data-nav="home">HOME</a>
     <a href="#plugins" data-nav="plugins">PLUG-INS</a>
+    <a href="#playlists" data-nav="playlists">PLAYLISTS</a>
     <a href="#player" data-nav="player">PLAYER</a>
   </div>
 </nav>
@@ -259,6 +297,26 @@ body.on-player .mini{display:none}
       <p class="count" id="count"></p>
       <div class="grid" id="all"></div>
       <p class="empty" id="none" hidden>No plug-in matches that. Try a shorter word, like “tape” or “reverb”.</p>
+    </section>
+  </div>
+
+  <!-- PLAYLISTS -->
+  <div id="view-playlists" class="view" hidden>
+    <section class="wrap" aria-labelledby="pls-h">
+      <p class="eyebrow">Your music</p>
+      <h2 id="pls-h">Playlists</h2>
+      <p class="lede">Add songs or a whole folder at once, name the playlist by album, genre or anything you like, and play it through SURGEON. Playlists and songs are saved on this device only. Nothing is uploaded.</p>
+      <div class="pl-wrap">
+        <div class="pl-side">
+          <form class="pl-new" id="pl-new"><input id="pl-new-name" maxlength="60" placeholder="New playlist name" aria-label="New playlist name" autocomplete="off"><button class="btn main" type="submit">CREATE</button></form>
+          <div id="pl-list"></div>
+          <button class="btn" id="pl-save-queue" type="button">SAVE WHAT'S PLAYING AS A PLAYLIST</button>
+          <p class="store-line" id="pl-store"></p>
+        </div>
+        <div class="pl-main" id="pl-main"></div>
+      </div>
+      <input type="file" id="pl-files" multiple accept="audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg,.aif,.aiff" hidden>
+      <input type="file" id="pl-folder" webkitdirectory multiple hidden>
     </section>
   </div>
 
@@ -397,12 +455,13 @@ function showPlugin(p) {
 }
 
 // router: #home, #plugins, #plugins-<family>, #p-<plug-in>, #player
-const views = ['home', 'plugins', 'plugin'].map(v => document.getElementById('view-' + v));
+const views = ['home', 'plugins', 'plugin', 'playlists'].map(v => document.getElementById('view-' + v));
 let lastView = '';
 function route() {
   const h = decodeURIComponent(location.hash.slice(1)) || 'home';
   let view = 'home', nav = 'home';
   if (h === 'player') { view = 'player'; nav = 'player'; }
+  else if (h === 'playlists') { view = 'playlists'; nav = 'playlists'; renderPlaylists(); }
   else if (h === 'plugins' || h.startsWith('plugins-')) {
     view = 'plugins'; nav = 'plugins';
     famFilter = FAMILIES.some(f => 'plugins-' + f.key === h) ? h.slice(8) : '';
@@ -487,6 +546,10 @@ function miniTick() {
   $('mini-title').textContent = s.title || (s.count ? `${s.count} songs ready · tap play` : 'No song loaded');
   $('mini-time').textContent = s.title ? `${mm(s.pos)} / ${mm(s.dur)}${s.count > 1 ? ` · song ${s.index + 1} of ${s.count}` : ''}${s.lufs > -99 ? ` · ${s.lufs.toFixed(1)} LUFS` : ''}` : (s.count ? 'Songs stay on this device' : 'Add songs from this device to start');
   $('mini-fill').style.width = s.dur ? `${Math.min(100, s.pos / s.dur * 100)}%` : '0';
+  if (!document.getElementById('view-playlists').hidden) {   // keep the playing song highlighted as songs change
+    const q = window.hemQueue ? window.hemQueue.list() : [], cur = window.hemQueue ? window.hemQueue.current() : -1, nm = cur >= 0 && q[cur] ? q[cur].name : null;
+    document.querySelectorAll('#pl-main .songs li').forEach(li => li.classList.toggle('now', li.dataset.name === nm));
+  }
   if (s.playing !== wasPlaying) { wasPlaying = s.playing; $('mini-play-ic').innerHTML = s.playing ? PAUSE_IC : PLAY_IC; $('mini-play').setAttribute('aria-label', s.playing ? 'Pause' : 'Play'); }
 }
 setInterval(miniTick, 250);
@@ -495,6 +558,181 @@ $('mini-next').onclick = () => window.hemPlayer && window.hemPlayer.next();
 $('mini-prev').onclick = () => window.hemPlayer && window.hemPlayer.prev();
 $('mini-add').onclick = () => window.hemPlayer && window.hemPlayer.addSongs();
 $('mini-bar').onclick = e => { const hp = window.hemPlayer; if (!hp) return; const r = e.currentTarget.getBoundingClientRect(); hp.seek((e.clientX - r.left) / r.width); };
+
+// ---------------------------------------------------------------- playlists (saved on this device: IndexedDB)
+// Two stores: songs {id, name, size, type, blob, added} and lists {id, name, songIds[], created, updated}.
+const PL = { sel: null, lists: [], meta: new Map(), busy: false, armed: false };
+const reqP = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+let dbP = null;
+function openDb() {
+  return dbP ||= new Promise((res, rej) => {
+    if (!('indexedDB' in window)) { rej(new Error('no-idb')); return; }
+    const r = indexedDB.open('hem-music', 1);
+    r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('songs', { keyPath: 'id', autoIncrement: true }); d.createObjectStore('lists', { keyPath: 'id', autoIncrement: true }); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function os(name, mode = 'readonly') { return (await openDb()).transaction(name, mode).objectStore(name); }
+const fmtMB = b => b >= 1e9 ? (b / 1e9).toFixed(1) + ' GB' : (b / 1e6).toFixed(b >= 1e8 ? 0 : 1) + ' MB';
+const songName = f => f.name.replace(/\.[^.]+$/, '');
+const isSong = f => /^audio\//.test(f.type) || /\.(wav|mp3|flac|m4a|aac|ogg|aif|aiff)$/i.test(f.name);
+
+async function loadAll() {
+  PL.lists = (await reqP((await os('lists')).getAll())).sort((a, b) => a.created - b.created);
+  // song names and sizes only (keys + a cursor that skips the audio)
+  PL.meta = new Map();
+  await new Promise((res, rej) => { (async () => {
+    const r = (await os('songs')).openCursor();
+    r.onsuccess = () => { const c = r.result; if (!c) return res(); const v = c.value; PL.meta.set(v.id, { name: v.name, size: v.size }); c.continue(); };
+    r.onerror = () => rej(r.error);
+  })().catch(rej); });
+}
+async function saveList(l) { l.updated = Date.now(); l.id = await reqP((await os('lists', 'readwrite')).put(l)); return l; }
+// stores the files (skipping ones already saved with the same name and size) and returns their ids in order
+async function storeFiles(files) {
+  const have = new Map([...PL.meta].map(([id, m]) => [m.name + '|' + m.size, id]));
+  const ids = [];
+  for (const f of files) {
+    const key = songName(f) + '|' + f.size;
+    if (have.has(key)) { ids.push(have.get(key)); continue; }
+    const id = await reqP((await os('songs', 'readwrite')).add({ name: songName(f), size: f.size, type: f.type, blob: f, added: Date.now() }));
+    PL.meta.set(id, { name: songName(f), size: f.size }); have.set(key, id); ids.push(id);
+  }
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  return ids;
+}
+// deletes saved songs that no playlist uses any more
+async function sweepSongs() {
+  const used = new Set(PL.lists.flatMap(l => l.songIds));
+  for (const id of [...PL.meta.keys()]) if (!used.has(id)) { await reqP((await os('songs', 'readwrite')).delete(id)); PL.meta.delete(id); }
+}
+async function songBlobs(ids) {
+  const st = await os('songs');
+  return Promise.all(ids.map(id => reqP(st.get(id)).then(v => v ? { name: v.name, file: v.blob } : null))).then(a => a.filter(Boolean));
+}
+
+function plStatus(msg) { const r = document.getElementById('readout'); r.hidden = false; r.textContent = msg; clearTimeout(plStatus.t); plStatus.t = setTimeout(() => { r.hidden = true; }, 2600); }
+async function renderPlaylists() {
+  try { await loadAll(); } catch (e) {
+    document.getElementById('pl-main').innerHTML = `<p class="pl-empty">This browser won't let the site save songs (private window or storage turned off), so playlists can't be kept here. You can still add songs on the player for this visit.</p>`;
+    return;
+  }
+  if (PL.sel !== null && !PL.lists.some(l => l.id === PL.sel)) PL.sel = null;
+  if (PL.sel === null && PL.lists.length) PL.sel = PL.lists[PL.lists.length - 1].id;
+  const total = [...PL.meta.values()].reduce((a, m) => a + m.size, 0);
+  document.getElementById('pl-list').innerHTML = PL.lists.length ? PL.lists.map(l => {
+    const bytes = l.songIds.reduce((a, id) => a + (PL.meta.get(id)?.size || 0), 0);
+    return `<button class="pl-item" type="button" data-id="${l.id}" aria-current="${l.id === PL.sel}"><b>${esc(l.name)}</b><span>${l.songIds.length} SONG${l.songIds.length === 1 ? '' : 'S'} · ${fmtMB(bytes)}</span></button>`;
+  }).join('') : '';
+  let quota = '';
+  try { if (navigator.storage && navigator.storage.estimate) { const e = await navigator.storage.estimate(); if (e.quota) quota = ` of about ${fmtMB(e.quota)} this browser allows`; } } catch (e) { /* no estimate */ }
+  document.getElementById('pl-store').textContent = PL.meta.size ? `${PL.meta.size} songs saved on this device, ${fmtMB(total)}${quota}.` : '';
+  renderMain();
+}
+function renderMain() {
+  const main = document.getElementById('pl-main'), l = PL.lists.find(x => x.id === PL.sel);
+  PL.armed = false;
+  if (!l) { main.innerHTML = `<p class="pl-empty">No playlists yet. Type a playlist name and press CREATE, then add songs or a whole folder.</p>`; return; }
+  const q = window.hemQueue ? window.hemQueue.list() : [], cur = window.hemQueue ? window.hemQueue.current() : -1;
+  const nowName = cur >= 0 && q[cur] ? q[cur].name : null;
+  const bytes = l.songIds.reduce((a, id) => a + (PL.meta.get(id)?.size || 0), 0);
+  main.innerHTML = `
+    <div class="pl-head"><input class="pl-name" id="pl-name" value="${esc(l.name)}" maxlength="60" aria-label="Playlist name"></div>
+    <div class="pl-actions">
+      <button class="btn main" type="button" data-a="play" ${l.songIds.length ? '' : 'disabled'}>▶ PLAY</button>
+      <button class="btn" type="button" data-a="shuffle" ${l.songIds.length > 1 ? '' : 'disabled'}>SHUFFLE PLAY</button>
+      <button class="btn" type="button" data-a="add">+ ADD SONGS</button>
+      <button class="btn" type="button" data-a="folder">+ ADD A FOLDER</button>
+      <button class="btn danger" type="button" data-a="delete">DELETE PLAYLIST</button>
+    </div>
+    <p class="pl-meta">${l.songIds.length} SONG${l.songIds.length === 1 ? '' : 'S'} · ${fmtMB(bytes)} · DROP SONGS HERE TO ADD THEM</p>
+    ${l.songIds.length ? `<ol class="songs">${l.songIds.map((id, i) => {
+      const m = PL.meta.get(id) || { name: 'Missing song', size: 0 };
+      return `<li class="${m.name === nowName ? 'now' : ''}" data-name="${esc(m.name)}"><span class="n">${i + 1}</span><span class="t">${esc(m.name)}<small>${fmtMB(m.size)}</small></span>
+        <span class="acts"><button type="button" data-a="from" data-i="${i}" aria-label="Play from ${esc(m.name)}">▶</button>
+        <button class="up" type="button" data-a="up" data-i="${i}" aria-label="Move up" ${i ? '' : 'disabled'}>↑</button>
+        <button class="down" type="button" data-a="down" data-i="${i}" aria-label="Move down" ${i < l.songIds.length - 1 ? '' : 'disabled'}>↓</button>
+        <button type="button" data-a="remove" data-i="${i}" aria-label="Remove ${esc(m.name)} from this playlist">✕</button></span></li>`;
+    }).join('')}</ol>` : `<p class="pl-empty">Empty. Tap + ADD SONGS to pick several at once, or + ADD A FOLDER to bring in a whole album.</p>`}`;
+}
+async function playList(l, start = 0, shuffleIt = false) {
+  if (!window.hemQueue) return;
+  let ids = l.songIds.slice();
+  if (shuffleIt) for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+  else ids = ids.slice(start).concat(ids.slice(0, start));
+  const list = await songBlobs(ids);
+  if (!list.length) { plStatus('Those songs are no longer saved on this device.'); return; }
+  window.hemQueue.set(list, 0);
+  plStatus(`Playing ${l.name}`);
+  setTimeout(renderMain, 600);
+}
+async function addToSelected(files) {
+  const l = PL.lists.find(x => x.id === PL.sel);
+  const songsIn = [...files].filter(isSong);
+  if (!l) { plStatus('Create a playlist first.'); return; }
+  if (!songsIn.length) { plStatus('No songs in that pick. WAV, MP3, FLAC or M4A files work.'); return; }
+  songsIn.sort((a, b) => (a.webkitRelativePath || a.name).localeCompare(b.webkitRelativePath || b.name, undefined, { numeric: true }));
+  plStatus(`Saving ${songsIn.length} song${songsIn.length === 1 ? '' : 's'} on this device…`);
+  try {
+    const ids = await storeFiles(songsIn);
+    l.songIds.push(...ids.filter(id => !l.songIds.includes(id)));
+    await saveList(l);
+    plStatus(`${songsIn.length} song${songsIn.length === 1 ? '' : 's'} added to ${l.name}`);
+  } catch (e) {
+    plStatus(e && e.name === 'QuotaExceededError' ? 'This device is out of room for more songs. Remove a playlist or use smaller files.' : 'Couldn’t save those songs here.');
+  }
+  renderPlaylists();
+}
+
+document.getElementById('pl-new').addEventListener('submit', async e => {
+  e.preventDefault();
+  const inp = document.getElementById('pl-new-name'), name = inp.value.trim() || `Playlist ${PL.lists.length + 1}`;
+  try { const l = await saveList({ name, songIds: [], created: Date.now() }); PL.sel = l.id; inp.value = ''; renderPlaylists(); }
+  catch (err) { plStatus('This browser won’t let the site save playlists.'); }
+});
+document.getElementById('pl-list').addEventListener('click', e => { const b = e.target.closest('.pl-item'); if (!b) return; PL.sel = +b.dataset.id; renderPlaylists(); });
+document.getElementById('pl-save-queue').addEventListener('click', async () => {
+  const q = window.hemQueue ? window.hemQueue.list() : [];
+  if (!q.length) { plStatus('Nothing is playing yet. Add songs on the player first.'); return; }
+  try {
+    const files = q.map(x => x.file instanceof File ? x.file : new File([x.file], x.name + '.audio', { type: x.file.type }));
+    const ids = await storeFiles(files);
+    const l = await saveList({ name: `Saved queue ${new Date().toLocaleDateString()}`, songIds: ids, created: Date.now() });
+    PL.sel = l.id; plStatus(`Saved ${ids.length} songs as a playlist`); renderPlaylists();
+  } catch (e) { plStatus(e && e.name === 'QuotaExceededError' ? 'This device is out of room for more songs.' : 'Couldn’t save the queue here.'); }
+});
+const plMain = document.getElementById('pl-main');
+plMain.addEventListener('change', async e => {
+  if (e.target.id !== 'pl-name') return;
+  const l = PL.lists.find(x => x.id === PL.sel); if (!l) return;
+  l.name = e.target.value.trim() || l.name; await saveList(l); renderPlaylists();
+});
+plMain.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const l = PL.lists.find(x => x.id === PL.sel); if (!l) return;
+  const a = b.dataset.a, i = +b.dataset.i;
+  if (a === 'play') return playList(l);
+  if (a === 'shuffle') return playList(l, 0, true);
+  if (a === 'from') return playList(l, i);
+  if (a === 'add') return document.getElementById('pl-files').click();
+  if (a === 'folder') return document.getElementById('pl-folder').click();
+  if (a === 'delete') {
+    if (!PL.armed) { PL.armed = true; b.classList.add('armed'); b.textContent = 'TAP AGAIN TO DELETE'; setTimeout(() => { if (b.isConnected) { PL.armed = false; b.classList.remove('armed'); b.textContent = 'DELETE PLAYLIST'; } }, 4000); return; }
+    await reqP((await os('lists', 'readwrite')).delete(l.id));
+    PL.lists = PL.lists.filter(x => x.id !== l.id); PL.sel = null;
+    await sweepSongs(); plStatus(`Deleted ${l.name}`); return renderPlaylists();
+  }
+  if (a === 'up' && i > 0) [l.songIds[i - 1], l.songIds[i]] = [l.songIds[i], l.songIds[i - 1]];
+  if (a === 'down' && i < l.songIds.length - 1) [l.songIds[i + 1], l.songIds[i]] = [l.songIds[i], l.songIds[i + 1]];
+  if (a === 'remove') l.songIds.splice(i, 1);
+  await saveList(l);
+  if (a === 'remove') await sweepSongs();
+  renderPlaylists();
+});
+['pl-files', 'pl-folder'].forEach(id => document.getElementById(id).addEventListener('change', e => { addToSelected(e.target.files); e.target.value = ''; }));
+plMain.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); plMain.classList.add('pl-drop'); });
+plMain.addEventListener('dragleave', () => plMain.classList.remove('pl-drop'));
+plMain.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); plMain.classList.remove('pl-drop'); if (e.dataTransfer.files.length) addToSelected(e.dataTransfer.files); });
 
 route();
 </script>

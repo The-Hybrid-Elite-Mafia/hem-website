@@ -1312,6 +1312,19 @@ function transportPoint(e) {
   const [x, y, w, h] = W.transport;
   return { x: x + hit.uv.x * w, y: y + (1 - hit.uv.y) * h };
 }
+// Lets the website's Playlists page load a playlist into the player (songs come from this device's own storage).
+window.hemQueue = {
+  set(list, start = 0) {
+    stopSrc(); playing = false; loadToken++;
+    songs.length = 0; list.forEach(x => songs.push({ name: x.name, file: x.file }));
+    curSong = -1; songBuf = null; pausedAt = 0; loadingSong = false;
+    if (songs.length) return playIndex(clamp(start, 0, songs.length - 1));
+    redrawTransport();
+  },
+  list: () => songs.map(x => ({ name: x.name, file: x.file })),
+  current: () => curSong,
+  playAt: i => playIndex(i),
+};
 window.hemStatus = () => ({ engineReady: eng.ready, playing, song: curSong >= 0 ? songs[curSong].name : null, position: songPos(),
   peaks: livePeaks(), dynamic: Array.from(eng.readouts.slice(0, 17)), loudness: Array.from(eng.readouts.slice(17)), sampleRate: eng.ctx ? eng.ctx.sampleRate : null });
 

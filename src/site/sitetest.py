@@ -81,6 +81,9 @@ async def main():
         await pg.evaluate("location.hash='#p-the-family'"); await pg.wait_for_timeout(1200)
         await pg.screenshot(path=str(OUT / 'phone-plugin.png'), full_page=True)
         wide3 = await pg.evaluate('document.documentElement.scrollWidth > innerWidth')
+        await pg.evaluate("location.hash='#playlists'"); await pg.wait_for_timeout(1500)
+        await pg.screenshot(path=str(OUT / 'phone-playlists.png'))
+        wide3 = wide3 or await pg.evaluate('document.documentElement.scrollWidth > innerWidth')
         await b.close()
 
         r = lambda s: f"playing={s['playing']} song={s['title']} at {s['pos']:.1f}s"
