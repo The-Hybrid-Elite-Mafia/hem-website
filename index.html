@@ -150,7 +150,8 @@ body:not(.on-player) #stage{display:none}
 #stage.pointing{cursor:pointer}
 .readout{position:fixed;z-index:35;left:50%;top:calc(var(--nav-h) + 14px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:700 15px/1 var(--font-display);letter-spacing:.08em;color:var(--ink);background:rgba(5,5,11,.85);border:1px solid rgba(34,228,255,.55);border-radius:8px;padding:9px 13px;pointer-events:none;font-variant-numeric:tabular-nums;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
 .hint{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:var(--gut-l);right:var(--gut-r);margin:0;font:500 14px/1.35 var(--font-body);color:var(--dim);pointer-events:none;max-width:70ch}
-body:not(.on-player) .hint{display:none}
+body:not(.on-player) .hint,body:not(.on-player) .hem-zoom{display:none!important}
+.hint{padding-right:76px}
 .err{position:fixed;inset:var(--nav-h) 0 0;display:grid;place-items:center;padding:24px var(--gut-r) 24px var(--gut-l);text-align:center;font:600 17px/1.4 var(--font-body);color:var(--dim)}
 body:not(.on-player) .err{display:none!important}
 
@@ -302,7 +303,7 @@ body.on-player .mini{display:none}
 <!-- PLAYER (3D) -->
 <canvas id="stage" aria-label="3D HEM Listening Player. Drag empty space to turn it."></canvas>
 <p class="readout" id="readout" hidden></p>
-<p class="hint" id="hint">Tap ADD SONGS to play songs from this device; they never leave it. Drag empty space to turn the player. In SURGEON, drag a band's dot, scroll on a dot for Q, tap a number to pick a band (tap it again to switch it off), double-tap the graph to add one.</p>
+<p class="hint" id="hint">Pinch, double-tap or press + to zoom in, then drag to move around. Turn your phone sideways for a bigger player. Tap ADD SONGS to play songs from this device; they never leave it.</p>
 <div class="err" id="err" hidden>This page needs WebGL to draw the 3D player, and this browser didn't allow it.</div>
 
 <!-- MINI PLAYER (every page but the player) -->
@@ -1343,14 +1344,35 @@ const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.5, 0.45, 0.92);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
+// Camera: fits the whole player at zoom 1; pinch, double-tap, the wheel or the + / − buttons zoom in up to 6x,
+// and dragging moves around while zoomed. The view never leaves the player.
+const cam = { baseZ: 20, zoom: 1, x: 0, y: 0 };
+const ZOOM_MAX = 6;
+const halfH = (z = cam.zoom) => Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * cam.baseZ / z;
+function applyCam() {
+  const hh = halfH(), hw = hh * camera.aspect;
+  const mx = Math.max(0, 9.7 - hw), my = Math.max(0, 5.5 - hh);
+  cam.x = clamp(cam.x, -mx, mx); cam.y = clamp(cam.y, -my, my);
+  camera.position.set(cam.x, cam.y, cam.baseZ); camera.zoom = cam.zoom;
+  camera.lookAt(cam.x, cam.y, 0); camera.updateProjectionMatrix();
+}
+// Zoom to z while the spot under the screen point (nx, ny in -1..1) stays put.
+function zoomAt(z, nx = 0, ny = 0) {
+  z = clamp(z, 1, ZOOM_MAX);
+  const h0 = halfH(), h1 = halfH(z);
+  const wx = cam.x + nx * h0 * camera.aspect, wy = cam.y + ny * h0;
+  cam.zoom = z; cam.x = wx - nx * h1 * camera.aspect; cam.y = wy - ny * h1;
+  applyCam(); updateZoomUi();
+}
+function zoomFit() { cam.zoom = 1; cam.x = cam.y = 0; applyCam(); updateZoomUi(); }
 function resize() {
   const rr = canvas.getBoundingClientRect(), w = Math.round(rr.width), h = Math.round(rr.height);
   if (!w || !h) return;
   renderer.setSize(w, h, false); composer.setSize(w, h); bloom.resolution.set(w / 2, h / 2);
   camera.aspect = w / h;
   const half = THREE.MathUtils.degToRad(camera.fov / 2);
-  camera.position.set(0, 0, Math.max(5.4 * 1.2 / Math.tan(half), 9.6 * 1.1 / (Math.tan(half) * camera.aspect)) + 0.5);
-  camera.lookAt(0, 0, 0); camera.updateProjectionMatrix();
+  cam.baseZ = Math.max(5.4 * 1.2 / Math.tan(half), 9.6 * 1.1 / (Math.tan(half) * camera.aspect)) + 0.5;
+  applyCam();
 }
 addEventListener('resize', resize);
 resize();
@@ -1359,7 +1381,9 @@ resize();
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
 const REST_RX = 0.08, REST_RY = -0.16;
 const view = { rx: 0, ry: 0, trx: 0, try: 0, userRx: 0, userRy: 0, lastUser: -1e9 };
-let mode = null, start = null, lastTap = { t: 0, x: 0, y: 0 };
+let mode = null, start = null, lastTap = { t: 0, x: 0, y: 0 }, lastEmptyTap = { t: 0, x: 0, y: 0 };
+const pointers = new Map();
+let pinch = null;
 const readout = document.getElementById('readout');
 function setRay(e) {
   const r = canvas.getBoundingClientRect();
@@ -1375,8 +1399,8 @@ function surgeonPoint(e) {   // pointer -> design px on the SURGEON floor, or nu
   return { x: x + hit.uv.x * w, y: y + (1 - hit.uv.y) * h };
 }
 const inGraph = pt => pt && pt.x >= GX0 && pt.x <= GX1 && pt.y >= GY0 && pt.y <= GY1;
-function nodeAt(pt) {
-  let best = -1, bd = 18 * 18;
+function nodeAt(pt, reach = 18) {
+  let best = -1, bd = reach * reach;
   bands.forEach((b, i) => {
     if (!b.on) return;
     const dx = freqToX(b.freq) - pt.x, dy = (hasGain(b.type) ? gyOf(b.gain) : gyOf(0)) - pt.y, d = dx * dx + dy * dy;
@@ -1386,8 +1410,22 @@ function nodeAt(pt) {
 }
 function bandReadout(i) { const b = bands[i]; return `BAND ${i + 1}  ${TYPES[b.type]}  ${fmtF(b.freq)}${hasGain(b.type) ? '  ' + fmtDb(b.gain) : ''}  Q ${b.q.toFixed(2)}`; }
 
+function ndcOf(x, y) {
+  const r = canvas.getBoundingClientRect();
+  return { x: ((x - r.left) / r.width) * 2 - 1, y: -((y - r.top) / r.height) * 2 + 1 };
+}
+function startPinch() {
+  if (mode === 'press' && start && start.o) start.o.userData.pressed = 0;   // a second finger cancels a button press
+  const [a, b] = [...pointers.values()];
+  const m = ndcOf((a.x + b.x) / 2, (a.y + b.y) / 2), h = halfH();
+  pinch = { d0: Math.max(10, Math.hypot(a.x - b.x, a.y - b.y)), z0: cam.zoom, wx: cam.x + m.x * h * camera.aspect, wy: cam.y + m.y * h };
+  mode = 'pinch'; readout.hidden = true; canvas.classList.remove('grabbing');
+}
 canvas.addEventListener('pointerdown', e => {
-  canvas.setPointerCapture(e.pointerId);
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* pointer already gone */ }
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2) { startPinch(); return; }
+  if (pointers.size > 2 || mode === 'idle') return;
   const o = pick(e);
   start = { x: e.clientX, y: e.clientY, o, rx: view.userRx, ry: view.userRy };
   if (o && (o.userData.kind === 'knob' || o.userData.kind === 'fader')) {
@@ -1399,20 +1437,43 @@ canvas.addEventListener('pointerdown', e => {
   if (inGraph(pt)) {
     const now = performance.now(), dbl = now - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 24;
     lastTap = { t: now, x: e.clientX, y: e.clientY };
-    const n = nodeAt(pt);
+    const n = nodeAt(pt, e.pointerType === 'touch' ? 34 : 18);
     if (n >= 0) { SG.sel = n; mode = 'node'; readout.hidden = false; readout.textContent = bandReadout(n); refreshSurgeon(); return; }
-    if (dbl) {   // add a band where you tapped (first band that is off)
+    if (dbl) {   // add a band where you tapped (first band that is off); with all 16 on, zoom instead
       const free = bands.findIndex(b => !b.on);
       if (free >= 0) { const b = bands[free]; b.on = true; b.type = 0; b.freq = clamp(xToFreq(pt.x), 20, 20000); b.gain = clamp(gyToDb(pt.y), -30, 30); SG.sel = free; recompute(); refreshSurgeon(); }
+      else { const n2 = ndcOf(e.clientX, e.clientY); cam.zoom > 1.05 ? zoomFit() : zoomAt(2.6, n2.x, n2.y); }
       mode = null; return;
     }
     mode = null; return;
   }
   const tp = transportPoint(e);
   if (tp && songBuf && tp.x >= 1070 && tp.x <= 1810 && tp.y >= 928 && tp.y <= 962) { seekTo(clamp((tp.x - 1080) / 720, 0, 1)); mode = null; return; }
+  const now = performance.now(), dbl = now - lastEmptyTap.t < 350 && Math.hypot(e.clientX - lastEmptyTap.x, e.clientY - lastEmptyTap.y) < 30;
+  lastEmptyTap = { t: now, x: e.clientX, y: e.clientY };
+  if (dbl) { const n = ndcOf(e.clientX, e.clientY); cam.zoom > 1.05 ? zoomFit() : zoomAt(2.6, n.x, n.y); mode = 'idle'; return; }
+  if (cam.zoom > 1.05) { mode = 'pan'; start.cx = cam.x; start.cy = cam.y; canvas.classList.add('grabbing'); return; }
   mode = 'orbit'; canvas.classList.add('grabbing');
 });
 canvas.addEventListener('pointermove', e => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (mode === 'pinch') {
+    if (pointers.size < 2) return;
+    const [a, b] = [...pointers.values()];
+    const m = ndcOf((a.x + b.x) / 2, (a.y + b.y) / 2);
+    cam.zoom = clamp(pinch.z0 * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d0, 1, ZOOM_MAX);
+    const h = halfH();
+    cam.x = pinch.wx - m.x * h * camera.aspect; cam.y = pinch.wy - m.y * h;
+    applyCam(); updateZoomUi();
+    return;
+  }
+  if (mode === 'pan') {
+    const k = 2 * halfH() / canvas.getBoundingClientRect().height;
+    cam.x = start.cx - (e.clientX - start.x) * k; cam.y = start.cy + (e.clientY - start.y) * k;
+    applyCam();
+    return;
+  }
+  if (mode === 'idle') return;
   const r = canvas.getBoundingClientRect();
   view.trx = -((e.clientY - r.top) / r.height - 0.5) * 0.1;
   view.try = ((e.clientX - r.left) / r.width - 0.5) * 0.16;
@@ -1438,7 +1499,13 @@ canvas.addEventListener('pointermove', e => {
     canvas.classList.toggle('pointing', !!o || n >= 0);
   }
 });
-function endPointer() {
+function endPointer(e) {
+  if (e) pointers.delete(e.pointerId);
+  if (mode === 'pinch' || mode === 'idle') {   // wait until every finger is up before anything else happens
+    if (pointers.size === 0) { mode = null; pinch = null; }
+    else mode = 'idle';
+    return;
+  }
   if (mode === 'press' && start.o) { const u = start.o.userData; u.pressed = 0; if (u.press) u.press(); }
   if (mode === 'orbit') view.lastUser = performance.now();
   mode = null; readout.hidden = true; canvas.classList.remove('grabbing');
@@ -1451,14 +1518,49 @@ canvas.addEventListener('wheel', e => {
     e.preventDefault(); const u = o.userData; u.val = clamp(u.val - Math.sign(e.deltaY) * 0.02, 0, 1); if (u.change) u.change(u.val); return;
   }
   const pt = surgeonPoint(e);
-  if (inGraph(pt)) {
-    const n = nodeAt(pt); if (n < 0) return;
-    e.preventDefault();
+  const n = inGraph(pt) ? nodeAt(pt) : -1;
+  e.preventDefault();
+  if (n >= 0 && !e.ctrlKey) {
     const b = bands[n]; b.q = clamp(b.q * Math.pow(1.1, -Math.sign(e.deltaY)), 0.1, 18);
     SG.sel = n; recompute(); refreshSurgeon(); readout.hidden = false; readout.textContent = bandReadout(n);
     clearTimeout(wheelHide); wheelHide = setTimeout(() => { if (!mode) readout.hidden = true; }, 900);
+    return;
   }
+  const p = ndcOf(e.clientX, e.clientY);
+  zoomAt(cam.zoom * Math.pow(e.ctrlKey ? 1.01 : 1.0018, -e.deltaY), p.x, p.y);
 }, { passive: false });
+
+// + / − / FIT buttons (big enough for a thumb)
+const zoomUi = document.createElement('div');
+zoomUi.className = 'hem-zoom';
+zoomUi.innerHTML = '<button type="button" data-z="in" aria-label="Zoom in">+</button><span class="lvl" aria-live="polite">1.0×</span>' +
+  '<button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="fit" aria-label="Show the whole player">FIT</button>';
+document.body.appendChild(zoomUi);
+const zoomCss = document.createElement('style');
+zoomCss.textContent = `.hem-zoom{position:fixed;z-index:36;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px}
+.hem-zoom button{width:56px;height:56px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:rgba(16,17,28,.85);color:#f4f1fb;font:700 28px/1 Orbitron,Rajdhani,system-ui,sans-serif;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);touch-action:manipulation}
+.hem-zoom button:active{background:rgba(44,46,68,.95)}
+.hem-zoom button[data-z=fit]{font-size:13px;letter-spacing:.1em}
+.hem-zoom button:disabled{opacity:.4;cursor:default}
+.hem-zoom .lvl{font:700 12px/1 Orbitron,Rajdhani,system-ui,sans-serif;color:#ffc94a;font-variant-numeric:tabular-nums;text-shadow:0 1px 3px #000}`;
+document.head.appendChild(zoomCss);
+zoomUi.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.z === 'in') zoomAt(cam.zoom * 1.6);
+  if (b.dataset.z === 'out') zoomAt(cam.zoom / 1.6);
+  if (b.dataset.z === 'fit') zoomFit();
+});
+function updateZoomUi() {
+  zoomUi.querySelector('.lvl').textContent = cam.zoom.toFixed(1) + '×';
+  zoomUi.querySelector('[data-z=in]').disabled = cam.zoom >= ZOOM_MAX - 0.01;
+  zoomUi.querySelector('[data-z=out]').disabled = zoomUi.querySelector('[data-z=fit]').disabled = cam.zoom <= 1.001;
+}
+updateZoomUi();
+// the help line gets out of the way: gone after the first touch, or 10 s after the player is first shown
+const hintEl = document.getElementById('hint');
+const dropHint = () => { if (hintEl) hintEl.hidden = true; };
+canvas.addEventListener('pointerdown', dropHint, { once: true });
+(function waitShown() { if (canvas.getBoundingClientRect().width) setTimeout(dropHint, 10000); else setTimeout(waitShown, 500); })();
 let wheelHide = 0;
 
 // =============================================================================
@@ -1662,7 +1764,8 @@ function frame() {
   const sway = REDUCED ? 0 : 1;
   view.rx += (REST_RX + view.userRx + view.trx + Math.sin(t * 0.35) * 0.02 * sway - view.rx) * 0.08;
   view.ry += (REST_RY + view.userRy + view.try + Math.sin(t * 0.27) * 0.04 * sway - view.ry) * 0.08;
-  player.rotation.set(view.rx, view.ry, 0);
+  const flat = clamp(2 - cam.zoom, 0, 1);   // straight-on once zoomed in, so the controls face you
+  player.rotation.set(view.rx * flat, view.ry * flat, 0);
   player.position.y = Math.sin(t * 0.6) * 0.035 * sway;
 
   const sp = REDUCED ? 0.15 : 1;

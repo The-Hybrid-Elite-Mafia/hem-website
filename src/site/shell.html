@@ -145,7 +145,8 @@ body:not(.on-player) #stage{display:none}
 #stage.pointing{cursor:pointer}
 .readout{position:fixed;z-index:35;left:50%;top:calc(var(--nav-h) + 14px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:700 15px/1 var(--font-display);letter-spacing:.08em;color:var(--ink);background:rgba(5,5,11,.85);border:1px solid rgba(34,228,255,.55);border-radius:8px;padding:9px 13px;pointer-events:none;font-variant-numeric:tabular-nums;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
 .hint{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:var(--gut-l);right:var(--gut-r);margin:0;font:500 14px/1.35 var(--font-body);color:var(--dim);pointer-events:none;max-width:70ch}
-body:not(.on-player) .hint{display:none}
+body:not(.on-player) .hint,body:not(.on-player) .hem-zoom{display:none!important}
+.hint{padding-right:76px}
 .err{position:fixed;inset:var(--nav-h) 0 0;display:grid;place-items:center;padding:24px var(--gut-r) 24px var(--gut-l);text-align:center;font:600 17px/1.4 var(--font-body);color:var(--dim)}
 body:not(.on-player) .err{display:none!important}
 
@@ -295,7 +296,7 @@ body.on-player .mini{display:none}
 <!-- PLAYER (3D) -->
 <canvas id="stage" aria-label="3D HEM Listening Player. Drag empty space to turn it."></canvas>
 <p class="readout" id="readout" hidden></p>
-<p class="hint" id="hint">Tap ADD SONGS to play songs from this device; they never leave it. Drag empty space to turn the player. In SURGEON, drag a band's dot, scroll on a dot for Q, tap a number to pick a band (tap it again to switch it off), double-tap the graph to add one.</p>
+<p class="hint" id="hint">Pinch, double-tap or press + to zoom in, then drag to move around. Turn your phone sideways for a bigger player. Tap ADD SONGS to play songs from this device; they never leave it.</p>
 <div class="err" id="err" hidden>This page needs WebGL to draw the 3D player, and this browser didn't allow it.</div>
 
 <!-- MINI PLAYER (every page but the player) -->
