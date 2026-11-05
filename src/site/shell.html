@@ -485,7 +485,7 @@ function miniTick() {
   const hp = window.hemPlayer; if (!hp) return;
   const s = hp.state();
   $('mini-title').textContent = s.title || (s.count ? `${s.count} songs ready · tap play` : 'No song loaded');
-  $('mini-time').textContent = s.title ? `${mm(s.pos)} / ${mm(s.dur)}${s.count > 1 ? ` · song ${s.index + 1} of ${s.count}` : ''}` : (s.count ? 'Songs stay on this device' : 'Add songs from this device to start');
+  $('mini-time').textContent = s.title ? `${mm(s.pos)} / ${mm(s.dur)}${s.count > 1 ? ` · song ${s.index + 1} of ${s.count}` : ''}${s.lufs > -99 ? ` · ${s.lufs.toFixed(1)} LUFS` : ''}` : (s.count ? 'Songs stay on this device' : 'Add songs from this device to start');
   $('mini-fill').style.width = s.dur ? `${Math.min(100, s.pos / s.dur * 100)}%` : '0';
   if (s.playing !== wasPlaying) { wasPlaying = s.playing; $('mini-play-ic').innerHTML = s.playing ? PAUSE_IC : PLAY_IC; $('mini-play').setAttribute('aria-label', s.playing ? 'Pause' : 'Play'); }
 }

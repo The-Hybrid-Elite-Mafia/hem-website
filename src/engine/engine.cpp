@@ -3,6 +3,8 @@
 //
 //  Chain:  song -> SURGEON (hem-elite-rack's real EliteEq.cpp, unchanged)
 //               -> 10-band faders (Hybrid Core RBJ bells)
+//               -> loudness meter (hem-elite-rack's THE ACCOUNTANT, LoudnessMeter.cpp, unchanged;
+//                  BS.1770 / EBU R128; reads the song as shaped, before the listening volume)
 //               -> volume -> speakers
 //
 //  The same file builds two ways:
@@ -13,6 +15,7 @@
 //  allocated in hem_init().
 // =============================================================================
 #include "hem/rack/EliteEq.hpp"
+#include "hem/rack/Tools.hpp"
 #include "hybrid/fx/Dsp.hpp"
 #include "hybrid/fx/Fx.hpp"
 
@@ -41,6 +44,7 @@ struct Engine {
     std::unique_ptr<hc::fx::Effect> surgeon;
     const hem::rack::EliteEqView* view = nullptr;
     bool surgeonOn = true;
+    std::unique_ptr<hc::fx::Effect> loudness;
 
     std::array<hc::fx::Biquad2, 10> faders{};
     std::array<float, 10> faderDb{};
@@ -75,6 +79,9 @@ HEM_EXPORT(hem_init) int hem_init(double sampleRate) {
     g->surgeon->setDefaults();
     g->surgeon->prepare(sampleRate, kBlock);
     g->view = dynamic_cast<const hem::rack::EliteEqView*>(g->surgeon.get());
+    g->loudness = hem::rack::makeLoudnessMeter();
+    g->loudness->setDefaults();
+    g->loudness->prepare(sampleRate, kBlock);
     for (std::size_t b = 0; b < g->faders.size(); ++b) designFader(*g, b);
     g->volume.prepare(sampleRate, 20.0, 1.0f);
     return 1;
@@ -102,6 +109,14 @@ HEM_EXPORT(hem_faders_on) void hem_faders_on(int on) { g->fadersOn = on != 0; }
 // Volume in dB; anything at or below -120 is silence (the −∞ end of the knob).
 HEM_EXPORT(hem_volume_set) void hem_volume_set(float db) { g->volumeTarget = db <= -120.0f ? 0.0f : hc::fx::dbToGain(db); }
 
+// THE ACCOUNTANT's readouts: 0 momentary LUFS, 1 short-term LUFS, 2 integrated LUFS, 3 loudness range LU,
+// 4 true peak dBTP, 5 correlation, 6 integrated minus target LU (-100 = nothing measured yet).
+HEM_EXPORT(hem_loudness) float hem_loudness(int which) { return g->loudness->meter(which); }
+// Target: 0 = -14, 1 = -16, 2 = -11, 3 = -9 LUFS.
+HEM_EXPORT(hem_loudness_target) void hem_loudness_target(int which) { g->loudness->set(hem::rack::meter::Target, static_cast<float>(which)); }
+// Starts the measurement over (a new song).
+HEM_EXPORT(hem_loudness_reset) void hem_loudness_reset() { g->loudness->reset(); }
+
 HEM_EXPORT(hem_reset) void hem_reset() {
     g->surgeon->reset();
     for (auto& f : g->faders) f.clear();
@@ -120,6 +135,7 @@ HEM_EXPORT(hem_process) void hem_process(std::uint32_t n) {
             if (e.faderDb[b] != 0.0f) e.faders[b].run(L, R, n);
         }
     }
+    e.loudness->process(L, R, n);   // measures only; the audio passes through untouched
     float pl = e.peakL, pr = e.peakR;
     for (std::uint32_t i = 0; i < n; ++i) {
         const float v = e.volume.next(e.volumeTarget);

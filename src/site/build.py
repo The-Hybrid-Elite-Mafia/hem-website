@@ -19,7 +19,7 @@ rep("window.hemStatus = ", """window.hemPlayer = {
   play, pause, next: nextSong, prev: prevSong, seek: f => seekTo(clamp(f, 0, 1)), resize,
   addSongs: () => { fileInput.click(); ensureAudio(); },
   state: () => ({ playing: !!playing, title: loadingSong ? 'Loading…' : curSong >= 0 ? songs[curSong].name : null,
-                  count: songs.length, index: curSong, pos: songPos(), dur: songBuf ? songBuf.duration : 0 }),
+                  count: songs.length, index: curSong, pos: songPos(), dur: songBuf ? songBuf.duration : 0, lufs: eng.readouts[19] }),
 };
 window.hemStatus = """)
 shell = (ROOT / 'shell.html').read_text()

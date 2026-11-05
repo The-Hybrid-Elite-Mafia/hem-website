@@ -156,6 +156,7 @@ const W = {
   vol:       [1543, 324, 297, 196, 18],
   surgeon:   [80, 534, 1760, 310, 22],
   transport: [80, 856, 1760, 118, 24],
+  lufs:      [1404, 40, 416, 60, 12],
 };
 const FLOOR_Z = -0.25;
 
@@ -200,7 +201,7 @@ function neonBar(x0, x1, y, z, rad) {
 player.add(neonLoop(34, 34, 1852, 1012, 40, 0.012, 0.03, neonMat, 900));   // where frame meets plate
 player.add(neonLoop(12, 12, 1896, 1056, 52, 0.11, 0.022, neonMat, 900));   // outer frame edge
 for (const k in W) { const [x, y, w, h, r] = W[k]; player.add(neonLoop(x - 5, y - 5, w + 10, h + 10, r + 5, 0.006, 0.012, neonThin, 500)); }
-[[150, 520, 70], [1400, 1770, 70], [150, 640, 1012], [1280, 1770, 1012]].forEach(([a, b, y]) => player.add(neonBar(a, b, y, 0.01, 0.014)));
+[[150, 520, 70], [150, 640, 1012], [1280, 1770, 1012]].forEach(([a, b, y]) => player.add(neonBar(a, b, y, 0.01, 0.014)));
 
 // ---------- canvas panels on well floors ----------
 function floorPanel(key, scale, glass = true) {
@@ -230,6 +231,7 @@ const P = {
   vol: floorPanel('vol', 2, false),
   surgeon: floorPanel('surgeon', 1.25, false),
   transport: floorPanel('transport', 1.5, false),
+  lufs: floorPanel('lufs', 2.4),
 };
 
 // printed / lit marks on the metal (header logo, footer line), redrawn as colours flow
@@ -853,6 +855,41 @@ const haloC = makeCanvas(512, 288), haloG = haloC.getContext('2d'), haloTex = ca
   const halo = new THREE.Mesh(new THREE.PlaneGeometry(44, 24.75), new THREE.MeshBasicMaterial({ map: haloTex, transparent: true, depthWrite: false }));
   halo.position.z = -4; scene.add(halo);
 }
+// ---------- loudness display (THE ACCOUNTANT's BS.1770 / EBU R128 numbers, live from the engine) ----------
+const LUFS_TARGETS = [-14, -16, -11, -9];   // the rack's own targets
+let lufsTarget = 0;
+function drawLufs(t) {
+  const p = P.lufs, g = p.g, s = p.s, ph = t * FLOW, r = eng.readouts;
+  const has = v => v > -99, f1 = v => has(v) ? v.toFixed(1) : '--.-';
+  const g0 = g.createLinearGradient(0, 0, 0, p.c.height); g0.addColorStop(0, '#071012'); g0.addColorStop(1, '#03070a');
+  g.fillStyle = g0; g.fillRect(0, 0, p.c.width, p.c.height);
+  g.fillStyle = 'rgba(34,228,255,.035)'; for (let y = 0; y < p.c.height; y += 3 * s) g.fillRect(0, y, p.c.width, 1 * s);
+  const integ = r[19];
+  g.save(); g.shadowColor = blendCss(ph); g.shadowBlur = 10 * s;
+  text(g, f1(integ), 90 * s, 25 * s, 28 * s, has(integ) ? blendGrad(g, 0, 190 * s, ph) : 'rgba(34,228,255,.35)', 'right', 'Orbitron', 700, 0.02);
+  g.restore();
+  text(g, 'LUFS', 100 * s, 18 * s, 10 * s, '#22e4ff', 'left', 'Orbitron', 700, 0.1);
+  text(g, 'INTEGRATED', 100 * s, 32 * s, 8 * s, '#948eaa', 'left', 'Rajdhani', 700, 0.14);
+  text(g, liveAudio() ? 'LOUDNESS · LIVE' : has(integ) ? 'LOUDNESS · PAUSED' : 'LOUDNESS · PLAY A SONG', 12 * s, 49 * s, 8 * s, '#948eaa', 'left', 'Rajdhani', 700, 0.16);
+  // two columns: label on the left, number right-aligned, with room between them
+  const col = (lbl, val, x0, x1, y, color = '#e9e4f5') => { text(g, lbl, x0, y, 8 * s, '#948eaa', 'left', 'Rajdhani', 700, 0.12); text(g, val, x1, y, 11 * s, color, 'right', 'Orbitron', 500, 0); };
+  col('SHORT', f1(r[18]), 176 * s, 282 * s, 13 * s);
+  col('MOMENT', f1(r[17]), 176 * s, 282 * s, 30 * s);
+  col('RANGE LU', has(integ) ? r[20].toFixed(1) : '--.-', 176 * s, 282 * s, 47 * s);
+  col('TRUE PEAK', f1(r[21]), 296 * s, 404 * s, 13 * s, r[21] > -1 ? '#ff5a5a' : '#e9e4f5');   // red above -1 dBTP
+  const tgt = LUFS_TARGETS[lufsTarget], off = r[23];
+  col('TARGET', String(tgt), 296 * s, 404 * s, 30 * s, '#ffc94a');
+  if (has(integ)) col('TO TARGET', `${off > 0 ? '+' : ''}${off.toFixed(1)}`, 296 * s, 404 * s, 47 * s, Math.abs(off) <= 1 ? '#5be36b' : off > 0 ? '#ff7a1a' : '#22e4ff');
+  else text(g, 'TAP TO CHANGE', 404 * s, 47 * s, 8 * s, '#948eaa', 'right', 'Rajdhani', 700, 0.12);
+  p.tex.needsUpdate = true;
+}
+function lufsHit(e) { setRay(e); return !!ray.intersectObject(P.lufs.mesh, false)[0]; }
+function nextLufsTarget() {
+  lufsTarget = (lufsTarget + 1) % LUFS_TARGETS.length;
+  if (eng.node) eng.node.port.postMessage({ t: 'lt', v: lufsTarget });
+  toast(`Loudness target ${LUFS_TARGETS[lufsTarget]} LUFS`);
+  drawLufs(clock.elapsedTime);
+}
 function drawHalo(t) {
   haloG.clearRect(0, 0, 512, 288);
   const gr = haloG.createRadialGradient(256, 144, 20, 256, 144, 250);
@@ -973,6 +1010,7 @@ canvas.addEventListener('pointerdown', e => {
     }
     mode = null; return;
   }
+  if (lufsHit(e)) { nextLufsTarget(); mode = null; return; }
   const tp = transportPoint(e);
   if (tp && songBuf && tp.x >= 1070 && tp.x <= 1810 && tp.y >= 928 && tp.y <= 962) { seekTo(clamp((tp.x - 1080) / 720, 0, 1)); mode = null; return; }
   const now = performance.now(), dbl = now - lastEmptyTap.t < 350 && Math.hypot(e.clientX - lastEmptyTap.x, e.clientY - lastEmptyTap.y) < 30;
@@ -1096,7 +1134,7 @@ let wheelHide = 0;
 //  The browser always hands the finished sound to the computer's own sound system; a web
 //  page cannot use ASIO or WASAPI exclusive. The PC app will.
 // =============================================================================
-const eng = { ctx: null, node: null, an: null, aL: null, aR: null, ready: false, starting: null, readouts: new Float32Array(17), sent: new Map() };
+const eng = { ctx: null, node: null, an: null, aL: null, aR: null, ready: false, starting: null, readouts: new Float32Array(24).fill(-100, 17, 24), sent: new Map() };
 const songs = [];
 let curSong = -1, songBuf = null, srcNode = null, startAt = 0, pausedAt = 0, loadingSong = false, loadToken = 0;
 const specBins = new Float32Array(4096), timeL = new Float32Array(2048), timeR = new Float32Array(2048);
@@ -1146,6 +1184,7 @@ function ensureAudio() {
       eng.node.connect(eng.ctx.destination); eng.node.connect(eng.an); eng.node.connect(split);
       split.connect(eng.aL, 0); split.connect(eng.aR, 1);
       eng.sent.clear(); syncEngine();
+      eng.node.port.postMessage({ t: 'lt', v: lufsTarget });
       return true;
     } catch (err) {
       toast('The sound engine could not start in this browser.');
@@ -1195,6 +1234,8 @@ async function playIndex(i, offset = 0) {
   if (i < 0 || i >= songs.length) return;
   const ok = await ensureAudio(); if (!ok) return;
   stopSrc(); playing = false; curSong = i; songBuf = null; pausedAt = 0; loadingSong = true; redrawTransport();
+  if (eng.node) eng.node.port.postMessage({ t: 'lr' });   // new song: loudness starts over
+  eng.readouts.fill(-100, 17, 24);
   const token = ++loadToken;
   try {
     const bytes = await songs[i].file.arrayBuffer();
@@ -1272,7 +1313,7 @@ function transportPoint(e) {
   return { x: x + hit.uv.x * w, y: y + (1 - hit.uv.y) * h };
 }
 window.hemStatus = () => ({ engineReady: eng.ready, playing, song: curSong >= 0 ? songs[curSong].name : null, position: songPos(),
-  peaks: livePeaks(), dynamic: Array.from(eng.readouts), sampleRate: eng.ctx ? eng.ctx.sampleRate : null });
+  peaks: livePeaks(), dynamic: Array.from(eng.readouts.slice(0, 17)), loudness: Array.from(eng.readouts.slice(17)), sampleRate: eng.ctx ? eng.ctx.sampleRate : null });
 
 // ---------- loop ----------
 const clock = new THREE.Clock();
@@ -1304,7 +1345,7 @@ function frame() {
   if (slowAcc > 1 / 30) {
     slowAcc = 0;
     readSpectrum();
-    drawArt(t); drawSpec(t); drawMeters(t); drawSurgeon(t); drawTransport(t); drawHead(t); drawHalo(t);
+    drawArt(t); drawSpec(t); drawMeters(t); drawSurgeon(t); drawTransport(t); drawHead(t); drawHalo(t); drawLufs(t);
   }
   composer.render();
   requestAnimationFrame(frame);

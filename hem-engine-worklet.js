@@ -1,4 +1,4 @@
-// HEM web engine on the browser's audio thread: runs hem-engine.wasm (SURGEON + faders + volume,
+// HEM web engine on the browser's audio thread: runs hem-engine.wasm (SURGEON + faders + loudness meter + volume,
 // compiled from C++23) on every 128-sample block. Settings arrive as messages and are applied before
 // the next block; the engine itself never allocates while playing.
 class HemEngineProcessor extends AudioWorkletProcessor {
@@ -7,7 +7,7 @@ class HemEngineProcessor extends AudioWorkletProcessor {
     this.ready = false;
     this.pending = [];
     this.tick = 0;
-    this.readouts = new Float32Array(17);   // 16 dynamic band moves + auto gain, in dB
+    this.readouts = new Float32Array(24);   // 16 dynamic band moves + auto gain (dB), then 7 loudness readouts
     this.port.onmessage = e => { if (this.ready) this.apply(e.data); else this.pending.push(e.data); };
     const stub = { fd_close: () => 0, fd_seek: () => 0, fd_write: () => 0 };
     WebAssembly.instantiate(options.processorOptions.wasm, { wasi_snapshot_preview1: stub }).then(({ instance }) => {
@@ -27,6 +27,8 @@ class HemEngineProcessor extends AudioWorkletProcessor {
     else if (m.t === 'f') x.hem_fader_set(m.i, m.v);
     else if (m.t === 'v') x.hem_volume_set(m.v);
     else if (m.t === 'reset') x.hem_reset();
+    else if (m.t === 'lt') x.hem_loudness_target(m.v);
+    else if (m.t === 'lr') x.hem_loudness_reset();
   }
   views() {
     const mem = this.x.memory.buffer;
@@ -55,6 +57,7 @@ class HemEngineProcessor extends AudioWorkletProcessor {
       this.tick = 0;
       for (let b = 0; b < 16; b++) this.readouts[b] = this.x.hem_dyn_gain(b);
       this.readouts[16] = this.x.hem_auto_gain();
+      for (let k = 0; k < 7; k++) this.readouts[17 + k] = this.x.hem_loudness(k);
       this.port.postMessage(this.readouts);
     }
     return true;
