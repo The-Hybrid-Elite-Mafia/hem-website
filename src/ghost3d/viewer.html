@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#101018}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head><body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const params = new URLSearchParams(location.search);
+const shots = JSON.parse(params.get('shots'));   // [[clip, time, angle], ...]
+const W = 300, Hh = 520;
+const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); r.setSize(W * shots.length, Hh); document.body.appendChild(r.domElement);
+r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping;
+const env = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(r), 0.04).texture;
+r.setScissorTest(true);
+const gltf = await new GLTFLoader().loadAsync('GHOST.glb');
+window.clips = gltf.animations.map(a => a.name + ':' + a.duration.toFixed(2));
+for (let i = 0; i < shots.length; i++) {
+  const [clipName, t, ang] = shots[i];
+  const g2 = await new GLTFLoader().loadAsync('GHOST.glb');
+  const root = g2.scene;
+  root.traverse(o => { if (o.isMesh && o.geometry.attributes.color) { o.material = new THREE.MeshBasicMaterial({ vertexColors: true }); } });
+  const sc = new THREE.Scene(); sc.background = new THREE.Color('#101018'); sc.environment = env;
+  sc.add(new THREE.HemisphereLight('#ffffff', '#222233', 1.2)); const dl = new THREE.DirectionalLight('#ffffff', 2); dl.position.set(1, 2, 3); sc.add(dl);
+  const holder = new THREE.Group(); holder.add(root); holder.rotation.y = THREE.MathUtils.degToRad(ang); sc.add(holder);
+  if (clipName) { const mx = new THREE.AnimationMixer(root); const clip = g2.animations.find(a => a.name === clipName); mx.clipAction(clip).play(); mx.setTime(t); }
+  const cam = new THREE.PerspectiveCamera(30, W / Hh, 0.05, 20); cam.position.set(0, 0.55, 2.7); cam.lookAt(0, 0.55, 0);
+  r.setViewport(i * W, 0, W, Hh); r.setScissor(i * W, 0, W, Hh); r.render(sc, cam);
+}
+window.done = true;
+</script></body></html>
