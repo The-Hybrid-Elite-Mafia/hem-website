@@ -163,6 +163,7 @@ const FLOOR_Z = -0.25;
 // ---------- body: back slab, faceplate with real recesses, raised frame ----------
 {
   const back = rrPath(new THREE.Shape(), 8, 8, 1904, 1064, 56);
+  { const [x, y, w, h, r] = W.art; back.holes.push(rrPath(new THREE.Path(), x, y, w, h, r)); }   // the stage box goes through the body
   const g = new THREE.ExtrudeGeometry(back, { depth: 0.6, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.08, bevelSegments: 6, curveSegments: 24 });
   const m = new THREE.Mesh(g, M.body); m.position.z = FLOOR_Z - 0.68 - 0.003; player.add(m);
   const front = rrPath(new THREE.Shape(), 2, 2, 1916, 1076, 60);
@@ -369,42 +370,163 @@ function placeFader(f, t) {
   u.line.material.color.copy(blendAt(t * FLOW + u.seed)).multiplyScalar(2);
 }
 
-// ---------- LEFT: stage screen ----------
-function drawArt(t) {
+// ---------- LEFT: the stage box (a real 3D room behind the glass, with the robot standing in it) ----------
+const STAGE_BACK = -1.0;   // the back wall sits this deep (the faceplate is at 0)
+P.art.mesh.position.z = STAGE_BACK;
+function drawArt(t) {   // back wall: night sky with HEM Blend aurora and a horizon glow
   const p = P.art, g = p.g, Wc = p.c.width, Hc = p.c.height, ph = t * FLOW;
   const sky = g.createLinearGradient(0, 0, 0, Hc);
-  sky.addColorStop(0, '#04050b'); sky.addColorStop(0.6, '#0b0b1c'); sky.addColorStop(1, '#04040a');
+  sky.addColorStop(0, '#04050b'); sky.addColorStop(0.7, '#0d0b1f'); sky.addColorStop(1, '#170a26');
   g.fillStyle = sky; g.fillRect(0, 0, Wc, Hc);
-  const hz = Hc * 0.64;
+  const hz = Hc * 0.86;
   g.save(); g.globalCompositeOperation = 'lighter';
   for (let r = 0; r < 5; r++) {
     g.beginPath();
     for (let x = 0; x <= Wc; x += 8) {
-      const y = hz - 110 - r * 26 + Math.sin(x * 0.007 + t * (0.45 + r * 0.15) + r) * 34 + Math.sin(x * 0.015 - t * 0.6) * 10;
+      const y = hz * 0.62 - r * 30 + Math.sin(x * 0.007 + t * (0.45 + r * 0.15) + r) * 40 + Math.sin(x * 0.015 - t * 0.6) * 12;
       x === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
     }
     const col = blendCss(r / 5 + ph);
-    g.strokeStyle = col; g.globalAlpha = 0.55; g.lineWidth = 9; g.shadowColor = col; g.shadowBlur = 28; g.stroke();
+    g.strokeStyle = col; g.globalAlpha = 0.5; g.lineWidth = 10; g.shadowColor = col; g.shadowBlur = 30; g.stroke();
   }
   g.restore();
-  const disc = g.createRadialGradient(Wc / 2, hz, 10, Wc / 2, hz, 280);
-  disc.addColorStop(0, blendCss(ph + 0.6, 0.5)); disc.addColorStop(0.45, blendCss(ph + 0.2, 0.16)); disc.addColorStop(1, 'rgba(0,0,0,0)');
+  const disc = g.createRadialGradient(Wc / 2, Hc, 10, Wc / 2, Hc, Wc * 0.6);
+  disc.addColorStop(0, blendCss(ph + 0.6, 0.55)); disc.addColorStop(0.5, blendCss(ph + 0.2, 0.14)); disc.addColorStop(1, 'rgba(0,0,0,0)');
   g.fillStyle = disc; g.fillRect(0, 0, Wc, Hc);
-  g.save(); g.beginPath(); g.rect(0, hz, Wc, Hc - hz); g.clip();
-  g.strokeStyle = blendCss(ph + 0.25, 0.5); g.lineWidth = 1.5;
-  for (let i = -14; i <= 14; i++) { g.beginPath(); g.moveTo(Wc / 2 + i * 14, hz); g.lineTo(Wc / 2 + i * 110, Hc); g.stroke(); }
-  const off = REDUCED ? 0 : (t * 0.35) % 1;
-  for (let k = 0; k < 12; k++) { const d = (k + off) / 12, y = hz + (Hc - hz) * d * d; g.globalAlpha = d; g.beginPath(); g.moveTo(0, y); g.lineTo(Wc, y); g.stroke(); }
-  g.restore();
-  // stage rings
-  for (let k = 0; k < 3; k++) {
-    g.strokeStyle = blendCss(ph + k * 0.2, 0.55 - k * 0.15); g.lineWidth = 3;
-    g.beginPath(); g.ellipse(Wc / 2, hz + 90, 120 + k * 50, 20 + k * 9, 0, 0, Math.PI * 2); g.stroke();
-  }
-  text(g, 'STAGE', Wc / 2, hz + 90, 18, 'rgba(244,241,251,.8)', 'center', 'Orbitron', 700, 0.4);
-  text(g, 'robot and instruments go here next', Wc / 2, hz + 128, 17, 'rgba(201,195,220,.6)', 'center', 'Rajdhani', 600, 0.05);
-  g.fillStyle = 'rgba(255,255,255,.02)'; for (let y = 0; y < Hc; y += 4) g.fillRect(0, y, Wc, 1);
   p.tex.needsUpdate = true;
+}
+
+// floor of the stage box: a grid that scrolls toward you, lit in HEM Blend
+const stageFloorC = makeCanvas(512, 512), stageFloorTex = canvasTex(stageFloorC);
+stageFloorTex.wrapS = stageFloorTex.wrapT = THREE.RepeatWrapping;
+function drawStageFloor(t) {
+  const g = stageFloorC.getContext('2d'), ph = t * FLOW;
+  g.fillStyle = '#07060d'; g.fillRect(0, 0, 512, 512);
+  g.globalCompositeOperation = 'lighter';
+  for (let k = 0; k <= 8; k++) {
+    g.strokeStyle = blendCss(ph + k / 8, 0.55); g.lineWidth = 2;
+    g.beginPath(); g.moveTo(k * 64, 0); g.lineTo(k * 64, 512); g.stroke();
+    g.beginPath(); g.moveTo(0, k * 64); g.lineTo(512, k * 64); g.stroke();
+  }
+  g.globalCompositeOperation = 'source-over';
+  stageFloorTex.offset.y = REDUCED ? 0 : -(t * 0.08) % 1;
+  stageFloorTex.needsUpdate = true;
+}
+const stage = new THREE.Group();
+player.add(stage);
+{
+  const [x, y, w, h] = W.art;
+  const cx = X(x + w / 2), cy = Y(y + h / 2), zMid = (FLOOR_Z + STAGE_BACK) / 2, D = FLOOR_Z - STAGE_BACK + 0.25;
+  const wallMat = new THREE.MeshPhysicalMaterial({ color: '#15161d', metalness: 0.9, roughness: 0.45, roughnessMap: brushed, envMapIntensity: 0.6, side: THREE.DoubleSide });
+  const sideG = new THREE.PlaneGeometry(D, h / 100), topG = new THREE.PlaneGeometry(w / 100, D);
+  const L = new THREE.Mesh(sideG, wallMat); L.rotation.y = Math.PI / 2; L.position.set(X(x), cy, zMid + 0.125);
+  const R = new THREE.Mesh(sideG, wallMat); R.rotation.y = -Math.PI / 2; R.position.set(X(x + w), cy, zMid + 0.125);
+  const T = new THREE.Mesh(topG, wallMat); T.rotation.x = Math.PI / 2; T.position.set(cx, Y(y), zMid + 0.125);
+  stageFloorTex.repeat.set(w / 100 / 0.6, D / 0.6);
+  const F = new THREE.Mesh(topG, new THREE.MeshBasicMaterial({ map: stageFloorTex, toneMapped: false }));
+  F.rotation.x = -Math.PI / 2; F.position.set(cx, Y(y + h) + 0.002, zMid + 0.125);
+  stage.add(L, R, T, F);
+  // soft light strip along the top of the box
+  const strip = new THREE.Mesh(new THREE.PlaneGeometry(w / 100 - 0.3, 0.05), neonThin);
+  strip.rotation.x = Math.PI / 2; strip.position.set(cx, Y(y) - 0.01, STAGE_BACK + 0.3); stage.add(strip);
+}
+
+// ---------- the robot: Steven's hooded ghost robot art, cut out and given real depth ----------
+// Made by robot/make_robot.py: U2-Net cut-out + MiDaS depth + roundness from his outline. The art itself is unchanged.
+const ROBOT = { color: 'robot-color.webp', depth: 'robot-depth.png', aspect: 0.5603, grid: [202, 360], glows: [{"name": "palm", "u": 0.2465, "v": 0.4017, "r": 0.0493}, {"name": "eyeL", "u": 0.5497, "v": 0.2474, "r": 0.0437}, {"name": "eyeR", "u": 0.7686, "v": 0.2664, "r": 0.0395}, {"name": "chest", "u": 0.7132, "v": 0.5419, "r": 0.0282}, {"name": "bootL", "u": 0.3107, "v": 0.9718, "r": 0.0282}, {"name": "bootR", "u": 0.917, "v": 0.9253, "r": 0.0254}] };
+const ROBOT_H = 3.35, ROBOT_DEPTH = 0.42, ROBOT_BACK = STAGE_BACK + 0.2;
+const robot = new THREE.Group(), robotBody = new THREE.Group();
+robot.add(robotBody);
+const robotRings = [];
+let musicLevel = 0, robotReady = false;
+{
+  const [x, y, w, h] = W.art;
+  robot.position.set(X(x + w / 2) + 0.15, Y(y + h) + 0.2, ROBOT_BACK);
+  stage.add(robot);
+  // stage rings under his feet
+  for (let k = 0; k < 3; k++) {
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.62 + k * 0.28, 0.66 + k * 0.28, 96), new THREE.MeshBasicMaterial({ toneMapped: false, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    ring.rotation.x = -Math.PI / 2; ring.position.set(0, -0.12, ROBOT_DEPTH * 0.5); ring.scale.set(1, 0.55, 1);
+    robot.add(ring); robotRings.push(ring);
+  }
+}
+const glowTex = (() => {
+  const c = makeCanvas(128, 128), g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gr.addColorStop(0, 'rgba(210,250,255,1)'); gr.addColorStop(0.25, 'rgba(34,228,255,.8)'); gr.addColorStop(1, 'rgba(34,228,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return canvasTex(c);
+})();
+const robotGlows = [];
+(async () => {
+  try {
+    const [tex, img] = await Promise.all([
+      new THREE.TextureLoader().loadAsync(ROBOT.color),
+      new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = ROBOT.depth; }),
+    ]);
+    tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const [gw, gh] = ROBOT.grid, c = makeCanvas(gw, gh), g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(img, 0, 0, gw, gh);
+    const px = g.getImageData(0, 0, gw, gh).data;
+    const H = ROBOT_H, Wd = H * ROBOT.aspect;
+    const pos = new Float32Array(gw * gh * 3), uv = new Float32Array(gw * gh * 2), keep = new Uint8Array(gw * gh);
+    const depthAt = (u, v) => { const i = Math.min(gw - 1, Math.round(u * (gw - 1))), j = Math.min(gh - 1, Math.round(v * (gh - 1))); return px[(j * gw + i) * 4] / 255; };
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
+      const k = j * gw + i, a = px[k * 4 + 3];
+      keep[k] = a > 8 ? 1 : 0;
+      pos[k * 3] = (i / (gw - 1) - 0.5) * Wd;
+      pos[k * 3 + 1] = (1 - j / (gh - 1)) * H;
+      pos[k * 3 + 2] = (a > 8 ? px[k * 4] / 255 : 0) * ROBOT_DEPTH;
+      uv[k * 2] = i / (gw - 1); uv[k * 2 + 1] = 1 - j / (gh - 1);
+    }
+    const idx = [];
+    for (let j = 0; j < gh - 1; j++) for (let i = 0; i < gw - 1; i++) {
+      const a = j * gw + i, b = a + 1, c2 = a + gw, d = c2 + 1;
+      if (keep[a] | keep[b] | keep[c2] | keep[d]) idx.push(a, c2, b, b, c2, d);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    geo.setIndex(idx); geo.computeVertexNormals();
+    // his own colours exactly (the art already has its lighting); the scene's lights only add a faint sheen as he turns
+    const mat = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: '#ffffff', emissiveIntensity: 0.96, color: '#18181c',
+      roughness: 0.5, metalness: 0.0, envMapIntensity: 0.15, alphaTest: 0.5, side: THREE.DoubleSide, toneMapped: false });
+    const mesh = new THREE.Mesh(geo, mat);
+    robotBody.add(mesh);
+    for (const gl of ROBOT.glows) {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false }));
+      sp.position.set((gl.u - 0.5) * Wd, (1 - gl.v) * H, depthAt(gl.u, gl.v) * ROBOT_DEPTH + 0.03);
+      const sz = gl.r * H * (gl.name.startsWith('boot') ? 1.6 : gl.name.startsWith('eye') ? 1.9 : 2.2);
+      sp.scale.set(sz, sz, 1); sp.userData = { base: sz, name: gl.name };
+      robotBody.add(sp); robotGlows.push(sp);
+    }
+    robotReady = true;
+  } catch (e) { /* the stage stays empty if the robot pictures can't load */ }
+})();
+function animateRobot(t, dt) {
+  // music level: low end of the live spectrum, smoothed (rises fast, falls slow, never flashes)
+  let target = 0;
+  if (liveAudio()) {
+    const n = eng.an.frequencyBinCount, nyq = eng.ctx.sampleRate / 2, top = Math.max(2, Math.round(160 / nyq * n));
+    let sum = 0; for (let i = 1; i < top; i++) sum += specBins[i];
+    target = clamp((sum / (top - 1) + 70) / 45, 0, 1);
+  }
+  musicLevel += (target - musicLevel) * (target > musicLevel ? 0.18 : 0.04);
+  const calm = REDUCED ? 0 : 1, m = musicLevel;
+  robot.position.y = Y(W.art[1] + W.art[3]) + 0.2 + (Math.sin(t * 1.3) * 0.035 + m * 0.05) * calm;
+  robotBody.rotation.y = (Math.sin(t * 0.45) * 0.16 + Math.sin(t * 0.17) * 0.06) * calm;   // slow turn so you see his depth
+  robotBody.rotation.z = Math.sin(t * 0.9) * 0.012 * calm;
+  const breathe = 1 + Math.sin(t * 2.0) * 0.006 * calm;
+  robotBody.scale.set(1, breathe, 1);
+  for (const sp of robotGlows) {
+    const eye = sp.userData.name.startsWith('eye'), k = (eye ? 0.45 : 0.35) + (eye ? 0.35 : 0.45) * m + Math.sin(t * 1.7) * 0.05 * calm;
+    sp.material.opacity = clamp(k, 0, 1);
+    const s2 = sp.userData.base * (0.9 + 0.3 * m); sp.scale.set(s2, s2, 1);
+  }
+  robotRings.forEach((r, k) => {
+    r.material.color.copy(blendAt(t * FLOW + k / 3)).multiplyScalar(1.2 + 1.3 * m);
+    r.material.opacity = 0.55 - k * 0.12;
+    const s3 = 1 + 0.06 * m + (REDUCED ? 0 : 0.03 * Math.sin(t * 1.4 + k));
+    r.scale.set(s3, s3 * 0.55, s3);
+  });
 }
 
 // ---------- spectrum analyser (sample motion) ----------
@@ -1334,6 +1456,7 @@ let slowAcc = 1;
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
   if (mode !== 'orbit' && performance.now() - view.lastUser > 4000) { view.userRx *= 0.97; view.userRy *= 0.97; }
+  animateRobot(t, dt);
   const sway = REDUCED ? 0 : 1;
   view.rx += (REST_RX + view.userRx + view.trx + Math.sin(t * 0.35) * 0.02 * sway - view.rx) * 0.08;
   view.ry += (REST_RY + view.userRy + view.try + Math.sin(t * 0.27) * 0.04 * sway - view.ry) * 0.08;
@@ -1358,7 +1481,7 @@ function frame() {
   if (slowAcc > 1 / 30) {
     slowAcc = 0;
     readSpectrum();
-    drawArt(t); drawSpec(t); drawMeters(t); drawSurgeon(t); drawTransport(t); drawHead(t); drawHalo(t); drawLufs(t);
+    drawArt(t); drawStageFloor(t); drawSpec(t); drawMeters(t); drawSurgeon(t); drawTransport(t); drawHead(t); drawHalo(t); drawLufs(t);
   }
   composer.render();
   requestAnimationFrame(frame);

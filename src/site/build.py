@@ -13,6 +13,7 @@ def rep(a, b):
     js = js.replace(a, b)
 rep("LOGO.crown.src = 'hem-crown.webp';", "LOGO.crown.src = 'img/brand/crown.webp';")
 rep("LOGO.ghost.src = 'hem-ghost.webp';", "LOGO.ghost.src = 'img/brand/ghost.webp';")
+rep("color: 'robot-color.webp', depth: 'robot-depth.png'", "color: 'img/robot/robot-color.webp', depth: 'img/robot/robot-depth.png'")
 rep("const w = innerWidth, h = innerHeight;", "const rr = canvas.getBoundingClientRect(), w = Math.round(rr.width), h = Math.round(rr.height);\n  if (!w || !h) return;")
 rep("function frame() {\n", "function frame() {\n  if (!document.body.classList.contains('on-player')) { clock.getDelta(); requestAnimationFrame(frame); return; }\n")
 rep("window.hemStatus = ", """window.hemPlayer = {
