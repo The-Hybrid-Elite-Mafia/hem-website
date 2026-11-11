@@ -1,30 +1,64 @@
-"""Builds the HEM website into dist/: the site shell + the 3D player's script (from p3d/hem-player-3d.html)
-+ the plug-in data + the images and the sound engine."""
+"""Builds the HEM website into dist/: the site shell + the HEM radio (from radio/index.html, its styles scoped
+under #hemRadio) + the plug-in data + the images, the sound engine, Ghost, and the HOTHEAD live tablet."""
 import json, pathlib, re, shutil
 ROOT = pathlib.Path(__file__).parent
 DIST = ROOT / 'dist'
-player = (ROOT.parent / 'p3d' / 'hem-player-3d.html').read_text()
-scripts = re.findall(r'<script type="importmap">.*?</script>\s*<script type="module">.*?</script>', player, re.S)
+RADIO = ROOT.parent / 'radio'
+HOTHEAD = ROOT.parent / 'hothead-web' / 'page'
+
+radio = (RADIO / 'index.html').read_text()
+
+# ---- the radio's styles, every rule scoped to #hemRadio so they can't touch the rest of the site
+css = re.search(r'<style>(.*?)</style>', radio, re.S).group(1)
+def scope_sel(sel):
+    sel = sel.strip()
+    if sel in (':root', 'body'): return '#hemRadio'
+    if sel in ('html', 'html,body'): return None
+    if sel == '*': return '#hemRadio *'
+    return '#hemRadio ' + sel
+def scope_rules(text):
+    out, i = [], 0
+    while i < len(text):
+        j = text.find('{', i)
+        if j < 0: break
+        head = text[i:j].strip()
+        depth, k = 1, j + 1
+        while depth:
+            depth += {'{': 1, '}': -1}.get(text[k], 0); k += 1
+        body = text[j + 1:k - 1]
+        if head.startswith('@media'):
+            out.append(head + '{' + scope_rules(body) + '}')
+        elif head.startswith('@'):
+            out.append(head + '{' + body + '}')
+        else:
+            sels = [s for s in (scope_sel(x) for x in re.split(r',(?![^()]*\))', head)) if s]
+            if sels: out.append(','.join(sels) + '{' + body + '}')
+        i = k
+    return '\n'.join(out)
+css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+radio_css = scope_rules(css)
+
+# ---- the radio's markup (the player, its two lists, the file picker, the message strip)
+body = radio[radio.index('<body>') + 6:radio.index('<script type="importmap">')]
+radio_html = '<div id="hemRadio">\n' + body.strip() + '\n</div>'
+radio_html = radio_html.replace('src="hem-ghost.webp"', 'src="img/brand/ghost.webp"')
+
+# ---- the radio's script
+scripts = re.findall(r'<script type="importmap">.*?</script>\s*<script type="module">.*?</script>', radio, re.S)
 assert len(scripts) == 1
 js = scripts[0]
 def rep(a, b):
     global js
     assert js.count(a) == 1, a[:60]
     js = js.replace(a, b)
-rep("LOGO.crown.src = 'hem-crown.webp';", "LOGO.crown.src = 'img/brand/crown.webp';")
-rep("LOGO.ghost.src = 'hem-ghost.webp';", "LOGO.ghost.src = 'img/brand/ghost.webp';")
-rep("const w = innerWidth, h = innerHeight;", "const rr = canvas.getBoundingClientRect(), w = Math.round(rr.width), h = Math.round(rr.height);\n  if (!w || !h) return;")
-rep("function frame() {\n", "function frame() {\n  if (!document.body.classList.contains('on-player')) { clock.getDelta(); requestAnimationFrame(frame); return; }\n")
-rep("window.hemStatus = ", """window.hemPlayer = {
-  play, pause, next: nextSong, prev: prevSong, seek: f => seekTo(clamp(f, 0, 1)), resize,
-  addSongs: () => { fileInput.click(); ensureAudio(); },
-  state: () => ({ playing: !!playing, title: loadingSong ? 'Loading…' : curSong >= 0 ? songs[curSong].name : null,
-                  count: songs.length, index: curSong, pos: songPos(), dur: songBuf ? songBuf.duration : 0, lufs: eng.readouts[19] }),
-};
-window.hemStatus = """)
+# Ghost (7.7 MB) loads the first time someone opens the player, not on every page
+rep("\nloadGhost();\n", "\nlet ghostAsked = false;\nwindow.hemRadioLoadGhost = () => { if (!ghostAsked) { ghostAsked = true; loadGhost(); } };\nif (location.hash === '#player') window.hemRadioLoadGhost();\n")
+rep("$('ghostImg').hidden = true;", "$('ghostImg').hidden = true; window.hemPlayer.resize();")
+
 shell = (ROOT / 'shell.html').read_text()
 plugins = json.loads((ROOT / 'plugins.json').read_text())
-out = shell.replace('{{PLUGINS_JSON}}', json.dumps(plugins, separators=(',', ':'))).replace('{{PLAYER_SCRIPTS}}', js)
+out = (shell.replace('{{PLUGINS_JSON}}', json.dumps(plugins, separators=(',', ':')))
+            .replace('{{PLAYER_SCRIPTS}}', js).replace('{{RADIO_CSS}}', radio_css).replace('{{RADIO_HTML}}', radio_html))
 assert '{{' not in out
 if DIST.exists(): shutil.rmtree(DIST)
 DIST.mkdir()
@@ -33,6 +67,10 @@ HEAD = '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta
 (DIST / 'index.html').write_text(HEAD + out.replace('<canvas id="aura"', '</head>\n<body>\n<canvas id="aura"', 1) + '\n</body>\n</html>\n', encoding='utf-8')
 (ROOT / 'preview.html').write_text(out, encoding='utf-8')
 shutil.copytree(ROOT / 'img', DIST / 'img')
-for f in ['hem-engine.wasm', 'hem-engine-worklet.js']:
-    shutil.copy(ROOT.parent / 'p3d' / f, DIST / f)
-print('built', len(out) // 1024, 'KB index;', sum(1 for _ in DIST.rglob('*') if _.is_file()), 'files')
+for f in ['hem-engine2-wasm.txt', 'hem-engine2-worklet.js', 'ghost4-model.txt']:
+    shutil.copy(RADIO / f, DIST / f)
+# HOTHEAD live tablet: its own small page, shown inside the HOTHEAD plug-in page
+(DIST / 'hothead').mkdir()
+for f in ['index.html', 'hem-tablet-base.webp', 'hem-tablet-lights.png', 'knob-bg.png', 'value-box.png', 'power-off.png', 'hem-hothead-wasm.txt', 'hem-stems-worklet.js']:
+    shutil.copy(HOTHEAD / f, DIST / 'hothead' / f)
+print('built', len(out) // 1024, 'KB index;', sum(1 for _ in DIST.rglob('*') if _.is_file()), 'files;', len(radio_css) // 1024, 'KB radio styles')

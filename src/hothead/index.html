@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HEM HOTHEAD Stems</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Poppins:wght@600;700&family=Rajdhani:wght@500;600;700&display=swap">
+<style>
+:root{
+  --bg:#07070d; --panel:#0e0f18; --panel2:#151726; --ink:#eef0f8; --dim:#9aa0b8; --line:rgba(255,255,255,.12);
+  --cyan:#22e4ff; --violet:#7b3cff; --magenta:#ff2fb9; --orange:#ff7a1a; --gold:#ffc94a; --red:#ff4d5e;
+  --display:Orbitron,"Segoe UI",system-ui,sans-serif; --body:Rajdhani,"Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px 16px 32px;min-height:100vh}
+h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(15px,3vw,22px);letter-spacing:.18em;text-align:center;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--magenta),var(--orange),var(--gold),var(--cyan));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 10s linear infinite}
+.wrap{width:min(100%,1400px);aspect-ratio:16/9;position:relative;user-select:none;-webkit-user-select:none}
+.wrap canvas.gl{width:100%;height:100%;display:block}
+.ov{position:absolute}
+#knob{cursor:ns-resize;touch-action:none;border-radius:50%}
+#knob canvas,#value canvas{width:100%;height:100%;display:block}
+#knob:focus-visible,#power:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+#power{border:0;padding:0;background:transparent;border-radius:50%;cursor:pointer}
+#power img{width:100%;height:100%;display:block;opacity:0;transition:opacity .15s}
+#power[aria-pressed="false"] img{opacity:1}
+.panel{width:min(100%,1400px);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.12em;cursor:pointer;display:inline-flex;align-items:center;gap:8px;position:relative}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{border-color:transparent;color:#07070d;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--magenta),var(--orange),var(--gold),var(--cyan));background-size:300% 100%;animation:flow 8s linear infinite}
+.btn:focus-visible,label.btn:focus-within{outline:2px solid var(--cyan);outline-offset:3px}
+input[type=file]{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.time{font-family:var(--display);font-size:13px;letter-spacing:.08em;color:var(--dim);font-variant-numeric:tabular-nums;min-width:110px}
+#pos{flex:1 1 220px;accent-color:var(--cyan);min-height:32px}
+#status{color:var(--dim);font-size:15px;letter-spacing:.04em;margin-top:8px;min-height:1.3em}
+.strips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+.strip{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.strip.full{border-color:rgba(255,201,74,.35)}
+.strip .nm{font-weight:700;font-size:15px;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip .nm small{display:block;font-weight:500;font-size:12px;color:var(--dim)}
+.strip .ms{display:flex;gap:6px}
+.strip .ms button{flex:1;min-height:36px;border-radius:8px;border:1px solid var(--line);background:#0b0c14;color:var(--dim);font-family:var(--display);font-weight:600;font-size:11px;cursor:pointer}
+.strip .ms button[aria-pressed="true"].m{background:var(--orange);color:#07070d;border-color:transparent}
+.strip .ms button[aria-pressed="true"].s{background:var(--gold);color:#07070d;border-color:transparent}
+.strip .ms button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.strip input[type=range]{width:100%;accent-color:var(--cyan);min-height:28px}
+.strip .db{font-family:var(--display);font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+.meter{height:6px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan) 0%,var(--violet) 55%,var(--magenta) 80%,var(--gold) 100%)}
+.master{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.master b{font-family:var(--display);font-size:12px;letter-spacing:.12em}
+.master input{accent-color:var(--magenta);min-height:28px;width:100%}
+.clip{font-family:var(--display);font-size:11px;padding:4px 8px;border-radius:6px;background:#2a1116;color:#7a4450}
+.clip.on{background:var(--red);color:#fff}
+.mtr{grid-column:1/-1}
+@keyframes flow{to{background-position:300% 0}}
+@media (prefers-reduced-motion:reduce){h1,.btn.primary{animation:none}}
+</style>
+</head>
+<body>
+<h1>HEM HOTHEAD · STEM PLAYER</h1>
+
+<div class="wrap" id="wrap">
+  <canvas class="gl" id="gl" aria-hidden="true"></canvas>
+  <div class="ov" id="knob" role="slider" tabindex="0" aria-label="Drive" aria-valuemin="0" aria-valuemax="10" aria-valuenow="6" aria-valuetext="6.00"><canvas id="kc"></canvas></div>
+  <div class="ov" id="value" aria-hidden="true"><canvas id="vc"></canvas></div>
+  <button class="ov" id="power" type="button" aria-pressed="true" aria-label="HOTHEAD power"><img src="power-off.png" alt=""></button>
+</div>
+
+<section class="panel" aria-label="Stems">
+  <div class="row">
+    <label class="btn primary">LOAD STEMS<input type="file" id="files" accept="audio/*,.wav,.mp3,.flac,.ogg,.m4a" multiple></label>
+    <label class="btn">LOAD A FOLDER<input type="file" id="folder" webkitdirectory multiple></label>
+    <button class="btn" id="play" type="button" disabled>PLAY</button>
+    <button class="btn" id="stop" type="button" disabled>STOP</button>
+    <span class="time" id="time">0:00.0 / 0:00.0</span>
+    <input type="range" id="pos" min="0" max="1000" value="0" step="1" aria-label="Song position" disabled>
+  </div>
+  <div id="status">Pick your stems (up to 24). They play right here on your device. Nothing is uploaded.</div>
+  <div class="strips" id="strips"></div>
+  <div class="master">
+    <b>MASTER</b>
+    <input type="range" id="trim" min="-24" max="6" step="0.5" value="-4" aria-label="Master level">
+    <span class="db" id="trimdb">-4.0 dB</span>
+    <div class="mtr row" style="gap:10px;flex-wrap:nowrap"><div class="meter" style="flex:1"><i id="outm"></i></div><span class="db" id="outdb">-inf dBFS</span><span class="clip" id="clip">CLIP</span></div>
+  </div>
+</section>
+
+<script type="application/json" id="layout">{"plate":[2560,1441],"knob":{"cx":1572.2,"cy":746.6,"box":[1456,630,1688,862],"capR":58,"startDeg":-123.98,"endDeg":123.98,"dots":[{"a":-123.98,"r":74.43,"len":11.2,"wid":9.9},{"a":-115.48,"r":75.83,"len":11.4,"wid":9.6},{"a":-107.18,"r":76.99,"len":11.2,"wid":9.3},{"a":-99.03,"r":78.22,"len":11.0,"wid":9.6},{"a":-90.93,"r":79.01,"len":11.0,"wid":9.0},{"a":-82.83,"r":80.1,"len":11.0,"wid":8.8},{"a":-75.15,"r":80.69,"len":11.0,"wid":9.4},{"a":-67.31,"r":81.1,"len":11.1,"wid":9.2},{"a":-59.48,"r":81.65,"len":11.1,"wid":9.2},{"a":-51.62,"r":81.81,"len":11.0,"wid":9.1},{"a":-43.77,"r":81.63,"len":10.3,"wid":8.8},{"a":-36.06,"r":81.65,"len":10.8,"wid":9.4},{"a":-28.31,"r":81.44,"len":10.8,"wid":9.1},{"a":-20.5,"r":80.95,"len":10.9,"wid":9.2},{"a":-12.59,"r":80.11,"len":11.3,"wid":9.1},{"a":-4.68,"r":79.51,"len":10.5,"wid":9.7},{"a":4.68,"r":79.51,"len":10.5,"wid":9.7},{"a":12.59,"r":80.11,"len":11.3,"wid":9.1},{"a":20.5,"r":80.95,"len":10.9,"wid":9.2},{"a":28.31,"r":81.44,"len":10.8,"wid":9.1},{"a":36.06,"r":81.65,"len":10.8,"wid":9.4},{"a":43.77,"r":81.63,"len":10.3,"wid":8.8},{"a":51.62,"r":81.81,"len":11.0,"wid":9.1},{"a":59.48,"r":81.65,"len":11.1,"wid":9.2},{"a":67.31,"r":81.1,"len":11.1,"wid":9.2},{"a":75.15,"r":80.69,"len":11.0,"wid":9.4},{"a":82.83,"r":80.1,"len":11.0,"wid":8.8},{"a":90.93,"r":79.01,"len":11.0,"wid":9.0},{"a":99.03,"r":78.22,"len":11.0,"wid":9.6},{"a":107.18,"r":76.99,"len":11.2,"wid":9.3},{"a":115.48,"r":75.83,"len":11.4,"wid":9.6},{"a":123.98,"r":74.43,"len":11.2,"wid":9.9}],"dim":[37,93,95],"lit":[34,216,221],"marker":{"r":76.7,"size":9.5,"col":[133,234,236]},"pointer":[16.6,44.5]},"value":{"box":[1456,838,1690,900],"digits":[1510,847,1622,890],"colour":[34,216,221]},"power":{"box":[223,956,407,1140],"r":68}}</script>
+<script>
+const LAY = JSON.parse(document.getElementById('layout').textContent);
+const status = document.getElementById('status');
+
+// ---------------------------------------------------------------- where the plate's parts sit on the tablet
+// the tablet picture is 1920 x 1080; the faceplate sits inside it at 357,200 sized 1206 x 679
+const PL = { x: 357, y: 200, w: 1206, h: 679 }, FW = 1920, FH = 1080;
+const sx = PL.w / LAY.plate[0], sy = PL.h / LAY.plate[1];
+function place(el, box) {
+  const [x0, y0, x1, y1] = box;
+  el.style.left = ((PL.x + x0 * sx) / FW * 100) + '%';
+  el.style.top = ((PL.y + y0 * sy) / FH * 100) + '%';
+  el.style.width = ((x1 - x0) * sx / FW * 100) + '%';
+  el.style.height = ((y1 - y0) * sy / FH * 100) + '%';
+}
+const knobEl = document.getElementById('knob'), valEl = document.getElementById('value'), powEl = document.getElementById('power');
+const K = LAY.knob;
+// the knob's hit area: the round part only (box is square around the knob)
+place(knobEl, K.box);
+place(valEl, LAY.value.box);
+const pb = LAY.power.box, pc = [(pb[0] + pb[2]) / 2, (pb[1] + pb[3]) / 2], pr = LAY.power.r + 6;
+place(powEl, pb);
+
+// ---------------------------------------------------------------- the knob and its readout, drawn from the plate's own parts
+const imgs = {};
+function load(name) { return new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(imgs[name] = i); i.onerror = () => bad(new Error('could not load ' + name)); i.src = name; }); }
+const kc = document.getElementById('kc'), vc = document.getElementById('vc');
+const KS = 2;   // draw at 2x the plate's own pixels so it stays sharp on big screens
+kc.width = (K.box[2] - K.box[0]) * KS; kc.height = (K.box[3] - K.box[1]) * KS;
+vc.width = (LAY.value.box[2] - LAY.value.box[0]) * KS; vc.height = (LAY.value.box[3] - LAY.value.box[1]) * KS;
+const rgb = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+let drive = 6, powerOn = true;
+function drawKnob() {
+  const g = kc.getContext('2d');
+  g.setTransform(KS, 0, 0, KS, 0, 0);
+  g.clearRect(0, 0, kc.width, kc.height);
+  if (imgs['knob-bg.png']) g.drawImage(imgs['knob-bg.png'], 0, 0);
+  const cx = K.cx - K.box[0], cy = K.cy - K.box[1];
+  const a = K.startDeg + (drive / 10) * (K.endDeg - K.startDeg);
+  const dimAll = !powerOn;
+  for (const d of K.dots) {
+    const lit = d.a <= a + 0.01 && drive > 0.001;
+    g.save();
+    g.translate(cx, cy); g.rotate(d.a * Math.PI / 180); g.translate(0, -d.r);
+    if (lit) { g.shadowColor = rgb(K.lit, dimAll ? 0.25 : 0.9); g.shadowBlur = 6; }
+    g.fillStyle = lit ? rgb(K.lit, dimAll ? 0.45 : 1) : rgb(K.dim, 1);
+    const w = d.wid, h = d.len;
+    g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, 1.5); g.fill();
+    g.restore();
+  }
+  // the light marker that rides on the ring
+  g.save(); g.translate(cx, cy); g.rotate(a * Math.PI / 180);
+  g.shadowColor = rgb(K.lit, dimAll ? 0.2 : 0.9); g.shadowBlur = 10;
+  g.fillStyle = rgb(K.marker.col, dimAll ? 0.5 : 1);
+  g.beginPath(); g.arc(0, -K.marker.r, K.marker.size, 0, Math.PI * 2); g.fill();
+  // the pointer on the cap
+  g.shadowBlur = 4; g.strokeStyle = rgb(K.lit, dimAll ? 0.5 : 1); g.lineWidth = 3.2; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(0, -K.pointer[0]); g.lineTo(0, -K.pointer[1]); g.stroke();
+  g.restore();
+  // readout
+  const v = vc.getContext('2d');
+  v.setTransform(KS, 0, 0, KS, 0, 0);
+  v.clearRect(0, 0, vc.width, vc.height);
+  if (imgs['value-box.png']) v.drawImage(imgs['value-box.png'], 0, 0);
+  const dg = LAY.value.digits, vb = LAY.value.box;
+  v.font = '700 60px Poppins, "Segoe UI", sans-serif'; v.textAlign = 'center'; v.textBaseline = 'alphabetic';
+  v.fillStyle = rgb(LAY.value.colour, powerOn ? 1 : 0.45);
+  const txt = drive.toFixed(2), room = (vb[2] - vb[0]) - 36;
+  const tw = v.measureText(txt).width;
+  if (tw > room) v.font = `700 ${(60 * room / tw).toFixed(1)}px Poppins, "Segoe UI", sans-serif`;   // "10.00" is wider than the box
+  v.fillText(txt, (dg[0] + dg[2]) / 2 - vb[0], dg[3] - vb[1] + 1);
+  knobEl.setAttribute('aria-valuenow', drive.toFixed(2)); knobEl.setAttribute('aria-valuetext', drive.toFixed(2));
+}
+function setDrive(v) {
+  drive = Math.round(Math.max(0, Math.min(10, v)) * 100) / 100;
+  send({ t: 'drive', v: drive });
+  drawKnob();
+}
+let drag = null;
+knobEl.addEventListener('pointerdown', e => { drag = { y: e.clientY, v: drive, h: knobEl.getBoundingClientRect().height }; knobEl.setPointerCapture(e.pointerId); e.preventDefault(); knobEl.focus(); });
+knobEl.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const full = Math.max(160, drag.h * 3) * (e.shiftKey ? 4 : 1);     // drag up the knob's height x3 for the full turn; Shift = fine
+  setDrive(drag.v + (drag.y - e.clientY) / full * 10);
+});
+knobEl.addEventListener('pointerup', () => drag = null);
+knobEl.addEventListener('pointercancel', () => drag = null);
+knobEl.addEventListener('dblclick', () => setDrive(0));
+knobEl.addEventListener('wheel', e => { e.preventDefault(); setDrive(drive - Math.sign(e.deltaY) * (e.shiftKey ? 0.01 : 0.1)); }, { passive: false });
+knobEl.addEventListener('keydown', e => {
+  const step = e.shiftKey ? 0.01 : 0.1;
+  const map = { ArrowUp: drive + step, ArrowRight: drive + step, ArrowDown: drive - step, ArrowLeft: drive - step, PageUp: drive + 1, PageDown: drive - 1, Home: 0, End: 10 };
+  if (e.key in map) { e.preventDefault(); setDrive(map[e.key]); }
+});
+powEl.addEventListener('click', () => {
+  powerOn = !powerOn;
+  powEl.setAttribute('aria-pressed', String(powerOn));
+  send({ t: 'on', v: powerOn });
+  drawKnob();
+});
+
+// ---------------------------------------------------------------- the tablet and its flowing lights (WebGL)
+const cv = document.getElementById('gl');
+const gl = cv.getContext('webgl', { premultipliedAlpha: false, alpha: false });
+let U = () => null;
+const VS = `attribute vec2 p; varying vec2 uv; void main(){ uv = p*0.5+0.5; gl_Position = vec4(p,0.,1.); }`;
+const FS = `precision highp float;
+varying vec2 uv;
+uniform sampler2D base, lights;
+uniform float t, level, aspect;
+uniform vec3 pal[5];
+vec3 blend(float x){
+  x = fract(x) * 5.0; float i = floor(x), f = smoothstep(0.0, 1.0, fract(x));
+  vec3 a = pal[4], b = pal[0];
+  if (i < 1.0) { a = pal[0]; b = pal[1]; } else if (i < 2.0) { a = pal[1]; b = pal[2]; }
+  else if (i < 3.0) { a = pal[2]; b = pal[3]; } else if (i < 4.0) { a = pal[3]; b = pal[4]; }
+  return mix(a, b, f);
+}
+void main(){
+  vec4 b = texture2D(base, uv);
+  vec3 col = mix(vec3(0.027, 0.027, 0.051), b.rgb, b.a);
+  vec2 m = texture2D(lights, uv).rg;
+  vec2 q = (uv - 0.5) * vec2(aspect, 1.0);
+  float along = atan(q.y, q.x) / 6.28318 + 0.5;
+  vec3 c = blend(along * 2.0 - t * 0.06);
+  float pulse = 0.5 + 0.5 * sin(along * 25.13 - t * 2.2);
+  float core = m.r * (0.55 + 0.25 * pulse + 0.9 * level);
+  float halo = m.g * (0.10 + 0.06 * pulse + 0.35 * level);
+  col += c * (core + halo) + vec3(core * core * 0.18);
+  gl_FragColor = vec4(col, 1.0);
+}`;
+let glReady = false;
+function setupGL() {
+  if (!gl) return Promise.resolve();
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const cache = {}; U = n => cache[n] ??= gl.getUniformLocation(prog, n);
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
+  gl.uniform3fv(U('pal'), new Float32Array(['#22e4ff', '#7b3cff', '#ff2fb9', '#ff7a1a', '#ffc94a'].flatMap(hex)));
+  gl.uniform1f(U('aspect'), 16 / 9);
+  const tex = (unit, im) => {
+    gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im);
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+  };
+  tex(0, imgs['hem-tablet-base.webp']); tex(1, imgs['hem-tablet-lights.png']);
+  gl.uniform1i(U('base'), 0); gl.uniform1i(U('lights'), 1);
+  glReady = true;
+}
+function sizeGL() {
+  if (!gl) return;
+  const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); gl.viewport(0, 0, cv.width, cv.height);
+}
+addEventListener('resize', sizeGL);
+
+// ---------------------------------------------------------------- sound
+let ac = null, node = null, an = null, adata = null, rate = 48000;
+let stems = [], length = 0, pos = 0, playing = false;
+const queue = [];
+function send(m, transfer) { if (node) node.port.postMessage(m, transfer || []); else queue.push(m); }
+async function startAudio() {
+  if (ac) { await ac.resume(); return; }
+  ac = new AudioContext({ sampleRate: 48000, latencyHint: 'playback' });
+  rate = ac.sampleRate;
+  const b64 = (await (await fetch('hem-hothead-wasm.txt')).text()).trim();
+  const wasm = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  await ac.audioWorklet.addModule('hem-stems-worklet.js');
+  node = new AudioWorkletNode(ac, 'hem-stems', { numberOfInputs: 0, outputChannelCount: [2], processorOptions: { wasm } });
+  an = ac.createAnalyser(); an.fftSize = 1024; an.smoothingTimeConstant = 0.6; adata = new Uint8Array(an.frequencyBinCount);
+  node.connect(an); an.connect(ac.destination);
+  node.port.onmessage = e => onWorklet(e.data);
+  node.port.postMessage({ t: 'drive', v: drive });
+  node.port.postMessage({ t: 'on', v: powerOn });
+  node.port.postMessage({ t: 'trim', v: +trimEl.value });
+  for (const m of queue.splice(0)) node.port.postMessage(m);
+  await ac.resume();
+}
+const fmt = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return m + ':' + (s - m * 60).toFixed(1).padStart(4, '0'); };
+const posEl = document.getElementById('pos'), timeEl = document.getElementById('time'), playEl = document.getElementById('play'), stopEl = document.getElementById('stop');
+const outm = document.getElementById('outm'), outdb = document.getElementById('outdb'), clipEl = document.getElementById('clip');
+let clipUntil = 0, outPeakHold = 0;
+const toDb = v => v > 1e-6 ? 20 * Math.log10(v) : -Infinity;
+const meterW = v => Math.max(0, Math.min(100, (toDb(v) + 60) / 60 * 100));
+function onWorklet(m) {
+  if (m.t === 'ready') return;
+  if (m.t === 'error') { status.textContent = 'The sound engine could not start: ' + m.message; return; }
+  if (m.t === 'ended') { playing = false; playEl.textContent = 'PLAY'; return; }
+  if (m.t === 'm') {
+    pos = m.pos;
+    if (!seeking) posEl.value = length ? Math.round(pos / length * 1000) : 0;
+    timeEl.textContent = fmt(pos / rate) + ' / ' + fmt(length / rate);
+    const np = m.peaks.length - 2;   // the worklet's own stem count (it can lag a step behind while stems load)
+    stems.forEach((s, i) => { s.meter.style.width = (i < np ? meterW(m.peaks[i]) : 0) + '%'; });
+    const out = m.peaks[np + 1] || 0;
+    outm.style.width = meterW(out) + '%';
+    outPeakHold = Math.max(out, outPeakHold * 0.97);
+    outdb.textContent = (outPeakHold > 1e-6 ? toDb(outPeakHold).toFixed(1) : '-inf') + ' dBFS';
+    if (out > 1.0) clipUntil = performance.now() + 1500;
+    clipEl.classList.toggle('on', performance.now() < clipUntil);
+  }
+}
+
+// a stem's name: "12 Vocals.wav" -> number 12, name "Vocals"
+function parseName(f) {
+  const base = f.name.replace(/\.[^.]+$/, '');
+  const m = base.match(/^\s*(\d+)\s*[-_. ]*\s*(.*)$/);
+  return { num: m ? +m[1] : 999, label: (m ? m[2] : base).replace(/_/g, ' ').trim() || base, folder: (f.webkitRelativePath || '').split('/').slice(-2, -1)[0] || '' };
+}
+const stripsEl = document.getElementById('strips');
+async function loadFiles(list) {
+  let files = [...list].filter(f => /^audio\//.test(f.type) || /\.(wav|mp3|flac|ogg|m4a|aac|aif|aiff)$/i.test(f.name));
+  if (!files.length) { status.textContent = 'No audio files in what you picked.'; return; }
+  if (files.length > 24) { status.textContent = 'That is ' + files.length + ' files; the player takes up to 24. Loading the first 24 by number.'; }
+  files = files.map(f => ({ f, ...parseName(f) })).sort((a, b) => a.num - b.num || a.label.localeCompare(b.label)).slice(0, 24);
+  await startAudio();
+  send({ t: 'clear' });
+  stems = []; length = 0; stripsEl.innerHTML = ''; playing = false; playEl.textContent = 'PLAY';
+  playEl.disabled = stopEl.disabled = posEl.disabled = true;
+  const t0 = performance.now();
+  for (let i = 0; i < files.length; i++) {
+    const { f, num, label, folder } = files[i];
+    status.textContent = `Loading ${i + 1} of ${files.length}: ${f.name}`;
+    let buf;
+    try { buf = await ac.decodeAudioData(await f.arrayBuffer()); }
+    catch (e) { status.textContent = `Could not read ${f.name} (${e.message || 'not a sound file this browser can open'}). Skipped it.`; await new Promise(r => setTimeout(r, 1200)); continue; }
+    const n = buf.length, L = new Int16Array(n), R = new Int16Array(n);
+    const a = buf.getChannelData(0), b = buf.numberOfChannels > 1 ? buf.getChannelData(1) : a;
+    for (let k = 0; k < n; k++) {
+      const x = a[k] * 32767, y = b[k] * 32767;
+      L[k] = x > 32767 ? 32767 : x < -32768 ? -32768 : x;
+      R[k] = y > 32767 ? 32767 : y < -32768 ? -32768 : y;
+    }
+    // the full song that comes with a stem folder ("0 <song name>", or the folder's own name) loads muted,
+    // so it isn't heard twice on top of its own stems
+    const isFull = files.length > 1 && (num === 0 || (folder && label.toLowerCase() === folder.toLowerCase()));
+    const idx = stems.length;
+    send({ t: 'add', i: idx, L, R, len: n, db: 0, mute: isFull }, [L.buffer, R.buffer]);
+    length = Math.max(length, n);
+    stems.push(makeStrip(idx, label, f.name, isFull, n, buf.numberOfChannels, buf.sampleRate));
+  }
+  if (!stems.length) { status.textContent = 'None of the files could be read.'; return; }
+  const secs = ((performance.now() - t0) / 1000).toFixed(1);
+  const full = stems.filter(s => s.full).length;
+  status.textContent = `${stems.length} stems loaded in ${secs} s, ${fmt(length / rate)} long.` + (full ? ' The full song file is muted so you hear the stems; unmute it to compare.' : '') + ' Nothing left your device.';
+  playEl.disabled = stopEl.disabled = posEl.disabled = false;
+  timeEl.textContent = fmt(0) + ' / ' + fmt(length / rate);
+}
+function makeStrip(i, label, file, full, n, ch, sr) {
+  const el = document.createElement('div');
+  el.className = 'strip' + (full ? ' full' : '');
+  el.innerHTML = `<div class="nm" title="${file.replace(/"/g, '&quot;')}">${label.replace(/</g, '&lt;')}<small>${full ? 'FULL SONG' : 'STEM ' + (i + 1)} · ${ch === 1 ? 'mono' : 'stereo'}</small></div>
+    <div class="ms"><button type="button" class="m" aria-pressed="${full}">MUTE</button><button type="button" class="s" aria-pressed="false">SOLO</button></div>
+    <input type="range" min="-60" max="6" step="0.5" value="0" aria-label="${label.replace(/"/g, '&quot;')} level">
+    <div class="row" style="gap:8px;flex-wrap:nowrap"><div class="meter" style="flex:1"><i></i></div><span class="db">0.0 dB</span></div>`;
+  const [mb, sb] = el.querySelectorAll('.ms button'), rg = el.querySelector('input'), db = el.querySelector('.db');
+  mb.addEventListener('click', () => { const v = mb.getAttribute('aria-pressed') !== 'true'; mb.setAttribute('aria-pressed', v); send({ t: 'mute', i, v }); });
+  sb.addEventListener('click', () => { const v = sb.getAttribute('aria-pressed') !== 'true'; sb.setAttribute('aria-pressed', v); send({ t: 'solo', i, v }); });
+  rg.addEventListener('input', () => { const v = +rg.value; db.textContent = v <= -60 ? 'off' : (v > 0 ? '+' : '') + v.toFixed(1) + ' dB'; send({ t: 'gain', i, db: v }); });
+  rg.addEventListener('dblclick', () => { rg.value = 0; rg.dispatchEvent(new Event('input')); });
+  stripsEl.appendChild(el);
+  return { el, full, meter: el.querySelector('.meter i') };
+}
+document.getElementById('files').addEventListener('change', e => { if (e.target.files.length) loadFiles(e.target.files); e.target.value = ''; });
+document.getElementById('folder').addEventListener('change', e => { if (e.target.files.length) loadFiles(e.target.files); e.target.value = ''; });
+playEl.addEventListener('click', async () => {
+  await startAudio();
+  if (playing) { send({ t: 'pause' }); playing = false; playEl.textContent = 'PLAY'; }
+  else { if (pos >= length) send({ t: 'seek', v: 0 }); send({ t: 'play' }); playing = true; playEl.textContent = 'PAUSE'; }
+});
+stopEl.addEventListener('click', () => { send({ t: 'pause' }); send({ t: 'seek', v: 0 }); playing = false; playEl.textContent = 'PLAY'; });
+let seeking = false;
+posEl.addEventListener('input', () => { seeking = true; timeEl.textContent = fmt(posEl.value / 1000 * length / rate) + ' / ' + fmt(length / rate); });
+posEl.addEventListener('change', () => { send({ t: 'seek', v: posEl.value / 1000 * length }); seeking = false; });
+const trimEl = document.getElementById('trim'), trimdb = document.getElementById('trimdb');
+trimEl.addEventListener('input', () => { const v = +trimEl.value; trimdb.textContent = (v > 0 ? '+' : '') + v.toFixed(1) + ' dB'; send({ t: 'trim', v }); });
+
+// ---------------------------------------------------------------- frame loop: lights follow the music
+let level = 0;
+const tStart = performance.now();
+function frame() {
+  let target = 0;
+  if (an && playing) {
+    an.getByteFrequencyData(adata);
+    let lo = 0; for (let i = 1; i < 24; i++) lo += adata[i];
+    let all = 0; for (let i = 1; i < 200; i++) all += adata[i];
+    target = Math.min(1, Math.max(0, (lo / 23 / 255) * 1.1 + (all / 199 / 255) * 0.4 - 0.15));
+  }
+  level += (target - level) * (target > level ? 0.25 : 0.06);
+  if (glReady) {
+    gl.uniform1f(U('t'), (performance.now() - tStart) / 1000); gl.uniform1f(U('level'), level);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  requestAnimationFrame(frame);
+}
+// when this page sits inside the HEM website: tell the site how tall it is, and when it starts playing (the site then pauses its radio)
+if (window.parent !== window) {
+  const tell = () => window.parent.postMessage({ hemFrameHeight: Math.ceil(document.documentElement.scrollHeight) }, '*');
+  new ResizeObserver(tell).observe(document.body); addEventListener('load', tell); tell();
+  playEl.addEventListener('click', () => { if (!playing) window.parent.postMessage({ hemFramePlaying: true }, '*'); }, true);
+}
+window.hemTest = { get drive() { return drive; }, get powerOn() { return powerOn; }, get stems() { return stems.length; }, get length() { return length; }, get pos() { return pos; }, get playing() { return playing; }, get level() { return level; }, get rate() { return rate; },
+  // for the automatic test: output level right now (dBFS RMS over ~21 ms) and how much is above 3 kHz
+  rms() { if (!an) return -Infinity; const f = new Float32Array(an.fftSize); an.getFloatTimeDomainData(f); let s = 0; for (const v of f) s += v * v; return 10 * Math.log10(s / f.length + 1e-20); } };
+
+Promise.all(['hem-tablet-base.webp', 'hem-tablet-lights.png', 'knob-bg.png', 'value-box.png'].map(load))
+  .then(async () => {
+    try { await document.fonts.load('700 60px Poppins'); } catch (e) {}
+    drawKnob();
+    if (gl) { setupGL(); sizeGL(); } else status.textContent = 'This browser cannot show WebGL, so the tablet lights cannot run here. The sound still works.';
+    frame();
+  })
+  .catch(e => { status.textContent = 'The tablet pictures did not load: ' + e.message; });
+</script>
+</body>
+</html>

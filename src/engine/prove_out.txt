@@ -1,0 +1,39 @@
+Nothing turned: 1 kHz tone                                    -0.00 dB   (want 0.00)
+BROADCAST EQ LOW +6, tone 30 Hz                               +5.95 dB   (want about +6)
+BROADCAST EQ MID +6, tone 1 kHz                               +6.00 dB   (want +6.00)
+BROADCAST EQ HIGH -6, tone 18 kHz                             -5.93 dB   (want about -6)
+BROADCAST EQ MID +6 but BROADCAST EQ off                      -0.00 dB   (want 0.00)
+BASS BOOST GAIN +6 at 80 Hz, tone 30 Hz                       +5.87 dB   (want about +6)
+BASS BOOST GAIN +6 at 80 Hz, tone 2 kHz (untouched)           +0.00 dB   (want 0.00)
+BASS BOOST DRIVE 0 %, 60 Hz tone: 3rd harmonic vs tone      -191.21 dB
+BASS BOOST DRIVE 0 %, 60 Hz tone at -20 dBFS: level change    -0.00 dB
+BASS BOOST DRIVE 50 %, 60 Hz tone: 3rd harmonic vs tone      -27.89 dB
+BASS BOOST DRIVE 50 %, 60 Hz tone at -20 dBFS: level change    +0.31 dB
+BASS BOOST DRIVE 100 %, 60 Hz tone: 3rd harmonic vs tone     -15.63 dB
+BASS BOOST DRIVE 100 %, 60 Hz tone at -20 dBFS: level change    +1.24 dB
+BASS BOOST DRIVE 100 %, 5 kHz tone (lows only)                -0.00 dB   (want 0.00)
+  the song itself: -16.4 LUFS
+AUTO-LEVELER, song played at +6 dB (-10.4 LUFS in): out      -13.61 LUFS   (want about -14)
+  ...true peak out                                            -1.28 dBTP   (want at most -1)
+AUTO-LEVELER, song played at +0 dB (-16.4 LUFS in): out      -13.61 LUFS   (want about -14)
+  ...true peak out                                            -1.28 dBTP   (want at most -1)
+AUTO-LEVELER, song played at -12 dB (-28.4 LUFS in): out     -13.61 LUFS   (want about -14)
+  ...true peak out                                            -1.28 dBTP   (want at most -1)
+AUTO-LEVELER, song played at -24 dB (-40.4 LUFS in): out     -21.91 LUFS   (want about -14)
+  ...true peak out                                            -9.90 dBTP   (want at most -1)
+AUTO-LEVELER TARGET -18, song as it is: out                  -17.61 LUFS   (want about -18)
+AUTO-LEVELER RANGE 6 dB, song at -20 dB: change               +6.00 dB   (want at most +6)
+AUTO-LEVELER: gain on the song (needs about +8.4)             +9.75 dB
+AUTO-LEVELER: gain on the -70 dBFS hiss after it              +9.17 dB   (want no more than the song had)
+CROSSFEED 0 %: left-only 300 Hz tone, right side            -300.00 dBFS   (want -inf (silence))
+CROSSFEED 100 %: left-only 300 Hz tone, right side           -32.70 dBFS
+CROSSFEED 100 %: left-only 8 kHz tone, right side (darker)   -76.56 dBFS
+WIDTH 0 % (mono): left-only tone, right side                  -6.02 dB   (want -6.02 (half on each side))
+WIDTH 200 %: left-only tone, left side                        +3.52 dB   (want +3.52 (1.5x))
+OUTPUT LEVEL -6, tone 1 kHz                                   -6.00 dB   (want -6.00)
+TRIM L -3: left side                                          -3.00 dB   (want -3.00)
+TRIM L -3: right side                                         -0.00 dB   (want 0.00)
+VOLUME -10, tone 1 kHz                                       -10.00 dB   (want -10.00)
+MUTE                                                        -261.81 dBFS   (want silence)
+WEB vs NATIVE on the song, busy settings: biggest sample difference    +0.00 
+WEB vs NATIVE: difference below the music                   +141.43 dB

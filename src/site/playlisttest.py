@@ -43,6 +43,7 @@ async def main():
         res.append((f'3 songs added in order {rows}', rows == ['01 HEM test 330 Hz', '02 HEM test 440 Hz', '03 HEM test 550 Hz']))
         await pg.set_input_files('#pl-files', files[:1]); await pg.wait_for_timeout(1500)
         res.append(('adding the same song again does not duplicate it', await pg.eval_on_selector_all('.songs li', 'e => e.length') == 3))
+        print(res, errs); await pg.screenshot(path="dbg_pl.png"); print(await pg.eval_on_selector_all("[data-a=down]", "e => e.map(x => [x.outerHTML.slice(0,120), x.getBoundingClientRect().y])"))
         await pg.click('[data-a=down][data-i="0"]'); await pg.wait_for_timeout(800)
         rows = await pg.eval_on_selector_all('.songs .t', 'els => els.map(e => e.firstChild.textContent)')
         res.append(('move down works', rows[0].startswith('02') and rows[1].startswith('01')))

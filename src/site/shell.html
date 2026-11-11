@@ -21,7 +21,7 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font:500 17px/1.5 var(--font-body);min-height:100%;padding-bottom:calc(var(--mini-h) + env(safe-area-inset-bottom,0px))}
-body.on-player{overflow:hidden;padding-bottom:0}
+body.on-player{padding-bottom:0}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:#07070e}
 [hidden]{display:none!important}
 a{color:inherit}
@@ -39,7 +39,6 @@ body.on-player #aura{display:none}
 /* nav */
 .nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;height:var(--nav-h);display:flex;align-items:center;gap:20px;padding:0 var(--gut-r) 0 var(--gut-l);background:rgba(8,8,16,.72);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--line)}
 .nav::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--blend);background-size:300% 100%;animation:flow 12s linear infinite;opacity:.8}
-body.on-player .nav{position:fixed;left:0;right:0}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0}
 .brand img{width:40px;height:40px}
 .brand b{font:900 15px/1 var(--font-display);letter-spacing:.12em;white-space:nowrap}
@@ -172,17 +171,15 @@ footer{padding:48px var(--gut-r) 28px var(--gut-l);text-align:center;color:var(-
 footer b{display:block;font-size:13px}
 body.on-player footer{display:none}
 
-/* player view: the 3D player fills the window under the nav */
-#stage{position:fixed;left:0;right:0;bottom:0;top:calc(var(--nav-h) + env(safe-area-inset-top,0px));width:100%;height:calc(100% - var(--nav-h) - env(safe-area-inset-top,0px));display:block;touch-action:none;cursor:grab;background:#04040a}
-body:not(.on-player) #stage{display:none}
-#stage.grabbing{cursor:grabbing}
-#stage.pointing{cursor:pointer}
+/* player view: the HEM radio (its own styles are scoped under #hemRadio) */
+#view-player{padding-top:18px}
+{{RADIO_CSS}}
 .readout{position:fixed;z-index:35;left:50%;top:calc(var(--nav-h) + 14px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:700 15px/1 var(--font-display);letter-spacing:.08em;color:var(--ink);background:rgba(5,5,11,.85);border:1px solid rgba(34,228,255,.55);border-radius:8px;padding:9px 13px;pointer-events:none;font-variant-numeric:tabular-nums;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
-.hint{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:var(--gut-l);right:var(--gut-r);margin:0;font:500 14px/1.35 var(--font-body);color:var(--dim);pointer-events:none;max-width:70ch}
-body:not(.on-player) .hint,body:not(.on-player) .hem-zoom{display:none!important}
-.hint{padding-right:76px}
-.err{position:fixed;inset:var(--nav-h) 0 0;display:grid;place-items:center;padding:24px var(--gut-r) 24px var(--gut-l);text-align:center;font:600 17px/1.4 var(--font-body);color:var(--dim)}
-body:not(.on-player) .err{display:none!important}
+/* HOTHEAD live tablet on its plug-in page */
+.pp-live{margin-top:40px}
+.pp-live h2{font-size:24px;margin-bottom:6px}
+.pp-live p{color:var(--dim);margin:0 0 14px;max-width:70ch}
+.pp-live iframe{display:block;width:100%;border:0;border-radius:16px;background:#07070d;min-height:520px}
 
 /* mini player */
 .mini{position:fixed;z-index:30;left:0;right:0;bottom:0;padding:10px var(--gut-r) calc(10px + env(safe-area-inset-bottom,0px)) var(--gut-l);background:rgba(8,8,16,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;align-items:center;gap:14px}
@@ -340,6 +337,11 @@ body.on-player .mini{display:none}
           <div class="cta" id="pp-cta"></div>
         </div>
       </div>
+      <div class="pp-live" id="pp-live" hidden>
+        <h2>TRY HOTHEAD LIVE</h2>
+        <p>The real HOTHEAD sound, right here. Turn DRIVE, switch it ON and OFF, and play your own song or stems through it. Your files stay on your device; nothing is uploaded.</p>
+        <iframe id="pp-live-frame" title="HOTHEAD live tablet" loading="lazy" allow="autoplay"></iframe>
+      </div>
       <nav class="stepper" aria-label="Next and previous plug-in"><a id="pp-prev"></a><a id="pp-next"></a></nav>
     </div>
     <section class="wrap" aria-labelledby="more-h">
@@ -347,15 +349,17 @@ body.on-player .mini{display:none}
       <div class="grid" id="pp-more"></div>
     </section>
   </div>
+  <p class="readout" id="readout" role="status" hidden></p>
+  <!-- PLAYER: the HEM radio -->
+  <div id="view-player" class="view" hidden>
+{{RADIO_HTML}}
+  </div>
 </main>
 
 <footer><b class="flow">HYBRID ELITE MAFIA • STUDIO PLUGINS</b>EST. 2024</footer>
 
 <!-- PLAYER (3D) -->
-<canvas id="stage" aria-label="3D HEM Listening Player. Drag empty space to turn it."></canvas>
-<p class="readout" id="readout" hidden></p>
-<p class="hint" id="hint">Pinch, double-tap or press + to zoom in, then drag to move around. Turn your phone sideways for a bigger player. Tap ADD SONGS to play songs from this device; they never leave it.</p>
-<div class="err" id="err" hidden>This page needs WebGL to draw the 3D player, and this browser didn't allow it.</div>
+
 
 <!-- MINI PLAYER (every page but the player) -->
 <div class="mini" id="mini" role="region" aria-label="Now playing">
@@ -442,9 +446,13 @@ function showPlugin(p) {
   set('pp-cat', fam.name); set('pp-name', p.name); set('pp-sub', p.sub); set('pp-tag', p.tag); set('pp-blurb', p.blurb);
   set('pp-family', `${fam.name}: ${fam.what.toLowerCase()}`); set('pp-kind', kind(p.vst));
   const crumb = document.getElementById('crumb'); crumb.href = `#plugins-${fam.key}`; crumb.textContent = `← ALL ${fam.name} PLUG-INS`;
-  document.getElementById('pp-cta').innerHTML = p.name === 'SURGEON'
-    ? `<a class="btn main" href="#player">USE SURGEON IN THE PLAYER</a><a class="btn" href="#plugins">ALL PLUG-INS</a>`
+  const live = p.slug === 'hothead';
+  document.getElementById('pp-cta').innerHTML = live
+    ? `<a class="btn main" href="#pp-live">TRY IT LIVE</a><a class="btn" href="#plugins">ALL PLUG-INS</a>`
     : `<a class="btn" href="#plugins">ALL PLUG-INS</a>`;
+  const lv = document.getElementById('pp-live'), fr = document.getElementById('pp-live-frame');
+  lv.hidden = !live;
+  if (live && !fr.src) fr.src = 'hothead/index.html';
   const prev = PLUGINS[(i - 1 + PLUGINS.length) % PLUGINS.length], next = PLUGINS[(i + 1) % PLUGINS.length];
   const pa = document.getElementById('pp-prev'), na = document.getElementById('pp-next');
   pa.href = `#p-${prev.slug}`; pa.textContent = `← ${prev.name}`;
@@ -455,9 +463,10 @@ function showPlugin(p) {
 }
 
 // router: #home, #plugins, #plugins-<family>, #p-<plug-in>, #player
-const views = ['home', 'plugins', 'plugin', 'playlists'].map(v => document.getElementById('view-' + v));
+const views = ['home', 'plugins', 'plugin', 'playlists', 'player'].map(v => document.getElementById('view-' + v));
 let lastView = '';
 function route() {
+  if (location.hash === '#pp-live') { history.replaceState(null, '', '#p-hothead'); document.getElementById('pp-live').scrollIntoView({ behavior: 'smooth' }); return; }
   const h = decodeURIComponent(location.hash.slice(1)) || 'home';
   let view = 'home', nav = 'home';
   if (h === 'player') { view = 'player'; nav = 'player'; }
@@ -470,12 +479,21 @@ function route() {
   views.forEach(v => { v.hidden = v.id !== 'view-' + view; });
   document.body.classList.toggle('on-player', view === 'player');
   document.querySelectorAll('[data-nav]').forEach(a => { if (a.dataset.nav === nav) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-  if (view === 'player' && window.hemPlayer) window.hemPlayer.resize();
+  if (view === 'player') { if (window.hemRadioLoadGhost) window.hemRadioLoadGhost(); if (window.hemPlayer) requestAnimationFrame(() => window.hemPlayer.resize()); }
   if (view !== lastView || view === 'plugin') window.scrollTo(0, 0);
   lastView = view;
   startAura();
 }
 addEventListener('hashchange', route);
+// the radio stops drawing while another page is showing (the music keeps playing)
+window.hemRadioHidden = () => !document.body.classList.contains('on-player');
+// the HOTHEAD tablet tells us its height, and when it starts playing (then the radio pauses so two sounds don't mix)
+addEventListener('message', e => {
+  const fr = document.getElementById('pp-live-frame');
+  if (!fr || e.source !== fr.contentWindow || !e.data) return;
+  if (e.data.hemFrameHeight) fr.style.height = Math.max(520, e.data.hemFrameHeight) + 'px';
+  if (e.data.hemFramePlaying && window.hemPlayer && window.hemPlayer.state().playing) window.hemPlayer.pause();
+});
 
 // 3D tilt on tablets and the crown medal (follows the pointer; flat for reduced motion)
 function tilt(el, e, max) {
