@@ -299,7 +299,12 @@ body.on-player footer{display:none}
 @media (max-width:700px) and (pointer:coarse){#hemRadio .tryface:not(.big) canvas{touch-action:pan-y}}
 @media (max-width:700px){#hemRadio .trychips{grid-template-columns:1fr 1fr}
 #hemRadio .trychips .sbtn{min-height:46px}}
-#hemRadio .tryclose{justify-self:center}
+#hemRadio .trylist{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+#hemRadio .trylist .tpill{font:700 clamp(10px,.9vw,13px)/1 var(--display);letter-spacing:.05em;min-height:34px;padding:0 12px}
+#hemRadio .trylist .tpill[aria-pressed="true"]{background:#22e4ff;color:#061012;border-color:#22e4ff}
+#hemRadio .tryacts{display:flex;justify-content:center;gap:8px}
+#hemRadio .tryacts:empty{display:none}
+#hemRadio .tryacts .sbtn{min-width:160px}
 #hemRadio .ststat{text-align:center;font:700 clamp(10px,.85vw,13px)/1.4 var(--display);letter-spacing:.05em;color:#ff6ad5}
 #hemRadio .ststat i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin:0 6px;vertical-align:middle}
 #hemRadio .ststat.on i{background:#ff9be6;box-shadow:0 0 8px #ff9be6}
@@ -655,8 +660,10 @@ body.on-player .mini{display:none}
       </section>
       <section class="panel tryp" aria-label="Try a HEM plug-in">
         <h2 class="ptitle">TRY A HEM PLUG-IN · LIVE ON THE MUSIC</h2>
-        <div class="trychips" id="tryChips" role="group" aria-label="Pick a plug-in to try"></div>
-        <p class="trynote" id="tryNote">Pick one. The music you are hearing plays through that plug-in's real sound engine, only for you. Turn the knobs; the POWER button compares ON and OFF.</p>
+        <div class="trychips" id="tryChips" role="group" aria-label="Plug-in categories"></div>
+        <div class="trylist" id="tryList" role="group"></div>
+        <div class="tryacts" id="tryActs"></div>
+        <p class="trynote" id="tryNote">Pick a category, then a plug-in. The music you are hearing plays through that plug-in's real sound engine, only for you. Turn the knobs; the POWER button compares ON and OFF.</p>
         <div class="tryface" id="tryFace" hidden><div class="bigwrap"><div class="bigbar"><button class="sbtn c5" id="tryBigClose" type="button">CLOSE BIG VIEW</button></div><canvas id="tryCv" role="img" aria-label="The plug-in's faceplate: drag a knob up or down to turn it, double-click it to reset, click buttons to switch"></canvas></div></div>
       </section>
     </div>
@@ -1796,19 +1803,28 @@ function layout() { layoutViz(); layoutMeters(); layoutBars(); layoutWave(); if 
 //  While it is open the AUTO-LEVELER rests (it would otherwise even out the loudness the plug-in changes, so ON / OFF
 //  would not compare fairly); HEM LOCKDOWN still holds the peaks at -1 dBTP. Closing puts everything back.
 // =============================================================================
-const TRY = [['VELVET', 'EQ'], ['THE FAMILY', 'DYNAMICS'], ['WIDE LOAD', 'TOOLS'], ['CATHEDRAL', 'SPACE'], ['THE CREW', 'MOVEMENT'], ['HOTHEAD', 'COLOR']];
+// every plug-in that runs in a browser, by category (KEYS left out; FINGERPRINT, THE MOLD and THE FORGER need threads)
+const TRY = {"EQ":["SURGEON","VELVET","FOUNDRY","BOARDROOM","MIDTOWN","STRAIGHT SHOOTER","BOTTOM LINE","TEN TOES","FOUR CORNERS","SMOOTH TALKER","CUTTHROAT","TUNNEL VISION","THE FIXER"],"DYNAMICS":["THE FAMILY","LOCKDOWN","ENFORCER","HITMAN","SWITCHBLADE","TERRITORY","STRAIGHT EDGE","CONSIGLIERE","STONE COLD","QUICK DRAW","OLD MONEY","HEAVYWEIGHT","THE DON","SLOW BURN","LONE WOLF","IRON FIST","KNOCKOUT","HAYMAKER","FOUR KINGS","BACKBONE","FULL HOUSE","WHEELMAN","CHAUFFEUR","BIG SHOT","LAST WORD","HIGH STAKES","TOP DOG","SWEET SIXTEEN","FAST MONEY","QUICK CASH","SILENCER","TIGHT LIPS","OMERTA","TOMMY GUN","INSIDE MAN","HEAVY HITTER","MOUTHPIECE","SLINGER","STREET TEAM"],"TOOLS":["THE CLEANER","WIDE LOAD","THE ACCOUNTANT","UNDERGROUND","SPOTLIGHT","BREATHLESS","THE CHAIRMAN","KINGPIN","THE MIDDLEMAN","DOUBLE CROSS","LOW RIDER","UNDERTOW","DEEP POCKETS","LOW PROFILE","STRAPPED","SAFE HOUSE","THE SNITCH","MADE MAN","THE DETECTIVE","THE AUDITOR","STAKEOUT","THE WITNESS","LIVE WIRE"],"SPACE":["CATHEDRAL","BACKROOM","CHROME","REPEAT OFFENDER","SIX SHOOTER","DEAD DROP","BACK ALLEY","BIG HOUSE","SPEAKEASY","COIL"],"MOVEMENT":["THE CREW","GETAWAY","SMOKESCREEN","SHAKEDOWN","CYCLONE","SHAPESHIFTER","THE SETUP","DRIVE-BY","BODY DOUBLE","HUSTLE","SWERVE","COLD CASE","PROMOTION","WISEGUYS"],"COLOR":["ARCHIVE","HOTHEAD","PAWN SHOP","MIXTAPE","CRATE DIGGER","SHREDDER","SPARK","FURNACE","REEL MONEY","GOLD CHAIN","IVORIES","HIGH ROLLER","THE INFORMANT","HOT WIRE","BOTTOM FEEDER","TORCH","THE RACKET"]};
+let tryCat = 'EQ';
 const tryS = { name: null, face: null, node: null, mod: null, wasm: null, layouts: null, worklet: false, busy: false };
 function tryOpen() { return !!tryS.name; }
 function tryChips() {
-  const box = $('tryChips'); box.textContent = '';
-  TRY.forEach(([n, g], k) => {
+  const box = $('tryChips'), list = $('tryList'), acts = $('tryActs');
+  box.textContent = ''; list.textContent = ''; acts.textContent = '';
+  Object.keys(TRY).forEach((g, k) => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'sbtn ' + (k % 2 ? 'c2' : 'c1');
-    b.setAttribute('aria-pressed', String(tryS.name === n)); b.innerHTML = '<span></span><small></small>';
-    b.firstChild.textContent = n; b.lastChild.textContent = g; b.onclick = () => tryPick(n); box.append(b);
+    b.setAttribute('aria-pressed', String(tryCat === g)); b.innerHTML = '<span></span><small></small>';
+    b.firstChild.textContent = g; b.lastChild.textContent = TRY[g].length + ' PLUG-INS';
+    b.onclick = () => { tryCat = g; tryChips(); }; box.append(b);
   });
+  list.setAttribute('aria-label', tryCat + ' plug-ins');
+  for (const n of TRY[tryCat]) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'pill tpill'; b.textContent = n;
+    b.setAttribute('aria-pressed', String(tryS.name === n)); b.onclick = () => tryPick(n); list.append(b);
+  }
   if (tryS.name) {
-    const g = document.createElement('button'); g.type = 'button'; g.className = 'sbtn c3'; g.textContent = 'BIG VIEW'; g.onclick = () => tryBig(true); box.append(g);
-    const c = document.createElement('button'); c.type = 'button'; c.className = 'sbtn c5'; c.textContent = 'CLOSE PLUG-IN'; c.onclick = tryClose; box.append(c);
+    const g = document.createElement('button'); g.type = 'button'; g.className = 'sbtn c3'; g.textContent = 'BIG VIEW'; g.onclick = () => tryBig(true); acts.append(g);
+    const c = document.createElement('button'); c.type = 'button'; c.className = 'sbtn c5'; c.textContent = 'CLOSE PLUG-IN'; c.onclick = tryClose; acts.append(c);
   }
 }
 async function tryPick(name) {
@@ -1821,22 +1837,30 @@ async function tryPick(name) {
       const [mod, b64, lay] = await Promise.all([import('./rack/hem-face.js'), fetch('rack/hem-rack-wasm.txt').then(r => r.text()), fetch('rack/hem-rack-layouts.json').then(r => r.json())]);
       tryS.mod = mod; tryS.wasm = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)).buffer; tryS.layouts = lay;
     }
-    if (!tryS.worklet) { await eng.ctx.audioWorklet.addModule('rack/hem-rack-worklet.js'); tryS.worklet = true; }
-    const ui = await tryS.mod.RackUi.create(tryS.wasm.slice(0), name);
-    const node = new AudioWorkletNode(eng.ctx, 'hem-rack', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], channelCount: 2, channelCountMode: 'explicit', processorOptions: { wasm: tryS.wasm.slice(0), name } });
-    for (let i = 0; i < ui.n; i++) node.port.postMessage({ t: 'p', i, v: ui.get(i) });
+    // one engine on the page and one on the audio thread for the whole visit: each pick loads into them
+    if (!tryS.ui) tryS.ui = await tryS.mod.RackUi.create(tryS.wasm.slice(0), name); else tryS.ui.load(name);
+    const ui = tryS.ui;
+    if (!tryS.node) {
+      if (!tryS.worklet) { await eng.ctx.audioWorklet.addModule('rack/hem-rack-worklet.js'); tryS.worklet = true; }
+      tryS.node = new AudioWorkletNode(eng.ctx, 'hem-rack', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], channelCount: 2, channelCountMode: 'explicit', processorOptions: { wasm: tryS.wasm.slice(0) } });
+      tryS.node.port.onmessage = e => {
+        const m = e.data;
+        if (m instanceof Float32Array) { if (tryS.face && m[32] === tryS.gen) tryS.face.setFeed(m); }
+        else if (m.t === 'error') toast(m.message);
+      };
+      eng.input.disconnect(); eng.input.connect(tryS.node); tryS.node.connect(eng.node);   // song -> plug-in -> station chain, from now on
+    }
+    const node = tryS.node, gen = tryS.gen = (tryS.gen || 0) + 1;
     if (tryS.face) tryS.face.destroy();
     $('tryFace').hidden = false;
     const face = new tryS.mod.HemFace({ canvas: $('tryCv'), layout: tryS.layouts[name], base: 'rack/face/', plate: 'rack/face/plate-' + name.replace(/ /g, '_').toLowerCase() + '.webp', ui,
-      onParam: (i, v) => node.port.postMessage({ t: 'p', i, v }), onPower: on => node.port.postMessage({ t: 'on', v: on }) });
-    node.port.onmessage = e => { if (e.data instanceof Float32Array) face.setFeed(e.data); else if (e.data.t === 'error') toast(e.data.message); };
+      onParam: (i, v) => { if (tryS.gen === gen) node.port.postMessage({ t: 'p', i, v }); }, onPower: on => node.port.postMessage({ t: 'on', v: on }) });
+    face.rot = $('tryFace').classList.contains('rot');
+    tryS.face = face;
     await face.ready;
-    // cut in: song -> plug-in -> station chain; the old plug-in (if any) is let go
-    const old = tryS.node;
-    eng.input.disconnect(); eng.input.connect(node); node.connect(eng.node);
-    if (old) { old.disconnect(); old.port.postMessage({ t: 'stop' }); }
+    node.port.postMessage({ t: 'load', name, gen, on: face.on, vals: Array.from({ length: ui.n }, (_, i) => ui.get(i)) });
     if (!tryS.name) post('e', E.LevOn, 0);   // the AUTO-LEVELER rests while a plug-in is open
-    tryS.node = node; tryS.face = face; tryS.name = name;
+    tryS.name = name;
     $('tryNote').textContent = name + ' is on the music now, only for you. Drag a knob up or down; double-click it for its starting place; POWER compares ON and OFF. The AUTO-LEVELER rests while a plug-in is open.';
   } catch (err) {
     toast('That plug-in could not start: ' + (err && err.message || err));
@@ -1855,13 +1879,13 @@ addEventListener('keydown', e => { if (e.key === 'Escape' && $('tryFace').classL
 function tryClose() {
   if (!tryS.name) return;
   tryBig(false);
-  eng.input.disconnect(); eng.input.connect(eng.node);
-  tryS.node.disconnect(); tryS.node.port.postMessage({ t: 'stop' });
+  tryS.node.port.postMessage({ t: 'idle' });   // the music passes straight through again (the engine stays for the next pick)
+  tryS.gen++;
   tryS.face.destroy();
   post('e', E.LevOn, EV[E.LevOn]);   // the AUTO-LEVELER back as it was
-  tryS.node = tryS.face = tryS.name = null;
+  tryS.face = tryS.name = null;
   $('tryFace').hidden = true;
-  $('tryNote').textContent = 'Pick one. The music you are hearing plays through that plug-in\'s real sound engine, only for you. Turn the knobs; the POWER button compares ON and OFF.';
+  $('tryNote').textContent = 'Pick a category, then a plug-in. The music you are hearing plays through that plug-in\'s real sound engine, only for you. Turn the knobs; the POWER button compares ON and OFF.';
   tryChips();
 }
 tryChips();

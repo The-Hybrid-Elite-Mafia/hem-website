@@ -23,8 +23,8 @@ int main(){
     for (const auto& m : fx->meters()) { printf("%s{\"name\":%s,\"unit\":%s,\"min\":%g,\"max\":%g}", i?",":"", q(m.name).c_str(), q(m.unit).c_str(), m.min,m.max); i++; }
     printf("],\n \"widgets\":["); i=0;
     for (const auto& w : L.widgets) {
-      printf("%s{\"k\":%d,\"r\":%s,\"p\":%d,\"p2\":%d,\"ctl\":%d,\"ch\":%d,\"cap\":%s,\"lo\":%s,\"hi\":%s,\"small\":%d,\"tight\":%d,\"meter\":%d,\"stride\":%d,\"plink\":%d,\"sp\":%d,\"sv\":%d}",
-        i?",\n  ":"\n  ", (int)w.kind, R(w.r).c_str(), w.param,w.param2,w.control,w.choice,q(w.caption).c_str(),q(w.lo).c_str(),q(w.hi).c_str(),w.small,w.tight,w.meter,w.pageStride,w.pageLink,w.showParam,w.showValue); i++;
+      printf("%s{\"k\":%d,\"r\":%s,\"p\":%d,\"p2\":%d,\"ctl\":%d,\"ch\":%d,\"cap\":%s,\"lo\":%s,\"hi\":%s,\"small\":%d,\"tight\":%d,\"meter\":%d,\"stride\":%d,\"plink\":%d,\"sp\":%d,\"sv\":%d,\"sc\":%d}",
+        i?",\n  ":"\n  ", (int)w.kind, R(w.r).c_str(), w.param,w.param2,w.control,w.choice,q(w.caption).c_str(),q(w.lo).c_str(),q(w.hi).c_str(),w.small,w.tight,w.meter,w.pageStride,w.pageLink,w.showParam,w.showValue,(int)w.needsSidechain); i++;
     }
     printf("],\n \"recesses\":["); i=0;
     for (const auto& r : L.recesses) { printf("%s[%s,%.1f,%.1f,%d,%d]", i?",":"", R(r.r).c_str(), r.radius,r.depth,r.round,r.glass); i++; }

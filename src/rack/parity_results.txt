@@ -1,0 +1,116 @@
+SURGEON        finite=True peak=  26.4 dBFS  web-vs-native max diff=8.11e-05 ( -108.3 dB under peak)  change vs input   23.6 dB
+THE CLEANER    finite=True peak=   4.3 dBFS  web-vs-native max diff=2.38e-07 ( -136.7 dB under peak)  change vs input    3.4 dB
+THE FAMILY     finite=True peak=  16.2 dBFS  web-vs-native max diff=6.20e-06 ( -120.3 dB under peak)  change vs input   10.8 dB
+ARCHIVE        finite=True peak=  -0.5 dBFS  web-vs-native max diff=1.79e-07 ( -134.4 dB under peak)  change vs input    2.3 dB
+HOTHEAD        finite=True peak=  -4.1 dBFS  web-vs-native max diff=5.96e-08 ( -140.4 dB under peak)  change vs input    3.7 dB
+PAWN SHOP      finite=True peak=  -1.7 dBFS  web-vs-native max diff=1.19e-07 ( -136.8 dB under peak)  change vs input    2.5 dB
+MIXTAPE        finite=True peak=   9.6 dBFS  web-vs-native max diff=4.77e-07 ( -136.0 dB under peak)  change vs input    9.6 dB
+CRATE DIGGER   finite=True peak=   8.1 dBFS  web-vs-native max diff=4.77e-07 ( -134.5 dB under peak)  change vs input    6.5 dB
+SHREDDER       finite=True peak=  10.9 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    8.0 dB
+VELVET         finite=True peak=   6.3 dBFS  web-vs-native max diff=4.77e-07 ( -132.8 dB under peak)  change vs input    5.9 dB
+FOUNDRY        finite=True peak=   7.8 dBFS  web-vs-native max diff=9.54e-07 ( -128.3 dB under peak)  change vs input    5.2 dB
+BOARDROOM      finite=True peak=  11.5 dBFS  web-vs-native max diff=7.15e-07 ( -134.4 dB under peak)  change vs input    8.8 dB
+MIDTOWN        finite=True peak=   7.9 dBFS  web-vs-native max diff=4.77e-07 ( -134.3 dB under peak)  change vs input    7.1 dB
+LOCKDOWN       finite=True peak=  -0.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    3.4 dB
+WIDE LOAD      finite=True peak=  10.1 dBFS  web-vs-native max diff=1.19e-07 ( -148.6 dB under peak)  change vs input    5.1 dB
+SPARK          finite=True peak=  -3.5 dBFS  web-vs-native max diff=2.98e-08 ( -147.0 dB under peak)  change vs input    1.4 dB
+THE ACCOUNTANT finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input -600.0 dB
+ENFORCER       finite=True peak=   8.1 dBFS  web-vs-native max diff=3.58e-07 ( -137.0 dB under peak)  change vs input    1.0 dB
+HITMAN         finite=True peak=  15.1 dBFS  web-vs-native max diff=3.43e-07 ( -144.4 dB under peak)  change vs input   13.2 dB
+FURNACE        finite=True peak=  12.3 dBFS  web-vs-native max diff=9.54e-07 ( -132.7 dB under peak)  change vs input    9.4 dB
+CATHEDRAL      finite=True peak=  -3.4 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -2.6 dB
+BACKROOM       finite=True peak=  -4.0 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -2.7 dB
+CHROME         finite=True peak=  -2.6 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -2.3 dB
+REPEAT OFFENDER finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -3.3 dB
+THE CREW       finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -4.9 dB
+GETAWAY        finite=True peak=   1.8 dBFS  web-vs-native max diff=1.79e-07 ( -136.8 dB under peak)  change vs input    0.8 dB
+SMOKESCREEN    finite=True peak=  -2.4 dBFS  web-vs-native max diff=3.58e-07 ( -126.5 dB under peak)  change vs input   -4.8 dB
+SHAKEDOWN      finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input  -11.2 dB
+CYCLONE        finite=True peak=  -4.3 dBFS  web-vs-native max diff=5.96e-08 ( -140.2 dB under peak)  change vs input   -5.3 dB
+SHAPESHIFTER   finite=True peak=   1.3 dBFS  web-vs-native max diff=7.15e-07 ( -124.2 dB under peak)  change vs input   -4.6 dB
+UNDERGROUND    finite=True peak=  13.2 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    9.2 dB
+SPOTLIGHT      finite=True peak=   8.5 dBFS  web-vs-native max diff=9.54e-07 ( -128.9 dB under peak)  change vs input    1.2 dB
+SWITCHBLADE    finite=True peak=  -0.4 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    1.8 dB
+TERRITORY      finite=True peak=  15.7 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    7.9 dB
+STRAIGHT EDGE  finite=True peak=  40.7 dBFS  web-vs-native max diff=6.10e-05 ( -125.0 dB under peak)  change vs input   36.4 dB
+CONSIGLIERE    finite=True peak=  30.8 dBFS  web-vs-native max diff=5.72e-05 ( -115.7 dB under peak)  change vs input   26.3 dB
+STONE COLD     finite=True peak=  29.6 dBFS  web-vs-native max diff=2.10e-05 ( -123.2 dB under peak)  change vs input   25.1 dB
+QUICK DRAW     finite=True peak=   7.1 dBFS  web-vs-native max diff=3.46e-06 ( -116.3 dB under peak)  change vs input    3.1 dB
+OLD MONEY      finite=True peak=   9.1 dBFS  web-vs-native max diff=7.15e-07 ( -132.0 dB under peak)  change vs input    2.1 dB
+HEAVYWEIGHT    finite=True peak=   0.0 dBFS  web-vs-native max diff=4.17e-07 ( -127.6 dB under peak)  change vs input    4.3 dB
+THE DON        finite=True peak=   6.9 dBFS  web-vs-native max diff=1.91e-06 ( -121.3 dB under peak)  change vs input    1.7 dB
+SLOW BURN      finite=True peak=   5.8 dBFS  web-vs-native max diff=4.77e-07 ( -132.2 dB under peak)  change vs input    3.5 dB
+LONE WOLF      finite=True peak=  11.4 dBFS  web-vs-native max diff=8.05e-07 ( -133.2 dB under peak)  change vs input    5.8 dB
+IRON FIST      finite=True peak=  14.5 dBFS  web-vs-native max diff=2.86e-06 ( -125.4 dB under peak)  change vs input   12.2 dB
+KNOCKOUT       finite=True peak=  -0.1 dBFS  web-vs-native max diff=1.43e-06 ( -116.8 dB under peak)  change vs input    4.0 dB
+HAYMAKER       finite=True peak=  22.8 dBFS  web-vs-native max diff=5.63e-05 ( -107.8 dB under peak)  change vs input   17.1 dB
+FOUR KINGS     finite=True peak=   4.7 dBFS  web-vs-native max diff=8.34e-07 ( -126.3 dB under peak)  change vs input    0.3 dB
+BACKBONE       finite=True peak=  -2.6 dBFS  web-vs-native max diff=2.38e-07 ( -129.9 dB under peak)  change vs input   -4.7 dB
+FULL HOUSE     finite=True peak=  -4.1 dBFS  web-vs-native max diff=2.98e-08 ( -146.4 dB under peak)  change vs input   -2.4 dB
+WHEELMAN       finite=True peak=   9.7 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    6.0 dB
+CHAUFFEUR      finite=True peak=   7.9 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    0.5 dB
+BIG SHOT       finite=True peak=  -3.2 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    1.6 dB
+LAST WORD      finite=True peak=  -4.1 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    0.4 dB
+HIGH STAKES    finite=True peak=  -4.4 dBFS  web-vs-native max diff=2.44e-04 (  -67.8 dB under peak)  change vs input    1.0 dB
+TOP DOG        finite=True peak=  -3.5 dBFS  web-vs-native max diff=2.58e-04 (  -68.3 dB under peak)  change vs input    1.3 dB
+SWEET SIXTEEN  finite=True peak=  -4.1 dBFS  web-vs-native max diff=3.05e-04 (  -66.2 dB under peak)  change vs input    1.6 dB
+FAST MONEY     finite=True peak=  -4.4 dBFS  web-vs-native max diff=2.14e-04 (  -69.0 dB under peak)  change vs input    0.9 dB
+QUICK CASH     finite=True peak=  -1.3 dBFS  web-vs-native max diff=7.63e-06 ( -101.1 dB under peak)  change vs input    1.3 dB
+SILENCER       finite=True peak=  -4.6 dBFS  web-vs-native max diff=5.96e-08 ( -139.9 dB under peak)  change vs input   -1.8 dB
+TIGHT LIPS     finite=True peak=  -3.5 dBFS  web-vs-native max diff=2.98e-08 ( -147.0 dB under peak)  change vs input   -3.9 dB
+OMERTA         finite=True peak=  -3.5 dBFS  web-vs-native max diff=2.98e-08 ( -147.0 dB under peak)  change vs input    2.7 dB
+BREATHLESS     finite=True peak=  -4.1 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    1.7 dB
+TOMMY GUN      finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input  -12.4 dB
+STRAIGHT SHOOTER finite=True peak=  18.9 dBFS  web-vs-native max diff=1.12e-05 ( -117.9 dB under peak)  change vs input    7.4 dB
+BOTTOM LINE    finite=True peak=  13.7 dBFS  web-vs-native max diff=1.24e-05 ( -111.8 dB under peak)  change vs input   10.8 dB
+TEN TOES       finite=True peak=  -2.6 dBFS  web-vs-native max diff=2.53e-07 ( -129.3 dB under peak)  change vs input   -1.1 dB
+FOUR CORNERS   finite=True peak=  12.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    2.0 dB
+SMOOTH TALKER  finite=True peak=  28.7 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   19.9 dB
+INSIDE MAN     finite=True peak=  -0.0 dBFS  web-vs-native max diff=2.50e-06 ( -112.0 dB under peak)  change vs input    6.9 dB
+CUTTHROAT      finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -4.1 dB
+TUNNEL VISION  finite=True peak=  -2.8 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -6.1 dB
+THE SETUP      finite=True peak=  -2.7 dBFS  web-vs-native max diff=2.54e-05 (  -89.2 dB under peak)  change vs input   -2.0 dB
+THE CHAIRMAN   finite=True peak=  10.9 dBFS  web-vs-native max diff=7.15e-07 ( -133.8 dB under peak)  change vs input    6.1 dB
+REEL MONEY     finite=True peak=  10.1 dBFS  web-vs-native max diff=4.77e-07 ( -136.5 dB under peak)  change vs input    7.1 dB
+HEAVY HITTER   finite=True peak=  24.7 dBFS  web-vs-native max diff=1.91e-06 ( -139.0 dB under peak)  change vs input   20.6 dB
+KINGPIN        finite=True peak=   5.8 dBFS  web-vs-native max diff=1.01e-06 ( -125.7 dB under peak)  change vs input   -0.3 dB
+GOLD CHAIN     finite=True peak=  25.9 dBFS  web-vs-native max diff=5.72e-06 ( -130.8 dB under peak)  change vs input   12.2 dB
+IVORIES        finite=True peak=   8.4 dBFS  web-vs-native max diff=4.77e-07 ( -134.9 dB under peak)  change vs input    3.5 dB
+HIGH ROLLER    finite=True peak=  24.4 dBFS  web-vs-native max diff=1.91e-06 ( -138.8 dB under peak)  change vs input   12.2 dB
+THE MIDDLEMAN  finite=True peak=  -3.5 dBFS  web-vs-native max diff=3.73e-08 ( -145.1 dB under peak)  change vs input   -3.2 dB
+DOUBLE CROSS   finite=True peak=  -4.1 dBFS  web-vs-native max diff=1.19e-07 ( -134.3 dB under peak)  change vs input    1.4 dB
+LOW RIDER      finite=True peak=  -4.1 dBFS  web-vs-native max diff=2.98e-08 ( -146.4 dB under peak)  change vs input    0.8 dB
+UNDERTOW       finite=True peak=  -4.1 dBFS  web-vs-native max diff=5.96e-08 ( -140.4 dB under peak)  change vs input   -2.4 dB
+DEEP POCKETS   finite=True peak=  -4.1 dBFS  web-vs-native max diff=2.98e-08 ( -146.5 dB under peak)  change vs input   -2.0 dB
+LOW PROFILE    finite=True peak=  -2.3 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -2.8 dB
+THE FIXER      finite=True peak=  17.0 dBFS  web-vs-native max diff=1.49e-08 ( -173.5 dB under peak)  change vs input   12.4 dB
+SIX SHOOTER    finite=True peak=   5.0 dBFS  web-vs-native max diff=2.38e-07 ( -137.5 dB under peak)  change vs input    2.7 dB
+DEAD DROP      finite=True peak=  10.9 dBFS  web-vs-native max diff=3.58e-07 ( -139.8 dB under peak)  change vs input    1.1 dB
+BACK ALLEY     finite=True peak=  -4.1 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -5.9 dB
+DRIVE-BY       finite=True peak=  -2.5 dBFS  web-vs-native max diff=5.96e-08 ( -142.0 dB under peak)  change vs input   -7.7 dB
+BODY DOUBLE    finite=True peak=  -4.1 dBFS  web-vs-native max diff=2.98e-08 ( -146.5 dB under peak)  change vs input   -1.4 dB
+HUSTLE         finite=True peak=  -0.7 dBFS  web-vs-native max diff=8.94e-08 ( -140.3 dB under peak)  change vs input    2.6 dB
+SWERVE         finite=True peak=   8.4 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    6.1 dB
+COLD CASE      finite=True peak=   7.3 dBFS  web-vs-native max diff=1.79e-07 ( -142.3 dB under peak)  change vs input    0.8 dB
+MOUTHPIECE     finite=True peak=  -3.3 dBFS  web-vs-native max diff=1.19e-07 ( -135.2 dB under peak)  change vs input   -5.9 dB
+SLINGER        finite=True peak=  -0.1 dBFS  web-vs-native max diff=2.09e-07 ( -133.5 dB under peak)  change vs input   -5.8 dB
+STREET TEAM    finite=True peak=  -4.1 dBFS  web-vs-native max diff=3.28e-07 ( -125.6 dB under peak)  change vs input   -1.7 dB
+BIG HOUSE      finite=True peak=  -4.1 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -5.0 dB
+SPEAKEASY      finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -1.5 dB
+COIL           finite=True peak=  22.2 dBFS  web-vs-native max diff=8.34e-06 ( -123.8 dB under peak)  change vs input   11.9 dB
+THE INFORMANT  finite=True peak=  51.4 dBFS  web-vs-native max diff=1.01e-04 ( -131.3 dB under peak)  change vs input   33.1 dB
+STRAPPED       finite=True peak=   8.1 dBFS  web-vs-native max diff=7.15e-07 ( -131.0 dB under peak)  change vs input    5.4 dB
+SAFE HOUSE     finite=True peak=   1.6 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -1.0 dB
+HOT WIRE       finite=True peak=  -0.1 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    6.9 dB
+BOTTOM FEEDER  finite=True peak=  -0.1 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    4.1 dB
+TORCH          finite=True peak=  21.6 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   20.4 dB
+THE RACKET     finite=True peak=  11.9 dBFS  web-vs-native max diff=4.77e-07 ( -138.3 dB under peak)  change vs input   11.3 dB
+THE SNITCH     finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input -600.0 dB
+PROMOTION      finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    2.7 dB
+WISEGUYS       finite=True peak=  -3.7 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    1.9 dB
+MADE MAN       finite=True peak=  -4.4 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    2.7 dB
+THE DETECTIVE  finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input -600.0 dB
+THE AUDITOR    finite=True peak=  -4.1 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input    1.3 dB
+STAKEOUT       finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input -600.0 dB
+THE WITNESS    finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input -600.0 dB
+LIVE WIRE      finite=True peak=  -3.5 dBFS  web-vs-native max diff=0.00e+00 ( -600.0 dB under peak)  change vs input   -2.1 dB

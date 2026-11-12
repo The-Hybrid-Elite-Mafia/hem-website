@@ -14,6 +14,10 @@
 #include "hem/rack/Plugins.hpp"
 #include "hem/rack/Spectrum.hpp"
 #include "hem/rack/TubeEq.hpp"
+#include "hem/rack/EliteEq.hpp"
+#include "hem/rack/Restorer.hpp"
+#include "hem/rack/Analyzer.hpp"
+#include "hem/rack/Space.hpp"
 #include "hybrid/fx/Fx.hpp"
 
 #include <algorithm>
@@ -40,6 +44,10 @@ struct Engine {
     const hem::rack::PluginInfo* info = nullptr;
     std::unique_ptr<hc::fx::Effect> fx;
     hem::rack::SpectrumSource* spec = nullptr;
+    hem::rack::NoiseProfileSource* noise = nullptr;
+    hem::rack::EliteEqView* eqv = nullptr;
+    hem::rack::AnalyzerSource* an = nullptr;
+    std::array<hem::rack::eq::Sections, hem::rack::eq::kBands> secs{}, live{};
     std::uint32_t lat = 0;
     bool on = true;
     float wet = 1.0f, step = 0.001f;
@@ -76,6 +84,9 @@ HEM_EXPORT(hem_load) int hem_load() {
     g->dlyR.assign(g->lat + 1, 0.0f);
     g->dpos = 0;
     g->spec = dynamic_cast<hem::rack::SpectrumSource*>(g->fx.get());
+    g->noise = dynamic_cast<hem::rack::NoiseProfileSource*>(g->fx.get());
+    g->eqv = dynamic_cast<hem::rack::EliteEqView*>(g->fx.get());
+    g->an = dynamic_cast<hem::rack::AnalyzerSource*>(g->fx.get());
     if (g->spec) { g->spec->spectrumBefore().setActive(true); g->spec->spectrumAfter().setActive(true); }
     return static_cast<int>(g->fx->params().size());
 }
@@ -174,3 +185,44 @@ HEM_EXPORT(hem_curve_dots) int hem_curve_dots() {
     for (int i = 0; i < n; ++i) g->io[static_cast<std::size_t>(i)] = static_cast<float>(hz[i]);
     return n;
 }
+
+// ---- more of what the faceplate reads while the sound runs (FaceFeed)
+// 1 spectrum, 2 noise floor (THE CLEANER), 4 EQ moves (SURGEON), 8 analyzer (STAKEOUT)
+HEM_EXPORT(hem_feed_flags) int hem_feed_flags() { return (g->spec ? 1 : 0) | (g->noise ? 2 : 0) | (g->eqv ? 4 : 0) | (g->an ? 8 : 0); }
+HEM_EXPORT(hem_noise) float hem_noise(int b) { return g->noise ? g->noise->noiseFloorDb(b) : -120.0f; }
+HEM_EXPORT(hem_removed) float hem_removed() { return g->noise ? g->noise->removedDb() : 0.0f; }
+HEM_EXPORT(hem_dyn_gain) float hem_dyn_gain(int b) { return g->eqv ? g->eqv->dynamicGainDb(b) : 0.0f; }
+HEM_EXPORT(hem_auto_gain) float hem_auto_gain() { return g->eqv ? g->eqv->autoGainDb() : 0.0f; }
+HEM_EXPORT(hem_rta_bands) int hem_rta_bands() { return hem::rack::kRtaMaxBands; }
+HEM_EXPORT(hem_rta) float hem_rta(int side, int b) { return g->an ? g->an->rtaLevel(side, b) : -120.0f; }
+HEM_EXPORT(hem_rta_max) float hem_rta_max(int side, int b) { return g->an ? g->an->rtaMax(side, b) : -120.0f; }
+HEM_EXPORT(hem_spd_angle) float hem_spd_angle(int b) { return g->an ? g->an->spdAngle(b) : 0.0f; }
+HEM_EXPORT(hem_spd_level) float hem_spd_level(int b) { return g->an ? g->an->spdLevel(b) : -120.0f; }
+HEM_EXPORT(hem_rta_hz) float hem_rta_hz(int res, int b) { return hem::rack::stakeout::bandHz(res, b); }
+
+// ---- SURGEON's graph: each band's filter, exactly what the audio runs (eq::design / magnitudeDb).
+// hem_eq_prepare: io[0..15] = each band's dynamic move now (dB, from the audio thread); builds the plain and the
+// moving filters. hem_eq_db(b, hz, live): band b's own curve; returns 0 for a band that is off.
+HEM_EXPORT(hem_eq_prepare) int hem_eq_prepare() {
+    using namespace hem::rack::eq;
+    int on = 0;
+    for (int b = 0; b < kBands; ++b) {
+        Band bd = bandOf(*g->fx, b);
+        if (!bd.on) { g->secs[b] = Sections{}; g->live[b] = Sections{}; continue; }
+        ++on;
+        g->secs[b] = design(bd, g->fs);
+        const bool dyn = g->fx->get(bandParam(b, Dyn)) >= 0.5f && typeCanBeDynamic(bd.type);
+        if (dyn) bd.gainDb += g->io[static_cast<std::size_t>(b)];
+        g->live[b] = design(bd, g->fs);
+    }
+    return on;
+}
+HEM_EXPORT(hem_eq_db) double hem_eq_db(int b, double hz, int live) {
+    if (b < 0 || b >= hem::rack::eq::kBands) return 0.0;
+    const auto& s = live ? g->live[static_cast<std::size_t>(b)] : g->secs[static_cast<std::size_t>(b)];
+    return s.count ? hem::rack::eq::magnitudeDb(s, g->fs, hz) : 0.0;
+}
+HEM_EXPORT(hem_eq_type_gain) int hem_eq_type_gain(int t) { return hem::rack::eq::typeHasGain(static_cast<hem::rack::eq::Type>(t)) ? 1 : 0; }
+HEM_EXPORT(hem_eq_type_dyn) int hem_eq_type_dyn(int t) { return hem::rack::eq::typeCanBeDynamic(static_cast<hem::rack::eq::Type>(t)) ? 1 : 0; }
+// REPEAT OFFENDER: the delay it really uses while TIME follows a note
+HEM_EXPORT(hem_ddelay_ms) float hem_ddelay_ms(int division, float bpm, float freeMs) { return hem::rack::ddelay::delayMs(division, bpm, freeMs); }
