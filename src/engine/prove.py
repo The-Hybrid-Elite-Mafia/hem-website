@@ -2,7 +2,7 @@
 import numpy as np, subprocess, os, soundfile as sf
 FS = 48000
 E = dict(BeqOn=0, BeqLow=1, BeqMid=2, BeqHigh=3, LevOn=4, LevTarget=5, LevRange=6, LevSpeed=7, BassOn=8, BassDrive=9, BassFreq=10, BassGain=11,
-         MonOn=12, Crossfeed=13, Width=14, Output=15, TrimL=16, TrimR=17, Volume=18, Mute=19)
+         MonOn=12, Crossfeed=13, Width=14, Output=15, TrimL=16, TrimR=17, Volume=18, Mute=19, StOn=20)
 def run(x, cmds, web=False, lev=False):
     cmds = ([] if lev else [(0, 'e', 4, 0)]) + list(cmds)
     x.astype(np.float32).tofile('t_in.f32')
@@ -28,6 +28,10 @@ R = []
 def rep(label, val, unit='dB', want=None):
     R.append((label, val, unit, want)); print(f'{label:58s} {val:+8.2f} {unit}' + (f'   (want {want})' if want else ''))
 rep('Nothing turned: 1 kHz tone', gain(1000, []), want='0.00')
+for b, hz in enumerate([31, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]):
+    rep(f'STATION EQ band {b + 1} ({hz} Hz) +6 dB, tone {hz} Hz', gain(hz, [(0, 'e', 21 + b, 6)]), want='+6.00')
+rep('STATION EQ 1 kHz +6 dB, tone 4 kHz (two bands away)', gain(4000, [(0, 'e', 26, 6)]), want='close to 0')
+rep('STATION EQ 1 kHz -10 dB but STATION EQ off', gain(1000, [(0, 'e', 26, -10), (0, 'e', 20, 0)]), want='0.00')
 rep('BROADCAST EQ LOW +6, tone 30 Hz', gain(30, [e('BeqLow', 6)]), want='about +6')
 rep('BROADCAST EQ MID +6, tone 1 kHz', gain(1000, [e('BeqMid', 6)]), want='+6.00')
 rep('BROADCAST EQ HIGH -6, tone 18 kHz', gain(18000, [e('BeqHigh', -6)]), want='about -6')
@@ -88,7 +92,7 @@ rep('TRIM L -3: right side', gain(1000, [e('TrimL', -3)], ch=1), want='0.00')
 rep('VOLUME -10, tone 1 kHz', gain(1000, [e('Volume', -10)]), want='-10.00')
 rep('MUTE', lvl(run(tone(1000), [e('Mute', 1)])), 'dBFS', 'silence')
 # web build = native build, busy settings on the song
-busy = [e('BeqLow', 3), e('BeqHigh', 2), e('BassGain', 4), e('BassDrive', 60), e('LevOn', 1), e('LevTarget', -16), e('Crossfeed', 40), e('Width', 130), e('Output', -2), e('TrimR', -1), (5, 'e', E['BeqMid'], -4), (9, 'e', E['BassFreq'], 150), (12, 'e', E['Volume'], -6)]
+busy = [(0, 'e', 22, 4), (0, 'e', 27, -3), e('BeqLow', 3), e('BeqHigh', 2), e('BassGain', 4), e('BassDrive', 60), e('LevOn', 1), e('LevTarget', -16), e('Crossfeed', 40), e('Width', 130), e('Output', -2), e('TrimR', -1), (5, 'e', E['BeqMid'], -4), (9, 'e', E['BassFreq'], 150), (12, 'e', E['Volume'], -6)]
 a = run(mix, busy, lev=True); b = run(mix, busy, web=True, lev=True)
 d = np.abs(a - b).max(); rep('WEB vs NATIVE on the song, busy settings: biggest sample difference', d, '')
 rep('WEB vs NATIVE: difference below the music', lvl(a, skip=0) - 20 * np.log10(np.sqrt(np.mean((a - b) ** 2)) + 1e-20), 'dB')

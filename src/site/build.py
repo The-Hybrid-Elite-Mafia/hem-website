@@ -41,7 +41,7 @@ radio_css = scope_rules(css)
 # ---- the radio's markup (the player, its two lists, the file picker, the message strip)
 body = radio[radio.index('<body>') + 6:radio.index('<script type="importmap">')]
 radio_html = '<div id="hemRadio">\n' + body.strip() + '\n</div>'
-radio_html = radio_html.replace('src="hem-ghost.webp"', 'src="img/brand/ghost.webp"')
+radio_html = radio_html.replace('src="hem-ghost.webp"', 'src="img/brand/ghost.webp"').replace('src="hem-crown.webp"', 'src="img/brand/crown.webp"')
 
 # ---- the radio's script
 scripts = re.findall(r'<script type="importmap">.*?</script>\s*<script type="module">.*?</script>', radio, re.S)

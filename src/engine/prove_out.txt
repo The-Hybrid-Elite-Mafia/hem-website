@@ -1,4 +1,16 @@
 Nothing turned: 1 kHz tone                                    -0.00 dB   (want 0.00)
+STATION EQ band 1 (31 Hz) +6 dB, tone 31 Hz                   +6.00 dB   (want +6.00)
+STATION EQ band 2 (63 Hz) +6 dB, tone 63 Hz                   +6.00 dB   (want +6.00)
+STATION EQ band 3 (125 Hz) +6 dB, tone 125 Hz                 +6.00 dB   (want +6.00)
+STATION EQ band 4 (250 Hz) +6 dB, tone 250 Hz                 +6.00 dB   (want +6.00)
+STATION EQ band 5 (500 Hz) +6 dB, tone 500 Hz                 +6.00 dB   (want +6.00)
+STATION EQ band 6 (1000 Hz) +6 dB, tone 1000 Hz               +6.00 dB   (want +6.00)
+STATION EQ band 7 (2000 Hz) +6 dB, tone 2000 Hz               +6.00 dB   (want +6.00)
+STATION EQ band 8 (4000 Hz) +6 dB, tone 4000 Hz               +6.00 dB   (want +6.00)
+STATION EQ band 9 (8000 Hz) +6 dB, tone 8000 Hz               +6.00 dB   (want +6.00)
+STATION EQ band 10 (16000 Hz) +6 dB, tone 16000 Hz            +6.00 dB   (want +6.00)
+STATION EQ 1 kHz +6 dB, tone 4 kHz (two bands away)           +0.21 dB   (want close to 0)
+STATION EQ 1 kHz -10 dB but STATION EQ off                    -0.00 dB   (want 0.00)
 BROADCAST EQ LOW +6, tone 30 Hz                               +5.95 dB   (want about +6)
 BROADCAST EQ MID +6, tone 1 kHz                               +6.00 dB   (want +6.00)
 BROADCAST EQ HIGH -6, tone 18 kHz                             -5.93 dB   (want about -6)
@@ -36,4 +48,4 @@ TRIM L -3: right side                                         -0.00 dB   (want 0
 VOLUME -10, tone 1 kHz                                       -10.00 dB   (want -10.00)
 MUTE                                                        -261.81 dBFS   (want silence)
 WEB vs NATIVE on the song, busy settings: biggest sample difference    +0.00 
-WEB vs NATIVE: difference below the music                   +141.43 dB
+WEB vs NATIVE: difference below the music                   +142.14 dB

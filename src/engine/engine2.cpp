@@ -4,6 +4,7 @@
 //  Chain:  song -> AUTO-LEVELER: measures the song's loudness (BS.1770 K-weighting, 3 s window) and slowly
 //                  turns it up or down to TARGET, by no more than RANGE; it never boosts silence or fade-outs
 //               -> SURGEON (hem-elite-rack EliteEq.cpp, unchanged; off unless switched on)
+//               -> STATION EQ: 10 bells, 31 Hz .. 16 kHz, +-10 dB each (Hybrid Core RBJ biquads)
 //               -> BROADCAST EQ (low shelf 100 Hz, mid bell 1 kHz, high shelf 10 kHz; Hybrid Core RBJ biquads)
 //               -> BASS BOOST (low shelf at FREQUENCY by GAIN, then DRIVE: soft clipping on the lows only;
 //                  only what the clipping adds is mixed in, so the dry sound is never thinned out)
@@ -46,9 +47,13 @@ enum Id : int {
     BassOn, BassDrive, BassFreq, BassGain,        // % 0..100; Hz 30..250; dB 0..+12
     MonOn, Crossfeed, Width, Output,              // % 0..100; % 0..200; dB -24..+12
     TrimL, TrimR, Volume, Mute,                   // dB -12..+12; dB (<= -120 = silence); 0/1
+    StOn, St0, St1, St2, St3, St4, St5, St6, St7, St8, St9,   // STATION EQ on; the 10 bands, dB -10..+10
     kIds
 };
-constexpr float kDef[kIds] = {1, 0, 0, 0, 1, -14, 18, 3, 1, 0, 80, 0, 1, 0, 100, 0, 0, 0, 0, 0};
+constexpr float kDef[kIds] = {1, 0, 0, 0, 1, -14, 18, 3, 1, 0, 80, 0, 1, 0, 100, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+// STATION EQ band centres. ASSUMED: width Q 1.4 (about one octave; Steven has not set this)
+constexpr double kStHz[10] = {31, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000};
+constexpr double kStQ = 1.4;
 // ASSUMED: corner frequencies of BROADCAST EQ, crossfeed filter and delay (Steven has not set these)
 constexpr double kBeqLowHz = 100.0, kBeqMidHz = 1000.0, kBeqMidQ = 0.7, kBeqHighHz = 10000.0;
 constexpr double kXfeedHz = 700.0, kXfeedMs = 0.3;
@@ -83,6 +88,7 @@ struct Engine {
     std::array<float, kIds> v{};
 
     GlideFilter beqLow, beqMid, beqHigh, bassShelf;
+    std::array<GlideFilter, 10> st{};
     hc::fx::Biquad2 bassSplit{};       // low-pass that picks out the lows the drive works on
     double bassSplitHz = -1;
     hc::fx::Smoothed driveMix{};
@@ -132,6 +138,7 @@ HEM_EXPORT(hem_init) int hem_init(double sampleRate) {
     e.beqLow.type = BQ::Type::LowShelf;  e.beqLow.hz = kBeqLowHz;
     e.beqMid.type = BQ::Type::Bell;      e.beqMid.hz = kBeqMidHz; e.beqMid.q = kBeqMidQ;
     e.beqHigh.type = BQ::Type::HighShelf; e.beqHigh.hz = kBeqHighHz;
+    for (int b = 0; b < 10; ++b) { e.st[static_cast<std::size_t>(b)].hz = kStHz[b]; e.st[static_cast<std::size_t>(b)].q = kStQ; }
     e.bassShelf.type = BQ::Type::LowShelf;
     e.xfeedLp.set(BQ::make(BQ::Type::LowPass, sampleRate, kXfeedHz, 0.7071));
     e.xdelay = static_cast<std::uint32_t>(std::clamp(std::lround(kXfeedMs * 0.001 * sampleRate), 1L, 63L));
@@ -175,6 +182,7 @@ HEM_EXPORT(hem_reset) void hem_reset() {
     e.surgeon->reset();
     e.limiter->reset();
     for (auto* f : {&e.beqLow, &e.beqMid, &e.beqHigh, &e.bassShelf}) f->f.clear();
+    for (auto& f : e.st) f.f.clear();
     e.bassSplit.clear();
     e.xfeedLp.clear();
     e.xdL.fill(0); e.xdR.fill(0);
@@ -228,6 +236,14 @@ HEM_EXPORT(hem_process) void hem_process(std::uint32_t n) {
     }
 
     if (e.surgeonOn) e.surgeon->process(L, R, n);
+
+    // STATION EQ
+    for (int b = 0; b < 10; ++b) {
+        auto& f = e.st[static_cast<std::size_t>(b)];
+        f.target = v[StOn] > 0.5f ? std::clamp(v[St0 + b], -10.0f, 10.0f) : 0.0f;
+        f.step(e.fs);
+        if (!f.flat()) f.f.run(L, R, n);
+    }
 
     // BROADCAST EQ
     e.beqLow.target = v[BeqOn] > 0.5f ? std::clamp(v[BeqLow], -12.0f, 12.0f) : 0.0f;
