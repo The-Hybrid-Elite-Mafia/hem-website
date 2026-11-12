@@ -240,7 +240,7 @@ body.on-player footer{display:none}
   box-shadow:0 0 calc(10px + var(--beat)*16px) rgba(255,47,185,.55),0 0 0 2px #ff2fb9 inset;color:#fff}
 #hemRadio .rtab span{background:linear-gradient(90deg,#ff9be6,#ff2fb9,#ff2fb9);-webkit-background-clip:text;background-clip:text;color:transparent}
 #hemRadio .rtab small{display:block;margin-top:5px;font:600 clamp(8px,.7vw,11px)/1 var(--display);letter-spacing:.32em;color:#d8d4e8}
-#hemRadio .rgrid{position:relative;display:grid;grid-template-columns:minmax(0,27fr) minmax(0,53fr) minmax(0,20fr);grid-template-areas:"screen mid side" "mods mods mods" "bar bar bar";gap:clamp(8px,1vw,14px)}
+#hemRadio .rgrid{position:relative;display:grid;grid-template-columns:minmax(0,27fr) minmax(0,53fr) minmax(0,20fr);grid-template-areas:"screen mid side" "mods mods mods" "bar bar bar" "tryp tryp tryp";gap:clamp(8px,1vw,14px)}
 #hemRadio .panel{position:relative;background:linear-gradient(180deg,#14161d,#0a0b10);border-radius:16px;border:1px solid rgba(255,47,185,.32);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 24px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.6),0 0 calc(6px + var(--beat)*10px) rgba(255,47,185,calc(.06 + var(--beat)*.12))}
 #hemRadio .ptitle{font:700 clamp(12px,1.2vw,18px)/1 var(--display);letter-spacing:.06em;text-align:center;margin:0;color:#e8e6f3;text-transform:uppercase}
@@ -284,6 +284,22 @@ body.on-player footer{display:none}
 #hemRadio .sbtn[aria-pressed="true"]{background:color-mix(in srgb,var(--c) 28%,#0a0a12);color:#fff}
 #hemRadio .sbtn:focus-visible{outline:2px solid #fff;outline-offset:2px}
 #hemRadio .srow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#hemRadio .tryp{grid-area:tryp;padding:12px;display:flex;flex-direction:column;gap:10px}
+#hemRadio .trychips{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+#hemRadio .trychips .sbtn{flex-direction:column;gap:4px;min-height:52px;padding:6px 10px}
+#hemRadio .trychips .sbtn small{font:600 10px/1 var(--display);letter-spacing:.14em;opacity:.8}
+#hemRadio .trynote{margin:0;text-align:center;color:#b9b4cc;font:500 clamp(13px,1.1vw,16px)/1.4 var(--body, system-ui)}
+#hemRadio .tryface{position:relative;border-radius:12px;overflow-x:auto;overflow-y:hidden;box-shadow:0 0 0 2px rgba(34,228,255,.8),0 0 18px rgba(34,228,255,.35),0 0 30px rgba(255,47,185,.2)}
+#hemRadio .tryface canvas{display:block;width:100%;aspect-ratio:1672/941;touch-action:none}
+#hemRadio .bigbar{display:none}
+#hemRadio .tryface.big{position:fixed;inset:0;z-index:2147483000;border-radius:0;background:#05050b;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:none}
+#hemRadio .tryface.big .bigwrap{display:flex;flex-direction:column;gap:8px;align-items:center;width:min(calc(100vw - 16px),calc((100dvh - 70px) * 1672 / 941))}
+#hemRadio .tryface.big.rot .bigwrap{transform:rotate(90deg);width:min(calc(100dvh - 16px),calc((100vw - 70px) * 1672 / 941))}
+#hemRadio .tryface.big .bigbar{display:flex;justify-content:center}
+@media (max-width:700px) and (pointer:coarse){#hemRadio .tryface:not(.big) canvas{touch-action:pan-y}}
+@media (max-width:700px){#hemRadio .trychips{grid-template-columns:1fr 1fr}
+#hemRadio .trychips .sbtn{min-height:46px}}
+#hemRadio .tryclose{justify-self:center}
 #hemRadio .ststat{text-align:center;font:700 clamp(10px,.85vw,13px)/1.4 var(--display);letter-spacing:.05em;color:#ff6ad5}
 #hemRadio .ststat i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin:0 6px;vertical-align:middle}
 #hemRadio .ststat.on i{background:#ff9be6;box-shadow:0 0 8px #ff9be6}
@@ -368,11 +384,11 @@ body.on-player footer{display:none}
 #hemRadio .sq{min-width:46px;padding:0 8px}}
 @media (max-width:1280px){#hemRadio .rbar{grid-template-columns:minmax(0,1fr) auto}
 #hemRadio .rbar .tp{grid-column:1/-1;justify-content:center}}
-@media (max-width:1100px){#hemRadio .rgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"screen side" "mid mid" "mods mods" "bar bar"}
+@media (max-width:1100px){#hemRadio .rgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"screen side" "mid mid" "mods mods" "bar bar" "tryp tryp"}
 #hemRadio .mods{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:700px){#hemRadio .radio,#hemRadio .neon,#hemRadio .neon-glow{border-radius:28px}
 #hemRadio .plate{border-radius:22px}
-#hemRadio .rgrid{grid-template-columns:minmax(0,1fr);grid-template-areas:"screen" "side" "mid" "mods" "bar"}
+#hemRadio .rgrid{grid-template-columns:minmax(0,1fr);grid-template-areas:"screen" "side" "mid" "mods" "bar" "tryp"}
 #hemRadio .side{grid-template-columns:1fr 1fr;grid-template-rows:auto}
 #hemRadio .deck{grid-template-columns:minmax(0,1fr)}
 #hemRadio .viz{aspect-ratio:1100/560}
@@ -636,6 +652,12 @@ body.on-player .mini{display:none}
           <div class="seekrow"><span id="tPos">0:00</span><canvas id="wave" role="slider" tabindex="0" aria-label="Song position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></canvas><span id="tLen">0:00</span></div>
         </div>
         <div class="clock"><small>LOCAL TIME</small><b id="clock">--:--</b></div>
+      </section>
+      <section class="panel tryp" aria-label="Try a HEM plug-in">
+        <h2 class="ptitle">TRY A HEM PLUG-IN · LIVE ON THE MUSIC</h2>
+        <div class="trychips" id="tryChips" role="group" aria-label="Pick a plug-in to try"></div>
+        <p class="trynote" id="tryNote">Pick one. The music you are hearing plays through that plug-in's real sound engine, only for you. Turn the knobs; the POWER button compares ON and OFF.</p>
+        <div class="tryface" id="tryFace" hidden><div class="bigwrap"><div class="bigbar"><button class="sbtn c5" id="tryBigClose" type="button">CLOSE BIG VIEW</button></div><canvas id="tryCv" role="img" aria-label="The plug-in's faceplate: drag a knob up or down to turn it, double-click it to reset, click buttons to switch"></canvas></div></div>
       </section>
     </div>
     <div class="foot"><b>HYBRID ELITE MAFIA</b><span>• RADIO BROADCAST SYSTEM</span></div>
@@ -1126,6 +1148,7 @@ function ensureAudio() {
       };
       eng.an = eng.ctx.createAnalyser(); eng.an.fftSize = 8192; eng.an.smoothingTimeConstant = 0.6;
       eng.node.connect(eng.ctx.destination); eng.node.connect(eng.an);
+      eng.input = eng.ctx.createGain(); eng.input.connect(eng.node);   // songs go in here; TRY A PLUG-IN cuts in after it
       eng.sent.clear(); EV.forEach((v, i) => post('e', i, v));
       return true;
     } catch (err) {
@@ -1337,7 +1360,7 @@ let curSong = -1, songBuf = null, srcNode = null, startAt = 0, pausedAt = 0, pla
 function stopSrc() { if (!srcNode) return; const s = srcNode; srcNode = null; s.onended = null; try { s.stop(); } catch (e) {} s.disconnect(); }
 function startSrc(offset) {
   stopSrc();
-  const s = eng.ctx.createBufferSource(); s.buffer = songBuf; s.connect(eng.node);
+  const s = eng.ctx.createBufferSource(); s.buffer = songBuf; s.connect(eng.input);
   s.onended = () => { if (srcNode === s) songEnded(); };
   startAt = eng.ctx.currentTime - offset; s.start(0, offset); srcNode = s; playing = true; ui();
 }
@@ -1756,7 +1779,7 @@ function frame(now) {
   root.style.setProperty('--beat', (REDUCED ? levelSlow * 0.5 : level).toFixed(3));
   const shown = !window.hemRadioHidden || !window.hemRadioHidden();
   if (shown) { drawViz(t); drawMeters(now); drawBars(t); drawWave(t); drawGhost(); }
-  if (levEl) { const gdb = eng.r[28] || 0; levEl.textContent = EV[E.LevOn] > 0.5 && live() ? (gdb >= 0 ? '+' : '') + gdb.toFixed(1) + ' dB' : ''; }
+  if (levEl) { const gdb = eng.r[28] || 0; levEl.textContent = tryOpen() ? 'RESTING' : EV[E.LevOn] > 0.5 && live() ? (gdb >= 0 ? '+' : '') + gdb.toFixed(1) + ' dB' : ''; }
   const li = eng.r[19], tp = eng.r[21];
   $('lufsI').textContent = li > -70 ? li.toFixed(1) : '--';
   $('lufsP').textContent = tp > -70 ? tp.toFixed(1) : '--';
@@ -1766,6 +1789,83 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 function layout() { layoutViz(); layoutMeters(); layoutBars(); layoutWave(); if (ghost) ghost.size(); }
+
+// =============================================================================
+//  TRY A PLUG-IN: one HEM-Elite-Rack plug-in, its real C++ (rack/hem-rack.wasm) on the audio thread, cut in between the
+//  song and the station chain, with its real faceplate (rack/hem-face.js). Only this listener hears it.
+//  While it is open the AUTO-LEVELER rests (it would otherwise even out the loudness the plug-in changes, so ON / OFF
+//  would not compare fairly); HEM LOCKDOWN still holds the peaks at -1 dBTP. Closing puts everything back.
+// =============================================================================
+const TRY = [['VELVET', 'EQ'], ['THE FAMILY', 'DYNAMICS'], ['WIDE LOAD', 'TOOLS'], ['CATHEDRAL', 'SPACE'], ['THE CREW', 'MOVEMENT'], ['HOTHEAD', 'COLOR']];
+const tryS = { name: null, face: null, node: null, mod: null, wasm: null, layouts: null, worklet: false, busy: false };
+function tryOpen() { return !!tryS.name; }
+function tryChips() {
+  const box = $('tryChips'); box.textContent = '';
+  TRY.forEach(([n, g], k) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sbtn ' + (k % 2 ? 'c2' : 'c1');
+    b.setAttribute('aria-pressed', String(tryS.name === n)); b.innerHTML = '<span></span><small></small>';
+    b.firstChild.textContent = n; b.lastChild.textContent = g; b.onclick = () => tryPick(n); box.append(b);
+  });
+  if (tryS.name) {
+    const g = document.createElement('button'); g.type = 'button'; g.className = 'sbtn c3'; g.textContent = 'BIG VIEW'; g.onclick = () => tryBig(true); box.append(g);
+    const c = document.createElement('button'); c.type = 'button'; c.className = 'sbtn c5'; c.textContent = 'CLOSE PLUG-IN'; c.onclick = tryClose; box.append(c);
+  }
+}
+async function tryPick(name) {
+  if (tryS.busy || tryS.name === name) return;
+  tryS.busy = true;
+  try {
+    if (!(await ensureAudio())) return;
+    $('tryNote').textContent = 'Loading ' + name + '...';
+    if (!tryS.mod) {
+      const [mod, b64, lay] = await Promise.all([import('./rack/hem-face.js'), fetch('rack/hem-rack-wasm.txt').then(r => r.text()), fetch('rack/hem-rack-layouts.json').then(r => r.json())]);
+      tryS.mod = mod; tryS.wasm = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)).buffer; tryS.layouts = lay;
+    }
+    if (!tryS.worklet) { await eng.ctx.audioWorklet.addModule('rack/hem-rack-worklet.js'); tryS.worklet = true; }
+    const ui = await tryS.mod.RackUi.create(tryS.wasm.slice(0), name);
+    const node = new AudioWorkletNode(eng.ctx, 'hem-rack', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], channelCount: 2, channelCountMode: 'explicit', processorOptions: { wasm: tryS.wasm.slice(0), name } });
+    for (let i = 0; i < ui.n; i++) node.port.postMessage({ t: 'p', i, v: ui.get(i) });
+    if (tryS.face) tryS.face.destroy();
+    $('tryFace').hidden = false;
+    const face = new tryS.mod.HemFace({ canvas: $('tryCv'), layout: tryS.layouts[name], base: 'rack/face/', plate: 'rack/face/plate-' + name.replace(/ /g, '_').toLowerCase() + '.webp', ui,
+      onParam: (i, v) => node.port.postMessage({ t: 'p', i, v }), onPower: on => node.port.postMessage({ t: 'on', v: on }) });
+    node.port.onmessage = e => { if (e.data instanceof Float32Array) face.setFeed(e.data); else if (e.data.t === 'error') toast(e.data.message); };
+    await face.ready;
+    // cut in: song -> plug-in -> station chain; the old plug-in (if any) is let go
+    const old = tryS.node;
+    eng.input.disconnect(); eng.input.connect(node); node.connect(eng.node);
+    if (old) { old.disconnect(); old.port.postMessage({ t: 'stop' }); }
+    if (!tryS.name) post('e', E.LevOn, 0);   // the AUTO-LEVELER rests while a plug-in is open
+    tryS.node = node; tryS.face = face; tryS.name = name;
+    $('tryNote').textContent = name + ' is on the music now, only for you. Drag a knob up or down; double-click it for its starting place; POWER compares ON and OFF. The AUTO-LEVELER rests while a plug-in is open.';
+  } catch (err) {
+    toast('That plug-in could not start: ' + (err && err.message || err));
+    $('tryNote').textContent = 'That plug-in could not start in this browser.';
+  } finally { tryS.busy = false; tryChips(); }
+}
+function tryBig(on) {
+  const f = $('tryFace'), rot = on && innerHeight > innerWidth;
+  f.classList.toggle('big', on); f.classList.toggle('rot', rot);
+  if (tryS.face) { tryS.face.rot = rot; tryS.face.dirty = true; }
+  if (on) $('tryBigClose').focus();
+}
+$('tryBigClose').onclick = () => tryBig(false);
+addEventListener('resize', () => { if ($('tryFace').classList.contains('big')) tryBig(true); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && $('tryFace').classList.contains('big')) tryBig(false); });
+function tryClose() {
+  if (!tryS.name) return;
+  tryBig(false);
+  eng.input.disconnect(); eng.input.connect(eng.node);
+  tryS.node.disconnect(); tryS.node.port.postMessage({ t: 'stop' });
+  tryS.face.destroy();
+  post('e', E.LevOn, EV[E.LevOn]);   // the AUTO-LEVELER back as it was
+  tryS.node = tryS.face = tryS.name = null;
+  $('tryFace').hidden = true;
+  $('tryNote').textContent = 'Pick one. The music you are hearing plays through that plug-in\'s real sound engine, only for you. Turn the knobs; the POWER button compares ON and OFF.';
+  tryChips();
+}
+tryChips();
+window.hemTry = { tryPick, tryClose, get state() { return tryS; } };
 
 buildMods(); ui(); drawQueue();
 addEventListener('resize', layout);

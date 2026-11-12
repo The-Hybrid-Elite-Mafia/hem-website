@@ -69,6 +69,8 @@ HEAD = '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta
 shutil.copytree(ROOT / 'img', DIST / 'img')
 for f in ['hem-engine2-wasm.txt', 'hem-engine2-worklet.js', 'ghost4-model.txt']:
     shutil.copy(RADIO / f, DIST / f)
+# TRY A PLUG-IN: the HEM-Elite-Rack engine (every plug-in's real C++), the faceplate code, layouts and parts
+shutil.copytree(RADIO / 'rack', DIST / 'rack')
 # HEM RADIO's station songs (made by make_station.py); with none yet, an empty list so TUNE IN says so
 import os
 STATION = pathlib.Path(os.environ.get('HEM_STATION_DIR', ROOT / 'station'))
