@@ -69,6 +69,14 @@ HEAD = '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta
 shutil.copytree(ROOT / 'img', DIST / 'img')
 for f in ['hem-engine2-wasm.txt', 'hem-engine2-worklet.js', 'ghost4-model.txt']:
     shutil.copy(RADIO / f, DIST / f)
+# HEM RADIO's station songs (made by make_station.py); with none yet, an empty list so TUNE IN says so
+import os
+STATION = pathlib.Path(os.environ.get('HEM_STATION_DIR', ROOT / 'station'))
+if (STATION / 'station.json').exists():
+    shutil.copytree(STATION, DIST / 'station', ignore=shutil.ignore_patterns('*.wav', '*.flac', '*.aif', '*.aiff'))
+else:
+    (DIST / 'station').mkdir()
+    (DIST / 'station' / 'station.json').write_text('{"epoch": 0, "songs": []}')
 # HOTHEAD live tablet: its own small page, shown inside the HOTHEAD plug-in page
 (DIST / 'hothead').mkdir()
 for f in ['index.html', 'hem-tablet-base.webp', 'hem-tablet-lights.png', 'knob-bg.png', 'value-box.png', 'power-off.png', 'hem-hothead-wasm.txt', 'hem-stems-worklet.js']:

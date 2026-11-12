@@ -220,7 +220,8 @@ input[type=file]{display:none}
           </section>
           <section class="panel" aria-label="Station">
             <h2 class="ptitle">STATION CONTROLS</h2>
-            <button class="sbtn c5" id="sAdd" type="button">+ ADD SONGS</button>
+            <button class="sbtn c1" id="sLive" type="button" aria-pressed="false">TUNE IN · HEM RADIO LIVE</button>
+            <button class="sbtn c5" id="sAdd" type="button">+ ADD MY SONGS</button>
             <div class="srow">
               <button class="sbtn c1" id="s247" type="button" aria-pressed="true">NONSTOP 24/7</button>
               <button class="sbtn c3" id="sShuf" type="button" aria-pressed="false">SHUFFLE</button>
@@ -477,6 +478,76 @@ function buildMods() {
 //  NONSTOP 24/7: after the last song it starts over from the top, for as long as the page is open.
 // =============================================================================
 const songs = [], played = [];
+// mode 'mine': songs from this device. mode 'live': HEM RADIO, the same song at the same moment for everyone.
+let mode = 'mine';
+const station = { list: [], epoch: 0, total: 0, skew: 0, loaded: false, cur: -1, nextIdx: -1, nextBuf: null, fetching: null };
+async function loadStation() {
+  if (station.loaded) return station.list.length > 0;
+  try {
+    const t0 = Date.now();
+    const r = await fetch('station/station.json', { cache: 'no-store' });
+    const t1 = Date.now();
+    // the website's own clock (the Date the server sends) so a phone with the wrong time still hears the right spot
+    const d = r.headers.get('date');
+    if (d && isFinite(Date.parse(d))) station.skew = Date.parse(d) + 500 - (t0 + t1) / 2;
+    const j = await r.json();
+    station.list = (j.songs || []).filter(x => x.dur > 0 && x.file);
+    station.epoch = +j.epoch || 0;
+    station.total = station.list.reduce((a, x) => a + x.dur, 0);
+    station.loaded = true;
+  } catch (e) { station.loaded = false; return false; }
+  return station.list.length > 0;
+}
+function stationAt(ms) {   // which station song is on air at time ms, and how far into it (seconds)
+  let t = ((ms + station.skew) / 1000 - station.epoch) % station.total; if (t < 0) t += station.total;
+  for (let i = 0; i < station.list.length; i++) { if (t < station.list[i].dur) return { i, off: t }; t -= station.list[i].dur; }
+  return { i: 0, off: 0 };
+}
+async function fetchStationSong(i) {
+  const r = await fetch('station/' + encodeURI(station.list[i].file));
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return eng.ctx.decodeAudioData(await r.arrayBuffer());
+}
+function prefetchNext() {   // fetch and decode the next song ahead of time, so the change-over has no gap
+  const n = (station.cur + 1) % station.list.length;
+  if (station.nextIdx === n && (station.nextBuf || station.fetching)) return;
+  station.nextIdx = n; station.nextBuf = null;
+  const p = fetchStationSong(n).then(b => { if (station.nextIdx === n) station.nextBuf = b; }).catch(() => {}).finally(() => { if (station.fetching === p) station.fetching = null; });
+  station.fetching = p;
+}
+async function tuneIn() {
+  const ok = await ensureAudio(); if (!ok) return;
+  if (eng.ctx.state !== 'running') await eng.ctx.resume().catch(() => {});
+  station.loaded = false;
+  if (!(await loadStation())) { toast("HEM RADIO's songs aren't up yet."); return; }
+  mode = 'live'; curSong = -1; planOrder();
+  return playLive();
+}
+async function playLive(fails = 0) {
+  stopSrc(); playing = false; songBuf = null; pausedAt = 0; loadingSong = true;
+  const { i } = stationAt(Date.now());
+  station.cur = i; ui();
+  if (eng.node) { eng.node.port.postMessage({ t: 'lr' }); eng.node.port.postMessage({ t: 'nr' }); }
+  eng.r.fill(-100, 17, 24);
+  const token = ++loadToken;
+  let buf = null;
+  try { buf = station.nextIdx === i && station.nextBuf ? station.nextBuf : await fetchStationSong(i); }
+  catch (e) {
+    if (token !== loadToken) return;
+    loadingSong = false; ui();
+    if (fails < 3) { toast("Couldn't reach the next song. Trying again…"); setTimeout(() => { if (mode === 'live' && token === loadToken) playLive(fails + 1); }, 3000); }
+    else toast("HEM RADIO can't be reached right now.");
+    return;
+  }
+  if (token !== loadToken || mode !== 'live') return;
+  const now = stationAt(Date.now());
+  if (now.i !== i) return playLive();   // the song changed while this one loaded: join the new one
+  songBuf = buf; peaksFor(buf); loadingSong = false;
+  played.unshift({ name: station.list[i].title, at: new Date() }); if (played.length > 200) played.pop();
+  startSrc(Math.min(now.off, Math.max(0, buf.duration - 0.05)));
+  prefetchNext();
+}
+function leaveLive() { if (mode !== 'live') return; mode = 'mine'; stopSrc(); playing = false; songBuf = null; loadToken++; station.cur = -1; wavePeaks = null; }
 let curSong = -1, songBuf = null, srcNode = null, startAt = 0, pausedAt = 0, playing = false, loadToken = 0, loadingSong = false;
 function stopSrc() { if (!srcNode) return; const s = srcNode; srcNode = null; s.onended = null; try { s.stop(); } catch (e) {} s.disconnect(); }
 function startSrc(offset) {
@@ -505,6 +576,7 @@ function planOrder() {
 }
 async function playIndex(i, offset = 0) {
   if (i < 0 || i >= songs.length) return;
+  leaveLive();
   const ok = await ensureAudio(); if (!ok) return;
   stopSrc(); playing = false; curSong = i; songBuf = null; pausedAt = 0; loadingSong = true; planOrder(); ui();
   if (eng.node) { eng.node.port.postMessage({ t: 'lr' }); eng.node.port.postMessage({ t: 'nr' }); }   // a new song: the loudness meter and AUTO-LEVELER measure it fresh
@@ -530,19 +602,21 @@ async function play() {
   const ok = await ensureAudio(); if (!ok) return;
   if (eng.ctx.state !== 'running') await eng.ctx.resume().catch(() => {});
   if (playing) return;
-  if (curSong < 0) { if (!songs.length) { pick(); return; } return playIndex(shuffle ? Math.floor(Math.random() * songs.length) : 0); }
+  if (mode === 'live') return playLive();   // live radio: pressing play joins wherever the station is now
+  if (curSong < 0) { if (!songs.length) { if (station.loaded && station.list.length || await loadStation()) return tuneIn(); pick(); return; } return playIndex(shuffle ? Math.floor(Math.random() * songs.length) : 0); }
   if (!songBuf) return playIndex(curSong, pausedAt);
   startSrc(pausedAt);
 }
 function pause() { if (!playing) return; pausedAt = songPos(); stopSrc(); playing = false; ui(); }
-function nextSong() { const n = order[0]; if (n !== undefined) playIndex(n); else if (songs.length) toast('That was the last song. Turn on NONSTOP 24/7 to keep it going.'); }
+function nextSong() { if (mode === 'live') { toast('HEM RADIO is live: no skipping. Use + ADD MY SONGS to pick your own.'); return; } const n = order[0]; if (n !== undefined) playIndex(n); else if (songs.length) toast('That was the last song. Turn on NONSTOP 24/7 to keep it going.'); }
 function prevSong() {
+  if (mode === 'live') { toast('HEM RADIO is live: no going back.'); return; }
   if (curSong < 0) return;
   if (songPos() > 3 || curSong === 0) { if (songBuf) { if (playing) startSrc(0); else pausedAt = 0; ui(); } return; }
   playIndex(curSong - 1);
 }
-function songEnded() { srcNode = null; playing = false; pausedAt = 0; if (repeatOne && songBuf) { startSrc(0); return; } const n = order[0]; if (n !== undefined) playIndex(n); else ui(); }
-function seekTo(frac) { if (!songBuf) return; const at = clamp(frac, 0, 1) * songBuf.duration; if (playing) startSrc(at); else { pausedAt = at; ui(); } }
+function songEnded() { srcNode = null; playing = false; pausedAt = 0; if (mode === 'live') { playLive(); return; } if (repeatOne && songBuf) { startSrc(0); return; } const n = order[0]; if (n !== undefined) playIndex(n); else ui(); }
+function seekTo(frac) { if (!songBuf || mode === 'live') return; const at = clamp(frac, 0, 1) * songBuf.duration; if (playing) startSrc(at); else { pausedAt = at; ui(); } }
 const isAudio = f => /^audio\//.test(f.type) || /\.(wav|mp3|flac|m4a|aac|ogg|aif|aiff)$/i.test(f.name);
 function readDuration(s) {   // a song's length from its file header, without decoding the whole song
   const a = new Audio(), url = URL.createObjectURL(s.file);
@@ -566,6 +640,7 @@ $('picker').addEventListener('change', e => { addFiles(e.target.files); e.target
 addEventListener('dragover', e => e.preventDefault());
 addEventListener('drop', e => { e.preventDefault(); ensureAudio(); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
 $('sAdd').addEventListener('click', pick);
+$('sLive').addEventListener('click', () => { if (mode === 'live' && (playing || loadingSong)) { toast("You're tuned in to HEM RADIO."); return; } tuneIn(); });
 $('bPlay').addEventListener('click', () => play());
 $('bPause').addEventListener('click', () => pause());
 $('bRep').addEventListener('click', () => { repeatOne = !repeatOne; save(); ui(); });
@@ -610,6 +685,19 @@ function drawHistory() {
 const upEl = $('upnext');
 function drawUpNext() {
   upEl.innerHTML = '';
+  if (mode === 'live' && station.list.length) {
+    let wait = songBuf ? Math.max(0, songBuf.duration - songPos()) : 0;
+    for (let k = 1; k <= 3; k++) {
+      const x = station.list[(station.cur + k) % station.list.length];
+      const row = document.createElement('div'); row.className = 'qrow';
+      const b = document.createElement('button'); b.className = 'qplay'; b.type = 'button'; b.disabled = true; b.setAttribute('aria-label', 'Coming up on HEM RADIO');
+      b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>';
+      const info = document.createElement('div'); info.className = 'qinfo';
+      info.innerHTML = `<div class="qn"><small>UP NEXT ON HEM RADIO:</small><span class="qt">${esc(x.title.toUpperCase())}</span></div><span class="w">${songBuf ? '+' + mmss(wait) : ''}</span>`;
+      wait += x.dur; row.append(b, info); upEl.appendChild(row);
+    }
+    return;
+  }
   let wait = songBuf ? Math.max(0, songBuf.duration - songPos()) : 0, known = curSong >= 0 && !!songBuf;
   for (let k = 0; k < 3; k++) {
     const idx = order[k], s = idx !== undefined ? songs[idx] : null;
@@ -630,6 +718,13 @@ function drawUpNext() {
 }
 function drawStation() {
   const st = $('stStat'), onAir = playing || loadingSong;
+  $('sLive').setAttribute('aria-pressed', String(mode === 'live' && onAir));
+  if (mode === 'live') {
+    st.classList.toggle('on', onAir);
+    st.querySelector('span').textContent = onAir ? 'HEM RADIO · LIVE 24/7' : 'HEM RADIO · PAUSED';
+    $('stInfo').textContent = `${station.list.length} SONG${station.list.length === 1 ? '' : 'S'} · SAME SONG FOR EVERYONE`;
+    return;
+  }
   st.classList.toggle('on', onAir);
   st.querySelector('span').textContent = onAir ? (nonstop ? 'ON AIR · NONSTOP 24/7' : 'ON AIR') : (songs.length ? 'PAUSED' : 'OFF AIR');
   const total = songs.reduce((a, s) => a + (s.dur || 0), 0);
@@ -637,28 +732,30 @@ function drawStation() {
 }
 // The website's Playlists page and mini player use these (songs come from this device's own storage)
 window.hemQueue = {
-  set(list, start = 0) { stopSrc(); playing = false; loadToken++; songs.length = 0; list.forEach(x => { const s = { name: x.name, file: x.file, dur: 0 }; songs.push(s); readDuration(s); }); curSong = -1; songBuf = null; pausedAt = 0; planOrder(); if (songs.length) return playIndex(clamp(start, 0, songs.length - 1)); ui(); },
+  set(list, start = 0) { leaveLive(); stopSrc(); playing = false; loadToken++; songs.length = 0; list.forEach(x => { const s = { name: x.name, file: x.file, dur: 0 }; songs.push(s); readDuration(s); }); curSong = -1; songBuf = null; pausedAt = 0; planOrder(); if (songs.length) return playIndex(clamp(start, 0, songs.length - 1)); ui(); },
   list: () => songs.map(x => ({ name: x.name, file: x.file })), current: () => curSong, playAt: i => playIndex(i),
 };
 window.hemPlayer = {
   play, pause, next: nextSong, prev: prevSong, seek: f => seekTo(clamp(f, 0, 1)), resize: () => layout(),
   addSongs: pick,
-  state: () => ({ playing: !!playing, title: loadingSong ? 'Loading…' : curSong >= 0 && songs[curSong] ? songs[curSong].name : null,
+  tuneIn, live: () => mode === 'live',
+  state: () => ({ playing: !!playing, title: loadingSong ? 'Loading…' : curName() || null,
                   count: songs.length, index: curSong, pos: songPos(), dur: songBuf ? songBuf.duration : 0, lufs: eng.r[19] }),
 };
-window.hemStatus = () => ({ engineReady: eng.ready, playing, song: curSong >= 0 ? songs[curSong].name : null, position: songPos(),
+window.hemStatus = () => ({ engineReady: eng.ready, playing, mode, station: mode === 'live' ? { index: station.cur, ...stationAt(Date.now()) } : null, song: curName() || null, position: songPos(),
   meters: Array.from(eng.r.slice(24, 30)), loudness: Array.from(eng.r.slice(17, 24)), level, sampleRate: eng.ctx ? eng.ctx.sampleRate : null });
 
+const curName = () => mode === 'live' ? (station.cur >= 0 && station.list[station.cur] ? station.list[station.cur].title : '') : (curSong >= 0 && songs[curSong] ? songs[curSong].name : '');
 function ui() {
-  const name = curSong >= 0 && songs[curSong] ? songs[curSong].name : '';
+  const name = curName();
   $('bPlay').setAttribute('aria-pressed', String(playing || loadingSong)); $('bPause').setAttribute('aria-pressed', String(!playing && !loadingSong && curSong >= 0));
   $('bShuf').setAttribute('aria-pressed', String(shuffle)); $('bRep').setAttribute('aria-pressed', String(repeatOne));
   $('s247').setAttribute('aria-pressed', String(nonstop)); $('sShuf').setAttribute('aria-pressed', String(shuffle));
   $('bMute').setAttribute('aria-pressed', String(EV[E.Mute] > 0.5)); $('bMute').textContent = EV[E.Mute] > 0.5 ? 'MUTED' : 'MUTE';
-  $('nowTitle').textContent = name ? name.toUpperCase() : 'NOTHING PLAYING · ADD SONGS TO START THE STATION';
+  $('nowTitle').textContent = name ? (mode === 'live' ? 'HEM RADIO LIVE · ' : '') + name.toUpperCase() : 'NOTHING PLAYING · TUNE IN TO HEM RADIO OR ADD YOUR SONGS';
   $('vNow').textContent = 'NOW PLAYING: ' + (name ? name.toUpperCase() : 'NOTHING YET') + ' // ARTIST: HYBRID ELITE MAFIA';
   const bd = $('badge'); bd.className = 'badge ' + (playing ? 'onair' : 'idle');
-  bd.querySelector('span').textContent = playing ? 'ON AIR' : loadingSong ? 'LOADING' : name ? 'PAUSED' : 'OFF AIR';
+  bd.querySelector('span').textContent = playing ? (mode === 'live' ? 'LIVE' : 'ON AIR') : loadingSong ? 'LOADING' : name ? 'PAUSED' : 'OFF AIR';
   $('tLen').textContent = mmss(songBuf ? songBuf.duration : 0);
   drawUpNext(); drawStation();
 }
@@ -892,7 +989,7 @@ layout();
 requestAnimationFrame(frame);
 loadGhost();
 addEventListener('pointerdown', () => { ensureAudio(); }, { once: true });   // the first tap wakes the sound engine
-window.hemTest = { eng, EV, E, get level() { return level; }, get playing() { return playing; }, songPos, songs, seekTo, setE, play, pause, get order() { return order; }, get cur() { return curSong; } };
+window.hemTest = { station, get mode() { return mode; }, stationAt, tuneIn, eng, EV, E, get level() { return level; }, get playing() { return playing; }, songPos, songs, seekTo, setE, play, pause, get order() { return order; }, get cur() { return curSong; } };
 </script>
 </body>
 </html>
